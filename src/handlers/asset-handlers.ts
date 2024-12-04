@@ -1,4 +1,4 @@
-import { contentfulClient } from '../config/client';
+import { contentfulClient } from '../config/client.js';
 
 export const assetHandlers = {
   uploadAsset: async (args: any) => {

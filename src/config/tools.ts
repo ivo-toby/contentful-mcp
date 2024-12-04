@@ -1,4 +1,4 @@
-import { ENTRY_TOOLS, ASSET_TOOLS, SPACE_ENV_TOOLS } from '../types/tools';
+import { ENTRY_TOOLS, ASSET_TOOLS, SPACE_ENV_TOOLS } from '../types/tools.js';
 
 // Define available tools
 export const TOOLS = {

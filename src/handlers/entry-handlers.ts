@@ -1,4 +1,4 @@
-import { contentfulClient } from '../config/client';
+import { contentfulClient } from '../config/client.js';
 
 export const entryHandlers = {
   createEntry: async (args: any) => {

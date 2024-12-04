@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ContentfulClientAPI } from "../common-types";
+import { ContentfulClientAPI } from "../common-types.js";
 
 export type HandlerArgs = {
   spaceId: string;
