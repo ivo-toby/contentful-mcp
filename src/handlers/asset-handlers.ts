@@ -1,5 +1,6 @@
+import { CreateAssetProps } from "contentful-management";
 import { contentfulClient } from "../config/client.js";
-import { HandlerArgs } from "../types/tools";
+import { HandlerArgs } from "../types/tools.js";
 
 type BaseAssetParams = {
   spaceId: string;
@@ -7,7 +8,9 @@ type BaseAssetParams = {
   assetId: string;
 };
 
-const getBaseParams = (args: HandlerArgs & { assetId: string }): BaseAssetParams => ({
+const getBaseParams = (
+  args: HandlerArgs & { assetId: string },
+): BaseAssetParams => ({
   spaceId: args.spaceId,
   environmentId: args.environmentId || "master",
   assetId: args.assetId,
@@ -22,30 +25,41 @@ const getCurrentAsset = async (params: BaseAssetParams) => {
 };
 
 export const assetHandlers = {
-  uploadAsset: async (args: HandlerArgs & {
-    title: string;
-    description?: string;
-    file: {
-      fileName: string;
-      contentType: string;
-      upload?: string;
-    };
-  }) => {
+  uploadAsset: async (
+    args: HandlerArgs & {
+      title: string;
+      description?: string;
+      file: {
+        fileName: string;
+        contentType: string;
+        upload?: string;
+      };
+    },
+  ) => {
     const params = {
       spaceId: args.spaceId,
       environmentId: args.environmentId || "master",
+    };
+
+    const assetProps: CreateAssetProps = {
       fields: {
         title: { "en-US": args.title },
-        description: args.description ? { "en-US": args.description } : undefined,
+        description: args.description
+          ? { "en-US": args.description }
+          : undefined,
         file: { "en-US": args.file },
       },
     };
 
-    const asset = await contentfulClient.asset.create(params);
-    const processedAsset = await contentfulClient.asset.processForAllLocales({
-      ...params,
-      assetId: asset.sys.id,
-    });
+    const asset = await contentfulClient.asset.create(params, assetProps);
+    const processedAsset = await contentfulClient.asset.processForAllLocales(
+      params,
+      {
+        sys: asset.sys,
+        fields: asset.fields,
+      },
+      {},
+    );
 
     return formatResponse(processedAsset);
   },
@@ -56,16 +70,18 @@ export const assetHandlers = {
     return formatResponse(asset);
   },
 
-  updateAsset: async (args: HandlerArgs & {
-    assetId: string;
-    title?: string;
-    description?: string;
-    file?: {
-      fileName: string;
-      contentType: string;
-      upload?: string;
-    };
-  }) => {
+  updateAsset: async (
+    args: HandlerArgs & {
+      assetId: string;
+      title?: string;
+      description?: string;
+      file?: {
+        fileName: string;
+        contentType: string;
+        upload?: string;
+      };
+    },
+  ) => {
     const params = getBaseParams(args);
     const currentAsset = await getCurrentAsset(params);
 
@@ -73,15 +89,19 @@ export const assetHandlers = {
     if (args.title) fields.title = { "en-US": args.title };
     if (args.description) fields.description = { "en-US": args.description };
     if (args.file) fields.file = { "en-US": args.file };
+    const updateParams = {
+      fields: {
+        title: args.title ? { "en-US": args.title } : currentAsset.fields.title,
+        description: args.description
+          ? { "en-US": args.description }
+          : currentAsset.fields.description,
+        file: args.file ? { "en-US": args.file } : currentAsset.fields.file,
+      },
+      sys: currentAsset.sys,
+    };
 
-    const asset = await contentfulClient.asset.update(
-      params,
-      {
-        sys: { version: currentAsset.sys.version },
-        fields
-      }
-    );
-    
+    const asset = await contentfulClient.asset.update(params, updateParams);
+
     return formatResponse(asset);
   },
 
@@ -94,17 +114,19 @@ export const assetHandlers = {
       version: currentAsset.sys.version,
     });
 
-    return formatResponse({ message: `Asset ${args.assetId} deleted successfully` });
+    return formatResponse({
+      message: `Asset ${args.assetId} deleted successfully`,
+    });
   },
 
   publishAsset: async (args: HandlerArgs & { assetId: string }) => {
     const params = getBaseParams(args);
     const currentAsset = await getCurrentAsset(params);
 
-    const asset = await contentfulClient.asset.publish(
-      params,
-      { sys: { version: currentAsset.sys.version } }
-    );
+    const asset = await contentfulClient.asset.publish(params, {
+      sys: currentAsset.sys,
+      fields: currentAsset.fields, // Add the fields property
+    });
 
     return formatResponse(asset);
   },
