@@ -77,7 +77,10 @@ export const assetHandlers = {
       updateParams.fields.description = { "en-US": args.description };
     if (args.file) updateParams.fields.file = { "en-US": args.file };
 
-    const asset = await contentfulClient.asset.update(updateParams);
+    const asset = await contentfulClient.asset.update({
+      ...updateParams,
+      version: currentAsset.sys.version,
+    });
     return {
       content: [{ type: "text", text: JSON.stringify(asset, null, 2) }],
     };
@@ -121,7 +124,7 @@ export const assetHandlers = {
       environmentId: args.environmentId || "master",
       assetId: args.assetId,
       version: currentAsset.sys.version,
-    });
+    }, currentAsset);
     return {
       content: [{ type: "text", text: JSON.stringify(asset, null, 2) }],
     };
