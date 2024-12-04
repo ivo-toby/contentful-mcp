@@ -64,20 +64,24 @@ export const assetHandlers = {
       assetId: args.assetId,
     });
 
-    const updateParams: any = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
-      version: currentAsset.sys.version,
-      fields: {},
-    };
+    const fields: Record<string, any> = {};
+    if (args.title) fields.title = { "en-US": args.title };
+    if (args.description) fields.description = { "en-US": args.description };
+    if (args.file) fields.file = { "en-US": args.file };
 
-    if (args.title) updateParams.fields.title = { "en-US": args.title };
-    if (args.description)
-      updateParams.fields.description = { "en-US": args.description };
-    if (args.file) updateParams.fields.file = { "en-US": args.file };
-
-    const asset = await contentfulClient.asset.update(updateParams);
+    const asset = await contentfulClient.asset.update(
+      {
+        spaceId: args.spaceId,
+        environmentId: args.environmentId || "master",
+        assetId: args.assetId,
+      },
+      {
+        sys: {
+          version: currentAsset.sys.version
+        },
+        fields
+      }
+    );
     return {
       content: [{ type: "text", text: JSON.stringify(asset, null, 2) }],
     };
@@ -116,12 +120,18 @@ export const assetHandlers = {
       assetId: args.assetId,
     });
 
-    const asset = await contentfulClient.asset.publish({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
-      version: currentAsset.sys.version,
-    });
+    const asset = await contentfulClient.asset.publish(
+      {
+        spaceId: args.spaceId,
+        environmentId: args.environmentId || "master",
+        assetId: args.assetId,
+      },
+      {
+        sys: {
+          version: currentAsset.sys.version
+        }
+      }
+    );
     return {
       content: [{ type: "text", text: JSON.stringify(asset, null, 2) }],
     };
