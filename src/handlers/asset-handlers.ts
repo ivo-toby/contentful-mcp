@@ -1,6 +1,26 @@
 import { contentfulClient } from "../config/client.js";
 import { HandlerArgs } from "../types/tools";
 
+type BaseAssetParams = {
+  spaceId: string;
+  environmentId?: string;
+  assetId: string;
+};
+
+const getBaseParams = (args: HandlerArgs & { assetId: string }): BaseAssetParams => ({
+  spaceId: args.spaceId,
+  environmentId: args.environmentId || "master",
+  assetId: args.assetId,
+});
+
+const formatResponse = (data: any) => ({
+  content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+});
+
+const getCurrentAsset = async (params: BaseAssetParams) => {
+  return contentfulClient.asset.get(params);
+};
+
 export const assetHandlers = {
   uploadAsset: async (args: HandlerArgs & {
     title: string;
@@ -11,40 +31,29 @@ export const assetHandlers = {
       upload?: string;
     };
   }) => {
-    const asset = await contentfulClient.asset.create({
+    const params = {
       spaceId: args.spaceId,
       environmentId: args.environmentId || "master",
       fields: {
         title: { "en-US": args.title },
-        description: args.description
-          ? { "en-US": args.description }
-          : undefined,
+        description: args.description ? { "en-US": args.description } : undefined,
         file: { "en-US": args.file },
       },
-    });
+    };
+
+    const asset = await contentfulClient.asset.create(params);
     const processedAsset = await contentfulClient.asset.processForAllLocales({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      ...params,
       assetId: asset.sys.id,
     });
-    return {
-      content: [
-        { type: "text", text: JSON.stringify(processedAsset, null, 2) },
-      ],
-    };
+
+    return formatResponse(processedAsset);
   },
 
-  getAsset: async (args: HandlerArgs & {
-    assetId: string;
-  }) => {
-    const asset = await contentfulClient.asset.get({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
-    });
-    return {
-      content: [{ type: "text", text: JSON.stringify(asset, null, 2) }],
-    };
+  getAsset: async (args: HandlerArgs & { assetId: string }) => {
+    const params = getBaseParams(args);
+    const asset = await contentfulClient.asset.get(params);
+    return formatResponse(asset);
   },
 
   updateAsset: async (args: HandlerArgs & {
@@ -57,12 +66,8 @@ export const assetHandlers = {
       upload?: string;
     };
   }) => {
-    // First get the current asset to get its version
-    const currentAsset = await contentfulClient.asset.get({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
-    });
+    const params = getBaseParams(args);
+    const currentAsset = await getCurrentAsset(params);
 
     const fields: Record<string, any> = {};
     if (args.title) fields.title = { "en-US": args.title };
@@ -70,91 +75,49 @@ export const assetHandlers = {
     if (args.file) fields.file = { "en-US": args.file };
 
     const asset = await contentfulClient.asset.update(
+      params,
       {
-        spaceId: args.spaceId,
-        environmentId: args.environmentId || "master",
-        assetId: args.assetId,
-      },
-      {
-        sys: {
-          version: currentAsset.sys.version
-        },
+        sys: { version: currentAsset.sys.version },
         fields
       }
     );
-    return {
-      content: [{ type: "text", text: JSON.stringify(asset, null, 2) }],
-    };
+    
+    return formatResponse(asset);
   },
 
-  deleteAsset: async (args: HandlerArgs & {
-    assetId: string;
-  }) => {
-    // First get the current asset to get its version
-    const currentAsset = await contentfulClient.asset.get({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
-    });
+  deleteAsset: async (args: HandlerArgs & { assetId: string }) => {
+    const params = getBaseParams(args);
+    const currentAsset = await getCurrentAsset(params);
 
     await contentfulClient.asset.delete({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
+      ...params,
       version: currentAsset.sys.version,
     });
-    return {
-      content: [
-        { type: "text", text: `Asset ${args.assetId} deleted successfully` },
-      ],
-    };
+
+    return formatResponse({ message: `Asset ${args.assetId} deleted successfully` });
   },
 
-  publishAsset: async (args: HandlerArgs & {
-    assetId: string;
-  }) => {
-    // First get the current asset to get its version
-    const currentAsset = await contentfulClient.asset.get({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
-    });
+  publishAsset: async (args: HandlerArgs & { assetId: string }) => {
+    const params = getBaseParams(args);
+    const currentAsset = await getCurrentAsset(params);
 
     const asset = await contentfulClient.asset.publish(
-      {
-        spaceId: args.spaceId,
-        environmentId: args.environmentId || "master",
-        assetId: args.assetId,
-      },
-      {
-        sys: {
-          version: currentAsset.sys.version
-        }
-      }
+      params,
+      { sys: { version: currentAsset.sys.version } }
     );
-    return {
-      content: [{ type: "text", text: JSON.stringify(asset, null, 2) }],
-    };
+
+    return formatResponse(asset);
   },
 
-  unpublishAsset: async (args: HandlerArgs & {
-    assetId: string;
-  }) => {
-    // First get the current asset to get its version
-    const currentAsset = await contentfulClient.asset.get({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
-    });
+  unpublishAsset: async (args: HandlerArgs & { assetId: string }) => {
+    const params = getBaseParams(args);
+    const currentAsset = await getCurrentAsset(params);
 
     const asset = await contentfulClient.asset.unpublish({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      assetId: args.assetId,
+      ...params,
       version: currentAsset.sys.version,
     });
-    return {
-      content: [{ type: "text", text: JSON.stringify(asset, null, 2) }],
-    };
+
+    return formatResponse(asset);
   },
 };
