@@ -2,7 +2,7 @@ import { contentfulClient } from '../config/client.js';
 
 export const spaceHandlers = {
   listSpaces: async () => {
-    const spaces = await contentfulClient.space.getMany({});
+    const spaces = await contentfulClient.space.getMany();
     return { content: [{ type: "text", text: JSON.stringify(spaces, null, 2) }] };
   },
 
@@ -21,13 +21,11 @@ export const spaceHandlers = {
   },
 
   createEnvironment: async (args: any) => {
-    const environmentData = {
-      name: args.name
-    };
     const environment = await contentfulClient.environment.create({
       spaceId: args.spaceId,
-      environmentId: args.environmentId
-    }, environmentData);
+      environmentId: args.environmentId,
+      name: args.name
+    });
     return { content: [{ type: "text", text: JSON.stringify(environment, null, 2) }] };
   },
 

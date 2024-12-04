@@ -2,14 +2,12 @@ import { contentfulClient } from '../config/client.js';
 
 export const entryHandlers = {
   createEntry: async (args: any) => {
-    const entryData = {
-      fields: args.fields
-    };
     const entry = await contentfulClient.entry.create({
       spaceId: args.spaceId,
       environmentId: args.environmentId || "master",
-      contentTypeId: args.contentTypeId
-    }, entryData);
+      contentTypeId: args.contentTypeId,
+      fields: args.fields
+    });
     return { content: [{ type: "text", text: JSON.stringify(entry, null, 2) }] };
   },
 
@@ -23,18 +21,12 @@ export const entryHandlers = {
   },
 
   updateEntry: async (args: any) => {
-    const entryData = {
-      fields: args.fields,
-      sys: {
-        id: args.entryId,
-        version: 1
-      }
-    };
     const entry = await contentfulClient.entry.update({
       spaceId: args.spaceId,
       environmentId: args.environmentId || "master",
-      entryId: args.entryId
-    }, entryData);
+      entryId: args.entryId,
+      fields: args.fields
+    });
     return { content: [{ type: "text", text: JSON.stringify(entry, null, 2) }] };
   },
 
