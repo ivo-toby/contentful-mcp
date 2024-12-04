@@ -1,0 +1,29 @@
+{
+  "name": "@modelcontextprotocol/server-contentful-management",
+  "version": "0.1.0",
+  "description": "MCP server for Contentful Content Management API integration",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "mcp-server-contentful": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js",
+    "prepare": "npm run build",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.0.1",
+    "contentful-management": "^10.46.4",
+    "zod": "^3.22.4",
+    "zod-to-json-schema": "^3.22.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "shx": "^0.3.4",
+    "typescript": "^5.6.2"
+  }
+}
