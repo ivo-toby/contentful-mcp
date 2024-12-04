@@ -3,25 +3,29 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { createClient } from "contentful-management";
 
-const CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+import { entryHandlers } from './handlers/entry-handlers';
+import { assetHandlers } from './handlers/asset-handlers';
+import { spaceHandlers } from './handlers/space-handlers';
+import { contentTypeHandlers } from './handlers/content-type-handlers';
+import { TOOLS } from './config/tools';
+import { validateEnvironment } from './utils/validation';
 
-if (!CONTENTFUL_MANAGEMENT_ACCESS_TOKEN) {
-  console.error("CONTENTFUL_MANAGEMENT_ACCESS_TOKEN environment variable is not set");
-  process.exit(1);
-}
+// Validate environment variables
+validateEnvironment();
 
-// Create the plain Contentful client
-const contentfulClient = createClient(
+// Create MCP server
+const server = new Server(
   {
-    accessToken: CONTENTFUL_MANAGEMENT_ACCESS_TOKEN,
+    name: "contentful-mcp-server",
+    version: "0.1.0",
   },
-  { type: "plain" }
+  {
+    capabilities: {
+      tools: {},
+    },
+  }
 );
-
-// Define available tools
-const TOOLS = {
   // Entry tools
   CREATE_ENTRY: {
     name: "create_entry",
@@ -358,74 +362,65 @@ const TOOLS = {
   }
 };
 
-import { entryHandlers } from './handlers/entry-handlers';
-import { assetHandlers } from './handlers/asset-handlers';
-import { spaceHandlers } from './handlers/space-handlers';
-import { contentTypeHandlers } from './handlers/content-type-handlers';
+// Set up request handlers
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: Object.values(TOOLS),
+}));
 
-// Create MCP server
-const server = new Server(
-  {
-    name: "contentful-mcp-server",
-    version: "0.1.0",
-  },
-  {
-    capabilities: {
-      tools: {},
-    },
-  },
-);
-
-// Handle tool listing
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: Object.values(TOOLS),
-  };
-});
-
-// Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     const { name, arguments: args } = request.params;
+    const handler = getHandler(name);
+    
+    if (!handler) {
+      throw new Error(`Unknown tool: ${name}`);
+    }
 
-    // Entry operations
-    if (name === "create_entry") return entryHandlers.createEntry(args);
-    if (name === "get_entry") return entryHandlers.getEntry(args);
-    if (name === "update_entry") return entryHandlers.updateEntry(args);
-    if (name === "delete_entry") return entryHandlers.deleteEntry(args);
-    if (name === "publish_entry") return entryHandlers.publishEntry(args);
-    if (name === "unpublish_entry") return entryHandlers.unpublishEntry(args);
-
-    // Asset operations
-    if (name === "upload_asset") return assetHandlers.uploadAsset(args);
-    if (name === "get_asset") return assetHandlers.getAsset(args);
-    if (name === "update_asset") return assetHandlers.updateAsset(args);
-    if (name === "delete_asset") return assetHandlers.deleteAsset(args);
-    if (name === "publish_asset") return assetHandlers.publishAsset(args);
-    if (name === "unpublish_asset") return assetHandlers.unpublishAsset(args);
-
-    // Space & Environment operations
-    if (name === "list_spaces") return spaceHandlers.listSpaces();
-    if (name === "get_space") return spaceHandlers.getSpace(args);
-    if (name === "list_environments") return spaceHandlers.listEnvironments(args);
-    if (name === "create_environment") return spaceHandlers.createEnvironment(args);
-    if (name === "delete_environment") return spaceHandlers.deleteEnvironment(args);
-
-    // Content Type operations
-    if (name === "list_content_types") return contentTypeHandlers.listContentTypes(args);
-    if (name === "get_content_type") return contentTypeHandlers.getContentType(args);
-    if (name === "create_content_type") return contentTypeHandlers.createContentType(args);
-    if (name === "update_content_type") return contentTypeHandlers.updateContentType(args);
-    if (name === "delete_content_type") return contentTypeHandlers.deleteContentType(args);
-    throw new Error(`Unknown tool: ${name}`);
+    return handler(args);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
     return {
-      content: [{ type: "text", text: `Error: ${errorMessage}` }],
+      content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
       isError: true,
     };
   }
 });
+
+// Helper function to map tool names to handlers
+function getHandler(name: string) {
+  const handlers = {
+    // Entry operations
+    create_entry: entryHandlers.createEntry,
+    get_entry: entryHandlers.getEntry,
+    update_entry: entryHandlers.updateEntry,
+    delete_entry: entryHandlers.deleteEntry,
+    publish_entry: entryHandlers.publishEntry,
+    unpublish_entry: entryHandlers.unpublishEntry,
+
+    // Asset operations
+    upload_asset: assetHandlers.uploadAsset,
+    get_asset: assetHandlers.getAsset,
+    update_asset: assetHandlers.updateAsset,
+    delete_asset: assetHandlers.deleteAsset,
+    publish_asset: assetHandlers.publishAsset,
+    unpublish_asset: assetHandlers.unpublishAsset,
+
+    // Space & Environment operations
+    list_spaces: spaceHandlers.listSpaces,
+    get_space: spaceHandlers.getSpace,
+    list_environments: spaceHandlers.listEnvironments,
+    create_environment: spaceHandlers.createEnvironment,
+    delete_environment: spaceHandlers.deleteEnvironment,
+
+    // Content Type operations
+    list_content_types: contentTypeHandlers.listContentTypes,
+    get_content_type: contentTypeHandlers.getContentType,
+    create_content_type: contentTypeHandlers.createContentType,
+    update_content_type: contentTypeHandlers.updateContentType,
+    delete_content_type: contentTypeHandlers.deleteContentType,
+  };
+
+  return handlers[name as keyof typeof handlers];
+}
 
 // Start the server
 async function runServer() {
