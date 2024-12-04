@@ -1,6 +1,3 @@
-import { z } from "zod";
-import { ContentfulClientAPI } from "../common-types.js";
-
 export type HandlerArgs = {
   spaceId: string;
   environmentId?: string;
@@ -8,7 +5,7 @@ export type HandlerArgs = {
 };
 
 export type HandlerResponse = {
-  content: Array<{type: string, text: string}>;
+  content: Array<{ type: string; text: string }>;
   isError?: boolean;
 };
 
@@ -22,13 +19,23 @@ export const ENTRY_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string", description: "The ID of the Contentful space" },
-        environmentId: { type: "string", description: "The ID of the environment within the space", default: "master" },
-        contentTypeId: { type: "string", description: "The ID of the content type for the new entry" },
-        fields: { type: "object", description: "The fields of the entry" }
+        spaceId: {
+          type: "string",
+          description: "The ID of the Contentful space",
+        },
+        environmentId: {
+          type: "string",
+          description: "The ID of the environment within the space",
+          default: "master",
+        },
+        contentTypeId: {
+          type: "string",
+          description: "The ID of the content type for the new entry",
+        },
+        fields: { type: "object", description: "The fields of the entry" },
       },
-      required: ["spaceId", "contentTypeId", "fields"]
-    }
+      required: ["spaceId", "contentTypeId", "fields"],
+    },
   },
   GET_ENTRY: {
     name: "get_entry",
@@ -38,10 +45,10 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        entryId: { type: "string" }
+        entryId: { type: "string" },
       },
-      required: ["spaceId", "entryId"]
-    }
+      required: ["spaceId", "entryId"],
+    },
   },
   UPDATE_ENTRY: {
     name: "update_entry",
@@ -52,10 +59,10 @@ export const ENTRY_TOOLS = {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
-        fields: { type: "object" }
+        fields: { type: "object" },
       },
-      required: ["spaceId", "entryId", "fields"]
-    }
+      required: ["spaceId", "entryId", "fields"],
+    },
   },
   DELETE_ENTRY: {
     name: "delete_entry",
@@ -65,10 +72,10 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        entryId: { type: "string" }
+        entryId: { type: "string" },
       },
-      required: ["spaceId", "entryId"]
-    }
+      required: ["spaceId", "entryId"],
+    },
   },
   PUBLISH_ENTRY: {
     name: "publish_entry",
@@ -78,10 +85,10 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        entryId: { type: "string" }
+        entryId: { type: "string" },
       },
-      required: ["spaceId", "entryId"]
-    }
+      required: ["spaceId", "entryId"],
+    },
   },
   UNPUBLISH_ENTRY: {
     name: "unpublish_entry",
@@ -91,11 +98,11 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        entryId: { type: "string" }
+        entryId: { type: "string" },
       },
-      required: ["spaceId", "entryId"]
-    }
-  }
+      required: ["spaceId", "entryId"],
+    },
+  },
 };
 
 // Tool definitions for Asset operations
@@ -115,13 +122,13 @@ export const ASSET_TOOLS = {
           properties: {
             url: { type: "string" },
             fileName: { type: "string" },
-            contentType: { type: "string" }
+            contentType: { type: "string" },
           },
-          required: ["url", "fileName", "contentType"]
-        }
+          required: ["url", "fileName", "contentType"],
+        },
       },
-      required: ["spaceId", "title", "file"]
-    }
+      required: ["spaceId", "title", "file"],
+    },
   },
   GET_ASSET: {
     name: "get_asset",
@@ -131,10 +138,10 @@ export const ASSET_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        assetId: { type: "string" }
+        assetId: { type: "string" },
       },
-      required: ["spaceId", "assetId"]
-    }
+      required: ["spaceId", "assetId"],
+    },
   },
   UPDATE_ASSET: {
     name: "update_asset",
@@ -152,13 +159,13 @@ export const ASSET_TOOLS = {
           properties: {
             url: { type: "string" },
             fileName: { type: "string" },
-            contentType: { type: "string" }
+            contentType: { type: "string" },
           },
-          required: ["url", "fileName", "contentType"]
-        }
+          required: ["url", "fileName", "contentType"],
+        },
       },
-      required: ["spaceId", "assetId"]
-    }
+      required: ["spaceId", "assetId"],
+    },
   },
   DELETE_ASSET: {
     name: "delete_asset",
@@ -168,10 +175,10 @@ export const ASSET_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        assetId: { type: "string" }
+        assetId: { type: "string" },
       },
-      required: ["spaceId", "assetId"]
-    }
+      required: ["spaceId", "assetId"],
+    },
   },
   PUBLISH_ASSET: {
     name: "publish_asset",
@@ -181,10 +188,10 @@ export const ASSET_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        assetId: { type: "string" }
+        assetId: { type: "string" },
       },
-      required: ["spaceId", "assetId"]
-    }
+      required: ["spaceId", "assetId"],
+    },
   },
   UNPUBLISH_ASSET: {
     name: "unpublish_asset",
@@ -194,11 +201,11 @@ export const ASSET_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        assetId: { type: "string" }
+        assetId: { type: "string" },
       },
-      required: ["spaceId", "assetId"]
-    }
-  }
+      required: ["spaceId", "assetId"],
+    },
+  },
 };
 
 // Tool definitions for Space & Environment operations
@@ -208,8 +215,8 @@ export const SPACE_ENV_TOOLS = {
     description: "List all available spaces",
     inputSchema: {
       type: "object",
-      properties: {}
-    }
+      properties: {},
+    },
   },
   GET_SPACE: {
     name: "get_space",
@@ -217,10 +224,10 @@ export const SPACE_ENV_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" }
+        spaceId: { type: "string" },
       },
-      required: ["spaceId"]
-    }
+      required: ["spaceId"],
+    },
   },
   LIST_ENVIRONMENTS: {
     name: "list_environments",
@@ -228,10 +235,10 @@ export const SPACE_ENV_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" }
+        spaceId: { type: "string" },
       },
-      required: ["spaceId"]
-    }
+      required: ["spaceId"],
+    },
   },
   CREATE_ENVIRONMENT: {
     name: "create_environment",
@@ -241,10 +248,10 @@ export const SPACE_ENV_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string" },
-        name: { type: "string" }
+        name: { type: "string" },
       },
-      required: ["spaceId", "environmentId", "name"]
-    }
+      required: ["spaceId", "environmentId", "name"],
+    },
   },
   DELETE_ENVIRONMENT: {
     name: "delete_environment",
@@ -253,16 +260,16 @@ export const SPACE_ENV_TOOLS = {
       type: "object",
       properties: {
         spaceId: { type: "string" },
-        environmentId: { type: "string" }
+        environmentId: { type: "string" },
       },
-      required: ["spaceId", "environmentId"]
-    }
-  }
+      required: ["spaceId", "environmentId"],
+    },
+  },
 };
 
 // Export combined tools
 export const TOOLS = {
   ...ENTRY_TOOLS,
   ...ASSET_TOOLS,
-  ...SPACE_ENV_TOOLS
+  ...SPACE_ENV_TOOLS,
 };
