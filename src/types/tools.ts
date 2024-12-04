@@ -1,4 +1,18 @@
 import { z } from "zod";
+import { ContentfulClientAPI } from "../common-types";
+
+export type HandlerArgs = {
+  spaceId: string;
+  environmentId?: string;
+  [key: string]: any;
+};
+
+export type HandlerResponse = {
+  content: Array<{type: string, text: string}>;
+  isError?: boolean;
+};
+
+export type Handler = (args: HandlerArgs) => Promise<HandlerResponse>;
 
 // Tool definitions for Entry operations
 export const ENTRY_TOOLS = {
