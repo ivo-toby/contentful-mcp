@@ -4,12 +4,12 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
-import { entryHandlers } from './handlers/entry-handlers';
-import { assetHandlers } from './handlers/asset-handlers';
-import { spaceHandlers } from './handlers/space-handlers';
-import { contentTypeHandlers } from './handlers/content-type-handlers';
-import { TOOLS } from './config/tools';
-import { validateEnvironment } from './utils/validation';
+import { entryHandlers } from './handlers/entry-handlers.js';
+import { assetHandlers } from './handlers/asset-handlers.js';
+import { spaceHandlers } from './handlers/space-handlers.js';
+import { contentTypeHandlers } from './handlers/content-type-handlers.js';
+import { TOOLS } from './config/tools.js';
+import { validateEnvironment } from './utils/validation.js';
 
 // Validate environment variables
 validateEnvironment();
@@ -22,25 +22,10 @@ const server = new Server(
   },
   {
     capabilities: {
-      tools: {},
+      tools: TOOLS,
     },
   }
 );
-  // Entry tools
-  CREATE_ENTRY: {
-    name: "create_entry",
-    description: "Create a new entry in Contentful",
-    inputSchema: {
-      type: "object",
-      properties: {
-        spaceId: { type: "string", description: "The ID of the Contentful space" },
-        environmentId: { type: "string", description: "The ID of the environment within the space", default: "master" },
-        contentTypeId: { type: "string", description: "The ID of the content type for the new entry" },
-        fields: { type: "object", description: "The fields of the entry" }
-      },
-      required: ["spaceId", "contentTypeId", "fields"]
-    }
-  },
   GET_ENTRY: {
     name: "get_entry",
     description: "Retrieve an existing entry",
