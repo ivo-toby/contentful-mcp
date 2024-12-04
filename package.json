@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.0.1",
