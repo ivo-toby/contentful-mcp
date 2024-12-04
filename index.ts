@@ -358,6 +358,11 @@ const TOOLS = {
   }
 };
 
+import { entryHandlers } from './handlers/entry-handlers';
+import { assetHandlers } from './handlers/asset-handlers';
+import { spaceHandlers } from './handlers/space-handlers';
+import { contentTypeHandlers } from './handlers/content-type-handlers';
+
 // Create MCP server
 const server = new Server(
   {
@@ -383,7 +388,35 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     const { name, arguments: args } = request.params;
 
-    switch (name) {
+    // Entry operations
+    if (name === "create_entry") return entryHandlers.createEntry(args);
+    if (name === "get_entry") return entryHandlers.getEntry(args);
+    if (name === "update_entry") return entryHandlers.updateEntry(args);
+    if (name === "delete_entry") return entryHandlers.deleteEntry(args);
+    if (name === "publish_entry") return entryHandlers.publishEntry(args);
+    if (name === "unpublish_entry") return entryHandlers.unpublishEntry(args);
+
+    // Asset operations
+    if (name === "upload_asset") return assetHandlers.uploadAsset(args);
+    if (name === "get_asset") return assetHandlers.getAsset(args);
+    if (name === "update_asset") return assetHandlers.updateAsset(args);
+    if (name === "delete_asset") return assetHandlers.deleteAsset(args);
+    if (name === "publish_asset") return assetHandlers.publishAsset(args);
+    if (name === "unpublish_asset") return assetHandlers.unpublishAsset(args);
+
+    // Space & Environment operations
+    if (name === "list_spaces") return spaceHandlers.listSpaces();
+    if (name === "get_space") return spaceHandlers.getSpace(args);
+    if (name === "list_environments") return spaceHandlers.listEnvironments(args);
+    if (name === "create_environment") return spaceHandlers.createEnvironment(args);
+    if (name === "delete_environment") return spaceHandlers.deleteEnvironment(args);
+
+    // Content Type operations
+    if (name === "list_content_types") return contentTypeHandlers.listContentTypes(args);
+    if (name === "get_content_type") return contentTypeHandlers.getContentType(args);
+    if (name === "create_content_type") return contentTypeHandlers.createContentType(args);
+    if (name === "update_content_type") return contentTypeHandlers.updateContentType(args);
+    if (name === "delete_content_type") return contentTypeHandlers.deleteContentType(args);
       // Entry operations
       case "create_entry": {
         const entry = await contentfulClient.entry.create({
