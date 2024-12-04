@@ -12,7 +12,6 @@
   ],
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
-    "prepare": "npm run build",
     "watch": "tsc --watch"
   },
   "dependencies": {
