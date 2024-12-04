@@ -2,20 +2,22 @@ import { contentfulClient } from '../config/client.js';
 
 export const assetHandlers = {
   uploadAsset: async (args: any) => {
-    const asset = await contentfulClient.asset.create({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+    const assetData = {
       fields: {
         title: { 'en-US': args.title },
         description: args.description ? { 'en-US': args.description } : undefined,
         file: { 'en-US': args.file }
       }
-    });
+    };
+    const asset = await contentfulClient.asset.create({
+      spaceId: args.spaceId,
+      environmentId: args.environmentId || "master"
+    }, assetData);
     const processedAsset = await contentfulClient.asset.processForAllLocales({
       spaceId: args.spaceId,
       environmentId: args.environmentId || "master",
       assetId: asset.sys.id
-    });
+    }, asset);
     return { content: [{ type: "text", text: JSON.stringify(processedAsset, null, 2) }] };
   },
 
@@ -40,7 +42,7 @@ export const assetHandlers = {
     if (args.description) updateParams.fields.description = { 'en-US': args.description };
     if (args.file) updateParams.fields.file = { 'en-US': args.file };
 
-    const asset = await contentfulClient.asset.update(updateParams);
+    const asset = await contentfulClient.asset.update(updateParams, updateParams.fields);
     return { content: [{ type: "text", text: JSON.stringify(asset, null, 2) }] };
   },
 
@@ -55,6 +57,16 @@ export const assetHandlers = {
 
   publishAsset: async (args: any) => {
     const asset = await contentfulClient.asset.publish({
+      spaceId: args.spaceId,
+      environmentId: args.environmentId || "master",
+      assetId: args.assetId
+    }, {
+      sys: {
+        id: args.assetId,
+        type: 'Asset',
+        version: 1
+      }
+    });
       spaceId: args.spaceId,
       environmentId: args.environmentId || "master",
       assetId: args.assetId

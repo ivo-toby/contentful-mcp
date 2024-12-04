@@ -19,12 +19,14 @@ export const contentTypeHandlers = {
   },
 
   createContentType: async (args: any) => {
-    const contentType = await contentfulClient.contentType.create({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+    const contentTypeData = {
       name: args.name,
       fields: args.fields
-    });
+    };
+    const contentType = await contentfulClient.contentType.create({
+      spaceId: args.spaceId,
+      environmentId: args.environmentId || "master"
+    }, contentTypeData);
     return { content: [{ type: "text", text: JSON.stringify(contentType, null, 2) }] };
   },
 
