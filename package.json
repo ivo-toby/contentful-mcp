@@ -1,10 +1,14 @@
 {
-  "name": "@modelcontextprotocol/server-contentful-management",
-  "version": "0.1.0",
+  "name": "@ivotoby/contentful-management-mcp-server",
+  "version": "0.1.1",
   "description": "MCP server for Contentful Content Management API integration",
   "license": "MIT",
   "type": "module",
   "main": "./dist/bundle.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com:ivo-toby/contentful-mcp.git"
+  },
   "bin": {
     "mcp-server-contentful": "./bin/mcp-server-contentful.js"
   },
