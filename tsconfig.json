@@ -3,18 +3,22 @@
     "outDir": "./dist",
     "rootDir": ".",
     "target": "ES2022",
-    "module": "Node16",
-    "moduleResolution": "Node16",
+    "module": "ES2020",
+    "moduleResolution": "node",
     "strict": true,
     "esModuleInterop": true,
+    "sourceMap": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
   "include": [
-    "./**/*.ts"
+    "src/**/*",
+    "examples/**/*"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
   ]
 }
