@@ -4,18 +4,20 @@
   "description": "MCP server for Contentful Content Management API integration",
   "license": "MIT",
   "type": "module",
+  "main": "./dist/bundle.js",
   "bin": {
-    "mcp-server-contentful": "dist/bundle.js"
+    "mcp-server-contentful": "./bin/mcp-server-contentful.js"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "node build.js",
+    "build": "node build.js && chmod +x bin/mcp-server-contentful.js",
     "clean": "rm -rf dist",
     "lint": "eslint src/**/*.ts",
     "watch": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.0.1",
