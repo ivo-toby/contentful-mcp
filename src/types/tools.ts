@@ -22,7 +22,7 @@ export const ENTRY_TOOLS = {
         spaceId: {
           type: "string",
           description:
-            "The ID of the Contentful space, this cannot be a name, but must be in the format of an ID, eg: 46jn46y2z40k",
+            "The ID of the Contentful space. This must be the space's ID (like '46jn46y2z40k') not its name. The ID can be found in the URL when viewing the space in Contentful",
         },
         environmentId: {
           type: "string",
@@ -54,7 +54,7 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space",
+          description: "The ID of the Contentful space. This must be the space's ID (like '46jn46y2z40k') not its name. The ID can be found in the URL when viewing the space in Contentful",
         },
         environmentId: {
           type: "string",
