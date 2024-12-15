@@ -1,6 +1,7 @@
 import { contentfulClient } from "../config/client.js";
 import { HandlerArgs } from "../types/tools.js";
 import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management";
+import { getSpaceAndEnvironment } from "../utils/space-environment.js";
 
 export const entryHandlers = {
   searchEntries: async (args: HandlerArgs & { query: QueryOptions }) => {

@@ -4,13 +4,11 @@ import {
   CreateContentTypeProps,
 } from "contentful-management";
 import { HandlerArgs } from "../types/tools.js";
+import { getSpaceAndEnvironment } from "../utils/space-environment.js";
 
 export const contentTypeHandlers = {
   listContentTypes: async (args: HandlerArgs) => {
-    const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-    };
+    const params = getSpaceAndEnvironment(args);
 
     const contentTypes = await contentfulClient.contentType.getMany(params);
     return {

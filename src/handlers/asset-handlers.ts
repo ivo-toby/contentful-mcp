@@ -1,6 +1,9 @@
 import { CreateAssetProps } from "contentful-management";
 import { contentfulClient } from "../config/client.js";
 import { HandlerArgs } from "../types/tools.js";
+import { getSpaceAndEnvironment } from "../utils/space-environment.js";
+import { HandlerArgs } from "../types/tools.js";
+import { getSpaceAndEnvironment } from "../utils/space-environment.js";
 
 type BaseAssetParams = {
   spaceId: string;
@@ -11,8 +14,7 @@ type BaseAssetParams = {
 const getBaseParams = (
   args: HandlerArgs & { assetId: string },
 ): BaseAssetParams => ({
-  spaceId: args.spaceId,
-  environmentId: args.environmentId || "master",
+  ...getSpaceAndEnvironment(args),
   assetId: args.assetId,
 });
 
@@ -36,10 +38,7 @@ export const assetHandlers = {
       };
     },
   ) => {
-    const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-    };
+    const params = getSpaceAndEnvironment(args);
 
     const assetProps: CreateAssetProps = {
       fields: {
