@@ -2,8 +2,6 @@ import { CreateAssetProps } from "contentful-management";
 import { contentfulClient } from "../config/client.js";
 import { HandlerArgs } from "../types/tools.js";
 import { getSpaceAndEnvironment } from "../utils/space-environment.js";
-import { HandlerArgs } from "../types/tools.js";
-import { getSpaceAndEnvironment } from "../utils/space-environment.js";
 
 type BaseAssetParams = {
   spaceId: string;

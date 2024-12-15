@@ -1,14 +1,16 @@
 import { contentfulClient } from "../config/client.js";
+import { HandlerArgs } from "../types/tools.js";
+import { getSpaceAndEnvironment } from "../utils/space-environment.js";
 
 export const spaceHandlers = {
   listSpaces: async () => {
-    const spaces = await contentfulClient.space.getMany({}); // Add empty object as parameter
+    const spaces = await contentfulClient.space.getMany();
     return {
       content: [{ type: "text", text: JSON.stringify(spaces, null, 2) }],
     };
   },
 
-  getSpace: async (args: any) => {
+  getSpace: async (args: HandlerArgs) => {
     const space = await contentfulClient.space.get({
       spaceId: args.spaceId,
     });
@@ -17,19 +19,16 @@ export const spaceHandlers = {
     };
   },
 
-  listEnvironments: async (args: any) => {
-    const environments = await contentfulClient.environment.getMany({
-      spaceId: args.spaceId,
-    });
+  listEnvironments: async (args: HandlerArgs) => {
+    const params = getSpaceAndEnvironment(args);
+    const environments = await contentfulClient.environment.getMany(params);
     return {
       content: [{ type: "text", text: JSON.stringify(environments, null, 2) }],
     };
   },
 
-  createEnvironment: async (args: any) => {
-    const params = {
-      spaceId: args.spaceId,
-    };
+  createEnvironment: async (args: HandlerArgs & { name: string; environmentId: string }) => {
+    const params = getSpaceAndEnvironment(args);
 
     const environmentProps = {
       name: args.name,
@@ -45,11 +44,9 @@ export const spaceHandlers = {
     };
   },
 
-  deleteEnvironment: async (args: any) => {
-    await contentfulClient.environment.delete({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId,
-    });
+  deleteEnvironment: async (args: HandlerArgs & { environmentId: string }) => {
+    const params = getSpaceAndEnvironment(args);
+    await contentfulClient.environment.delete(params);
     return {
       content: [
         {
