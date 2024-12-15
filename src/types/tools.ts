@@ -208,6 +208,87 @@ export const ASSET_TOOLS = {
   },
 };
 
+// Tool definitions for Content Type operations
+export const CONTENT_TYPE_TOOLS = {
+  LIST_CONTENT_TYPES: {
+    name: "list_content_types",
+    description: "List all content types in a space and environment",
+    inputSchema: {
+      type: "object",
+      properties: {
+        spaceId: { type: "string" },
+        environmentId: { type: "string", default: "master" }
+      },
+      required: ["spaceId"]
+    }
+  },
+  GET_CONTENT_TYPE: {
+    name: "get_content_type",
+    description: "Get details of a specific content type",
+    inputSchema: {
+      type: "object", 
+      properties: {
+        spaceId: { type: "string" },
+        environmentId: { type: "string", default: "master" },
+        contentTypeId: { type: "string" }
+      },
+      required: ["spaceId", "contentTypeId"]
+    }
+  },
+  CREATE_CONTENT_TYPE: {
+    name: "create_content_type",
+    description: "Create a new content type",
+    inputSchema: {
+      type: "object",
+      properties: {
+        spaceId: { type: "string" },
+        environmentId: { type: "string", default: "master" },
+        name: { type: "string" },
+        fields: { 
+          type: "array",
+          items: { type: "object" }
+        },
+        description: { type: "string" },
+        displayField: { type: "string" }
+      },
+      required: ["spaceId", "name", "fields"]
+    }
+  },
+  UPDATE_CONTENT_TYPE: {
+    name: "update_content_type", 
+    description: "Update an existing content type",
+    inputSchema: {
+      type: "object",
+      properties: {
+        spaceId: { type: "string" },
+        environmentId: { type: "string", default: "master" },
+        contentTypeId: { type: "string" },
+        name: { type: "string" },
+        fields: {
+          type: "array",
+          items: { type: "object" }
+        },
+        description: { type: "string" },
+        displayField: { type: "string" }
+      },
+      required: ["spaceId", "contentTypeId", "name", "fields"]
+    }
+  },
+  DELETE_CONTENT_TYPE: {
+    name: "delete_content_type",
+    description: "Delete a content type",
+    inputSchema: {
+      type: "object",
+      properties: {
+        spaceId: { type: "string" },
+        environmentId: { type: "string", default: "master" },
+        contentTypeId: { type: "string" }
+      },
+      required: ["spaceId", "contentTypeId"]
+    }
+  }
+};
+
 // Tool definitions for Space & Environment operations
 export const SPACE_ENV_TOOLS = {
   LIST_SPACES: {
@@ -272,4 +353,5 @@ export const TOOLS = {
   ...ENTRY_TOOLS,
   ...ASSET_TOOLS,
   ...SPACE_ENV_TOOLS,
+  ...CONTENT_TYPE_TOOLS,
 };
