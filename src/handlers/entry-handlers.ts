@@ -28,8 +28,8 @@ export const entryHandlers = {
     },
   ) => {
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
       contentTypeId: args.contentTypeId,
     };
 
@@ -64,8 +64,8 @@ export const entryHandlers = {
     },
   ) => {
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
       entryId: args.entryId,
     };
 

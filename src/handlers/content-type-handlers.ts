@@ -43,7 +43,7 @@ export const contentTypeHandlers = {
     },
   ) => {
     const params = {
-      spaceId: args.spaceId,
+      spaceId: config.spaceId || args.spaceId,
       environmentId: args.environmentId || "master",
     };
 
@@ -73,8 +73,8 @@ export const contentTypeHandlers = {
     },
   ) => {
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
       contentTypeId: args.contentTypeId,
     };
 

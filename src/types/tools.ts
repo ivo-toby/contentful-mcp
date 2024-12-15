@@ -21,11 +21,13 @@ export const ENTRY_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: {
-          type: "string",
-          description:
-            "The ID of the Contentful space. This must be the space's ID (like '46jn46y2z40k') not its name. The ID can be found in the URL when viewing the space in Contentful",
-        },
+        ...(config.spaceId ? {} : {
+          spaceId: {
+            type: "string",
+            description:
+              "The ID of the Contentful space. This must be the space's ID (like '46jn46y2z40k') not its name. The ID can be found in the URL when viewing the space in Contentful",
+          },
+        }),
         environmentId: {
           type: "string",
           description:
