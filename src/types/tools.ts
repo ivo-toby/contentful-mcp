@@ -1,5 +1,3 @@
-import { config } from "../utils/validation";
-
 export interface HandlerArgs {
   spaceId?: string;
   environmentId?: string;
@@ -12,9 +10,8 @@ export type HandlerResponse = {
 };
 
 export type Handler = (args: HandlerArgs) => Promise<HandlerResponse>;
-console.log(config);
 // Tool definitions for Entry operations
-export const ENTRY_TOOLS = {
+export const getEntryTools = (config: { spaceId?: string; environmentId?: string }) => ({
   SEARCH_ENTRIES: {
     name: "search_entries",
     description: "Search for entries using query parameters",
@@ -156,7 +153,7 @@ export const ENTRY_TOOLS = {
 };
 
 // Tool definitions for Asset operations
-export const ASSET_TOOLS = {
+export const getAssetTools = (config: { spaceId?: string; environmentId?: string }) => ({
   UPLOAD_ASSET: {
     name: "upload_asset",
     description: "Upload a new asset",
@@ -259,7 +256,7 @@ export const ASSET_TOOLS = {
 };
 
 // Tool definitions for Content Type operations
-export const CONTENT_TYPE_TOOLS = {
+export const getContentTypeTools = (config: { spaceId?: string; environmentId?: string }) => ({
   LIST_CONTENT_TYPES: {
     name: "list_content_types",
     description: "List all content types in a space and environment",
@@ -345,7 +342,7 @@ export const CONTENT_TYPE_TOOLS = {
 };
 
 // Tool definitions for Space & Environment operations
-export const SPACE_ENV_TOOLS = {
+export const getSpaceEnvTools = (config: { spaceId?: string; environmentId?: string }) => ({
   LIST_SPACES: {
     name: "list_spaces",
     description: "List all available spaces",
@@ -409,10 +406,10 @@ export const SPACE_ENV_TOOLS = {
   },
 };
 
-// Export combined tools
-export const TOOLS = {
-  ...ENTRY_TOOLS,
-  ...ASSET_TOOLS,
-  ...SPACE_ENV_TOOLS,
-  ...CONTENT_TYPE_TOOLS,
-};
+// Export tools factory
+export const getTools = (config: { spaceId?: string; environmentId?: string }) => ({
+  ...getEntryTools(config),
+  ...getAssetTools(config),
+  ...getSpaceEnvTools(config),
+  ...getContentTypeTools(config),
+});
