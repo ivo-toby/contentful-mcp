@@ -1,8 +1,8 @@
 import { config } from "../utils/validation";
-+
-+export type HandlerArgs = {
-+  spaceId?: string;
-+  environmentId?: string;
+
+export interface HandlerArgs {
+  spaceId?: string;
+  environmentId?: string;
   [key: string]: any;
 };
 

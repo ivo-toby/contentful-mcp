@@ -1,7 +1,7 @@
 import { contentfulClient } from "../config/client.js";
-+import { config } from "../utils/validation.js";
-+import { HandlerArgs } from "../types/tools.js";
-+import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management";
+import { config } from "../utils/validation.js";
+import { HandlerArgs } from "../types/tools.js";
+import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management";
 
 export const entryHandlers = {
   searchEntries: async (args: HandlerArgs & { query: QueryOptions }) => {

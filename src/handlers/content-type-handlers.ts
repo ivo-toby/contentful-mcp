@@ -1,10 +1,10 @@
 import { contentfulClient } from "../config/client.js";
-+import { config } from "../utils/validation.js";
-+import {
-+  ContentTypeProps,
-+  CreateContentTypeProps,
-+} from "contentful-management";
-+import { HandlerArgs } from "../types/tools.js";
+import { config } from "../utils/validation.js";
+import {
+  ContentTypeProps,
+  CreateContentTypeProps,
+} from "contentful-management";
+import { HandlerArgs } from "../types/tools.js";
 
 export const contentTypeHandlers = {
   listContentTypes: async (args: HandlerArgs) => {
