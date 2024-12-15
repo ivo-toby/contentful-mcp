@@ -1,6 +1,8 @@
-export type HandlerArgs = {
-  spaceId: string;
-  environmentId?: string;
+import { config } from "../utils/validation";
++
++export type HandlerArgs = {
++  spaceId?: string;
++  environmentId?: string;
   [key: string]: any;
 };
 
@@ -30,9 +32,11 @@ export const ENTRY_TOOLS = {
             "The ID of the environment within the space, by default this will be called Master",
           default: "master",
         },
-        query: {
-          type: "object",
-          description: "Query parameters for searching entries",
++
++        query: {
++          type: "object",
++          description: "Query parameters for searching entries",
++
           properties: {
             content_type: { type: "string" },
             select: { type: "string" },
@@ -43,20 +47,22 @@ export const ENTRY_TOOLS = {
           },
         },
       },
-      required: ["spaceId", "query"],
-    },
-  },
-  CREATE_ENTRY: {
++      required: [...(config.spaceId ? [] : ["spaceId"]), "query"],
++    },
++  },
++  CREATE_ENTRY: {
     name: "create_entry",
     description: "Create a new entry in Contentful",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: {
-          type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID (like '46jn46y2z40k') not its name. The ID can be found in the URL when viewing the space in Contentful",
-        },
-        environmentId: {
++        ...(config.spaceId ? {} : {
++          spaceId: {
++            type: "string",
++            description: "The ID of the Contentful space. This must be the space's ID (like '46jn46y2z40k') not its name. The ID can be found in the URL when viewing the space in Contentful",
++          },
++        }),
++        environmentId: {
           type: "string",
           description: "The ID of the environment within the space",
           default: "master",
@@ -66,64 +72,69 @@ export const ENTRY_TOOLS = {
           description: "The ID of the content type for the new entry",
         },
         fields: { type: "object", description: "The fields of the entry" },
-      },
-      required: ["spaceId", "contentTypeId", "fields"],
-    },
-  },
-  GET_ENTRY: {
++      },
++      required: ["contentTypeId", "fields", ...(config.spaceId ? [] : ["spaceId"])],
++
++    },
++  },
++  GET_ENTRY: {
     name: "get_entry",
     description: "Retrieve an existing entry",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        entryId: { type: "string" },
-      },
-      required: ["spaceId", "entryId"],
-    },
-  },
-  UPDATE_ENTRY: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         entryId: { type: "string" },
+       },
+-      required: ["spaceId", "entryId"],
++      required: ["entryId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  UPDATE_ENTRY: {
     name: "update_entry",
     description: "Update an existing entry",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        entryId: { type: "string" },
-        fields: { type: "object" },
-      },
-      required: ["spaceId", "entryId", "fields"],
-    },
-  },
-  DELETE_ENTRY: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         entryId: { type: "string" },
+         fields: { type: "object" },
+       },
+-      required: ["spaceId", "entryId", "fields"],
++      required: ["entryId", "fields", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  DELETE_ENTRY: {
     name: "delete_entry",
     description: "Delete an entry",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        entryId: { type: "string" },
-      },
-      required: ["spaceId", "entryId"],
-    },
-  },
-  PUBLISH_ENTRY: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         entryId: { type: "string" },
+       },
+-      required: ["spaceId", "entryId"],
++      required: ["entryId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  PUBLISH_ENTRY: {
     name: "publish_entry",
     description: "Publish an entry",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        entryId: { type: "string" },
-      },
-      required: ["spaceId", "entryId"],
-    },
-  },
-  UNPUBLISH_ENTRY: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         entryId: { type: "string" },
+       },
+-      required: ["spaceId", "entryId"],
++      required: ["entryId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  UNPUBLISH_ENTRY: {
     name: "unpublish_entry",
     description: "Unpublish an entry",
     inputSchema: {
@@ -146,10 +157,10 @@ export const ASSET_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        title: { type: "string" },
-        description: { type: "string" },
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         title: { type: "string" },
+         description: { type: "string" },
         file: {
           type: "object",
           properties: {
@@ -158,35 +169,36 @@ export const ASSET_TOOLS = {
             contentType: { type: "string" },
           },
           required: ["url", "fileName", "contentType"],
-        },
-      },
-      required: ["spaceId", "title", "file"],
-    },
-  },
-  GET_ASSET: {
++        },
++      },
++      required: ["title", "file", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  GET_ASSET: {
     name: "get_asset",
     description: "Retrieve an asset",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        assetId: { type: "string" },
-      },
-      required: ["spaceId", "assetId"],
-    },
-  },
-  UPDATE_ASSET: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         assetId: { type: "string" },
+       },
+-      required: ["spaceId", "assetId"],
++      required: ["assetId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  UPDATE_ASSET: {
     name: "update_asset",
     description: "Update an asset",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        assetId: { type: "string" },
-        title: { type: "string" },
-        description: { type: "string" },
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         assetId: { type: "string" },
+         title: { type: "string" },
+         description: { type: "string" },
         file: {
           type: "object",
           properties: {
@@ -195,38 +207,40 @@ export const ASSET_TOOLS = {
             contentType: { type: "string" },
           },
           required: ["url", "fileName", "contentType"],
-        },
-      },
-      required: ["spaceId", "assetId"],
-    },
-  },
-  DELETE_ASSET: {
++        },
++      },
++      required: ["assetId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  DELETE_ASSET: {
     name: "delete_asset",
     description: "Delete an asset",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        assetId: { type: "string" },
-      },
-      required: ["spaceId", "assetId"],
-    },
-  },
-  PUBLISH_ASSET: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         assetId: { type: "string" },
+       },
+-      required: ["spaceId", "assetId"],
++      required: ["assetId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  PUBLISH_ASSET: {
     name: "publish_asset",
     description: "Publish an asset",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        assetId: { type: "string" },
-      },
-      required: ["spaceId", "assetId"],
-    },
-  },
-  UNPUBLISH_ASSET: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         assetId: { type: "string" },
+       },
+-      required: ["spaceId", "assetId"],
++      required: ["assetId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  UNPUBLISH_ASSET: {
     name: "unpublish_asset",
     description: "Unpublish an asset",
     inputSchema: {
@@ -249,34 +263,35 @@ export const CONTENT_TYPE_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-      },
-      required: ["spaceId"],
-    },
-  },
-  GET_CONTENT_TYPE: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+       },
+-      required: ["spaceId"],
++      required: [...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  GET_CONTENT_TYPE: {
     name: "get_content_type",
     description: "Get details of a specific content type",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        contentTypeId: { type: "string" },
-      },
-      required: ["spaceId", "contentTypeId"],
-    },
-  },
-  CREATE_CONTENT_TYPE: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         contentTypeId: { type: "string" },
+       },
+       required: ["spaceId", "contentTypeId"],
++    },
++  },
++  CREATE_CONTENT_TYPE: {
     name: "create_content_type",
     description: "Create a new content type",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        name: { type: "string" },
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         name: { type: "string" },
         fields: {
           type: "array",
           items: { type: "object" },
@@ -284,19 +299,19 @@ export const CONTENT_TYPE_TOOLS = {
         description: { type: "string" },
         displayField: { type: "string" },
       },
-      required: ["spaceId", "name", "fields"],
-    },
-  },
-  UPDATE_CONTENT_TYPE: {
++      required: ["name", "fields", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  UPDATE_CONTENT_TYPE: {
     name: "update_content_type",
     description: "Update an existing content type",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        contentTypeId: { type: "string" },
-        name: { type: "string" },
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         contentTypeId: { type: "string" },
+         name: { type: "string" },
         fields: {
           type: "array",
           items: { type: "object" },
@@ -304,23 +319,24 @@ export const CONTENT_TYPE_TOOLS = {
         description: { type: "string" },
         displayField: { type: "string" },
       },
-      required: ["spaceId", "contentTypeId", "name", "fields"],
-    },
-  },
-  DELETE_CONTENT_TYPE: {
++      required: ["contentTypeId", "name", "fields", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  DELETE_CONTENT_TYPE: {
     name: "delete_content_type",
     description: "Delete a content type",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" },
-        contentTypeId: { type: "string" },
-      },
-      required: ["spaceId", "contentTypeId"],
-    },
-  },
-};
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
+         environmentId: { type: "string", default: "master" },
+         contentTypeId: { type: "string" },
+       },
+-      required: ["spaceId", "contentTypeId"],
++      required: ["contentTypeId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++};
 
 // Tool definitions for Space & Environment operations
 export const SPACE_ENV_TOOLS = {
@@ -330,56 +346,62 @@ export const SPACE_ENV_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {},
-    },
-  },
-  GET_SPACE: {
++    },
++  },
++  GET_SPACE: {
     name: "get_space",
     description: "Get details of a space",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-      },
-      required: ["spaceId"],
-    },
-  },
-  LIST_ENVIRONMENTS: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
++
++      },
++      required: ["spaceId"],
++    },
++  },
++  LIST_ENVIRONMENTS: {
     name: "list_environments",
     description: "List all environments in a space",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-      },
-      required: ["spaceId"],
-    },
-  },
-  CREATE_ENVIRONMENT: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
++
++      },
++      required: ["spaceId"],
++    },
++  },
++  CREATE_ENVIRONMENT: {
     name: "create_environment",
     description: "Create a new environment",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string" },
-        name: { type: "string" },
-      },
-      required: ["spaceId", "environmentId", "name"],
-    },
-  },
-  DELETE_ENVIRONMENT: {
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
++
+         environmentId: { type: "string" },
+         name: { type: "string" },
+       },
+-      required: ["spaceId", "environmentId", "name"],
++      required: ["environmentId", "name", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++  DELETE_ENVIRONMENT: {
     name: "delete_environment",
     description: "Delete an environment",
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
-        environmentId: { type: "string" },
-      },
-      required: ["spaceId", "environmentId"],
-    },
-  },
-};
++        ...(config.spaceId ? {} : { spaceId: { type: "string" } }),
++
+         environmentId: { type: "string" },
+       },
+-      required: ["spaceId", "environmentId"],
++      required: ["environmentId", ...(config.spaceId ? [] : ["spaceId"])],
++    },
++  },
++};
 
 // Export combined tools
 export const TOOLS = {

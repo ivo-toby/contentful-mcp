@@ -1,16 +1,18 @@
 import { contentfulClient } from "../config/client.js";
-import {
-  ContentTypeProps,
-  CreateContentTypeProps,
-} from "contentful-management";
-import { HandlerArgs } from "../types/tools.js";
++import { config } from "../utils/validation.js";
++import {
++  ContentTypeProps,
++  CreateContentTypeProps,
++} from "contentful-management";
++import { HandlerArgs } from "../types/tools.js";
 
 export const contentTypeHandlers = {
   listContentTypes: async (args: HandlerArgs) => {
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-    };
++      spaceId: config.spaceId || args.spaceId,
+       spaceId: args.spaceId,
+       environmentId: args.environmentId || "master",
+     };
 
     const contentTypes = await contentfulClient.contentType.getMany(params);
     return {
@@ -20,10 +22,11 @@ export const contentTypeHandlers = {
 
   getContentType: async (args: HandlerArgs & { contentTypeId: string }) => {
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      contentTypeId: args.contentTypeId,
-    };
++      spaceId: config.spaceId || args.spaceId,
++      environmentId: config.environmentId || args.environmentId || "master",
++      contentTypeId: args.contentTypeId,
++
++    };
 
     const contentType = await contentfulClient.contentType.get(params);
     return {
@@ -96,10 +99,11 @@ export const contentTypeHandlers = {
 
   deleteContentType: async (args: HandlerArgs & { contentTypeId: string }) => {
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-      contentTypeId: args.contentTypeId,
-    };
++      spaceId: config.spaceId || args.spaceId,
++      environmentId: config.environmentId || args.environmentId || "master",
++      contentTypeId: args.contentTypeId,
++
++    };
 
     await contentfulClient.contentType.delete(params);
     return {
