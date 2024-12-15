@@ -19,14 +19,16 @@ export const ENTRY_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { 
+        spaceId: {
           type: "string",
-          description: "The ID of the Contentful space"
+          description:
+            "The ID of the Contentful space, this cannot be a name, but must be in the format of an ID, eg: 46jn46y2z40k",
         },
         environmentId: {
           type: "string",
-          description: "The ID of the environment within the space",
-          default: "master"
+          description:
+            "The ID of the environment within the space, by default this will be called Master",
+          default: "master",
         },
         query: {
           type: "object",
@@ -37,12 +39,12 @@ export const ENTRY_TOOLS = {
             limit: { type: "number" },
             skip: { type: "number" },
             order: { type: "string" },
-            query: { type: "string" }
-          }
-        }
+            query: { type: "string" },
+          },
+        },
       },
-      required: ["spaceId", "query"]
-    }
+      required: ["spaceId", "query"],
+    },
   },
   CREATE_ENTRY: {
     name: "create_entry",
@@ -248,23 +250,23 @@ export const CONTENT_TYPE_TOOLS = {
       type: "object",
       properties: {
         spaceId: { type: "string" },
-        environmentId: { type: "string", default: "master" }
+        environmentId: { type: "string", default: "master" },
       },
-      required: ["spaceId"]
-    }
+      required: ["spaceId"],
+    },
   },
   GET_CONTENT_TYPE: {
     name: "get_content_type",
     description: "Get details of a specific content type",
     inputSchema: {
-      type: "object", 
+      type: "object",
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        contentTypeId: { type: "string" }
+        contentTypeId: { type: "string" },
       },
-      required: ["spaceId", "contentTypeId"]
-    }
+      required: ["spaceId", "contentTypeId"],
+    },
   },
   CREATE_CONTENT_TYPE: {
     name: "create_content_type",
@@ -275,18 +277,18 @@ export const CONTENT_TYPE_TOOLS = {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
         name: { type: "string" },
-        fields: { 
+        fields: {
           type: "array",
-          items: { type: "object" }
+          items: { type: "object" },
         },
         description: { type: "string" },
-        displayField: { type: "string" }
+        displayField: { type: "string" },
       },
-      required: ["spaceId", "name", "fields"]
-    }
+      required: ["spaceId", "name", "fields"],
+    },
   },
   UPDATE_CONTENT_TYPE: {
-    name: "update_content_type", 
+    name: "update_content_type",
     description: "Update an existing content type",
     inputSchema: {
       type: "object",
@@ -297,13 +299,13 @@ export const CONTENT_TYPE_TOOLS = {
         name: { type: "string" },
         fields: {
           type: "array",
-          items: { type: "object" }
+          items: { type: "object" },
         },
         description: { type: "string" },
-        displayField: { type: "string" }
+        displayField: { type: "string" },
       },
-      required: ["spaceId", "contentTypeId", "name", "fields"]
-    }
+      required: ["spaceId", "contentTypeId", "name", "fields"],
+    },
   },
   DELETE_CONTENT_TYPE: {
     name: "delete_content_type",
@@ -313,11 +315,11 @@ export const CONTENT_TYPE_TOOLS = {
       properties: {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
-        contentTypeId: { type: "string" }
+        contentTypeId: { type: "string" },
       },
-      required: ["spaceId", "contentTypeId"]
-    }
-  }
+      required: ["spaceId", "contentTypeId"],
+    },
+  },
 };
 
 // Tool definitions for Space & Environment operations
