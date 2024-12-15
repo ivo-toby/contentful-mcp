@@ -9,8 +9,8 @@ export const entryHandlers = {
       spaceId: config.spaceId || args.spaceId,
       environmentId: config.environmentId || args.environmentId || "master",
     };
-+
-+    if (!params.spaceId) throw new Error("spaceId is required");
+
+    if (!params.spaceId) throw new Error("spaceId is required");
 
     const entries = await contentfulClient.entry.getMany({
       ...params,

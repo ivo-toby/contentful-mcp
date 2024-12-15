@@ -49,10 +49,10 @@ export const ENTRY_TOOLS = {
           },
         },
       },
-+      required: [...(config.spaceId ? [] : ["spaceId"]), "query"],
-+    },
-+  },
-+  CREATE_ENTRY: {
+      required: [...(config.spaceId ? [] : ["spaceId"]), "query"],
+    },
+  },
+  CREATE_ENTRY: {
     name: "create_entry",
     description: "Create a new entry in Contentful",
     inputSchema: {

@@ -9,10 +9,9 @@ import { HandlerArgs } from "../types/tools.js";
 export const contentTypeHandlers = {
   listContentTypes: async (args: HandlerArgs) => {
     const params = {
-+      spaceId: config.spaceId || args.spaceId,
-       spaceId: args.spaceId,
-       environmentId: args.environmentId || "master",
-     };
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: args.environmentId || "master",
+    };
 
     const contentTypes = await contentfulClient.contentType.getMany(params);
     return {
