@@ -21,6 +21,7 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 
 ### Entry Management
 
+- **search_entries**: Search for entries using query parameters
 - **create_entry**: Create new entries
 - **get_entry**: Retrieve existing entries
 - **update_entry**: Update entry fields
@@ -30,12 +31,12 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 
 ### Asset Management
 
-- **upload_asset**: Upload new assets
-- **get_asset**: Retrieve asset details
-- **update_asset**: Update asset metadata
-- **delete_asset**: Remove assets
-- **publish_asset**: Publish assets
-- **unpublish_asset**: Unpublish assets
+- **upload_asset**: Upload new assets with metadata
+- **get_asset**: Retrieve asset details and information
+- **update_asset**: Update asset metadata and files
+- **delete_asset**: Remove assets from space
+- **publish_asset**: Publish assets to delivery API
+- **unpublish_asset**: Unpublish assets from delivery API
 
 ### Space & Environment Management
 
@@ -52,6 +53,17 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 - **create_content_type**: Create new content type
 - **update_content_type**: Update content type
 - **delete_content_type**: Remove content type
+
+## Development Tools
+
+### MCP Inspector
+
+The project includes an MCP Inspector tool that helps with development and debugging:
+
+- **Inspect Mode**: Run `npm run inspect` to start the inspector
+- **Watch Mode**: Use `npm run inspect:watch` to automatically restart the inspector when files change
+- **Visual Interface**: The inspector provides a web interface to test and debug MCP tools
+- **Real-time Testing**: Try out tools and see their responses immediately
 
 ## Configuration
 
