@@ -1,5 +1,3 @@
-# This project is still in development
-
 # Contentful MCP Server
 
 An MCP server implementation that integrates with Contentful's Content Management API, providing comprehensive content management capabilities.
