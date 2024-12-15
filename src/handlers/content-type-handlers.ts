@@ -2,26 +2,10 @@ import { contentfulClient } from "../config/client.js";
 import {
   ContentTypeProps,
   CreateContentTypeProps,
-  QueryOptions
 } from "contentful-management";
 import { HandlerArgs } from "../types/tools.js";
 
 export const contentTypeHandlers = {
-  searchEntries: async (args: HandlerArgs & { query: QueryOptions }) => {
-    const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
-    };
-
-    const entries = await contentfulClient.entry.getMany({
-      ...params,
-      query: args.query
-    });
-
-    return {
-      content: [{ type: "text", text: JSON.stringify(entries, null, 2) }],
-    };
-  },
   listContentTypes: async (args: HandlerArgs) => {
     const params = {
       spaceId: args.spaceId,
