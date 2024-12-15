@@ -58,10 +58,12 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 
 The project includes an MCP Inspector tool that helps with development and debugging:
 
-- **Inspect Mode**: Run `npm run inspect` to start the inspector
+- **Inspect Mode**: Run `npm run inspect` to start the inspector, you can open the inspector by going to http://localhost:5173
 - **Watch Mode**: Use `npm run inspect:watch` to automatically restart the inspector when files change
 - **Visual Interface**: The inspector provides a web interface to test and debug MCP tools
 - **Real-time Testing**: Try out tools and see their responses immediately
+
+The project also contains a `npm run dev` command which rebuilds and reloads the MCP server on every change.
 
 ## Configuration
 
@@ -96,6 +98,29 @@ and add the following lines:
 }
 ```
 
+### Developing and using Claude desktop
+
+If you want to contribute and test what Claude does with your contributions;
+
+- run `npm run dev`, this will start the watcher that rebuilds the MCP server on every change
+- update `claude_desktop_config.json` to reference the project directly, ie;
+
+```
+{
+  "mcpServers": {
+    "contentful": {
+      "command": "node",
+      "args": ["/Users/ivo/workspace/contentful-mcp/bin/mcp-server.js"],
+      "env": {
+        "CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "<Your CMA Token>"
+      }
+    }
+  }
+}
+```
+
+This will allow you to test any modification in the MCP server with Claude directly, however; if you add new tools/resources you will need to restart Claude Desktop
+
 ## Error Handling
 
 The server implements comprehensive error handling for:
@@ -109,3 +134,7 @@ The server implements comprehensive error handling for:
 ## License
 
 MIT License
+
+## Fine print
+
+This MCP Server enables Claude (or other agents that can consume MCP resources) to update, delete content, spaces and content-models. So be sure what you allow Claude to do with your Contentful spaces!
