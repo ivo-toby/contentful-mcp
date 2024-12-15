@@ -67,6 +67,7 @@ function getHandler(name: string) {
     delete_entry: entryHandlers.deleteEntry,
     publish_entry: entryHandlers.publishEntry,
     unpublish_entry: entryHandlers.unpublishEntry,
+    search_entries: entryHandlers.searchEntries,
 
     // Asset operations
     upload_asset: assetHandlers.uploadAsset,
