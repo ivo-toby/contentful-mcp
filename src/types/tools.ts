@@ -13,6 +13,37 @@ export type Handler = (args: HandlerArgs) => Promise<HandlerResponse>;
 
 // Tool definitions for Entry operations
 export const ENTRY_TOOLS = {
+  SEARCH_ENTRIES: {
+    name: "search_entries",
+    description: "Search for entries using query parameters",
+    inputSchema: {
+      type: "object",
+      properties: {
+        spaceId: { 
+          type: "string",
+          description: "The ID of the Contentful space"
+        },
+        environmentId: {
+          type: "string",
+          description: "The ID of the environment within the space",
+          default: "master"
+        },
+        query: {
+          type: "object",
+          description: "Query parameters for searching entries",
+          properties: {
+            content_type: { type: "string" },
+            select: { type: "string" },
+            limit: { type: "number" },
+            skip: { type: "number" },
+            order: { type: "string" },
+            query: { type: "string" }
+          }
+        }
+      },
+      required: ["spaceId", "query"]
+    }
+  },
   CREATE_ENTRY: {
     name: "create_entry",
     description: "Create a new entry in Contentful",
