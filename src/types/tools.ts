@@ -43,7 +43,7 @@ export const ENTRY_TOOLS = {
           },
         },
       },
-      required: ["spaceId", "query"],
+      required: process.env.CONTENTFUL_SPACE_ID ? ["query"] : ["spaceId", "query"],
     },
   },
   CREATE_ENTRY: {
@@ -67,7 +67,7 @@ export const ENTRY_TOOLS = {
         },
         fields: { type: "object", description: "The fields of the entry" },
       },
-      required: ["spaceId", "contentTypeId", "fields"],
+      required: process.env.CONTENTFUL_SPACE_ID ? ["contentTypeId", "fields"] : ["spaceId", "contentTypeId", "fields"],
     },
   },
   GET_ENTRY: {
@@ -160,7 +160,7 @@ export const ASSET_TOOLS = {
           required: ["url", "fileName", "contentType"],
         },
       },
-      required: ["spaceId", "title", "file"],
+      required: process.env.CONTENTFUL_SPACE_ID ? ["title", "file"] : ["spaceId", "title", "file"],
     },
   },
   GET_ASSET: {
@@ -381,10 +381,32 @@ export const SPACE_ENV_TOOLS = {
   },
 };
 
+// Function to get required fields based on environment
+function getRequiredFields(baseFields: string[]): string[] {
+  const hasDefaultSpace = Boolean(process.env.CONTENTFUL_SPACE_ID);
+  return hasDefaultSpace 
+    ? baseFields.filter(field => field !== 'spaceId')
+    : baseFields;
+}
+
+// Function to generate tool definitions
+export function getTools() {
+  const tools = {
+    ...ENTRY_TOOLS,
+    ...ASSET_TOOLS,
+    ...SPACE_ENV_TOOLS,
+    ...CONTENT_TYPE_TOOLS,
+  };
+
+  // Modify required fields based on environment
+  Object.values(tools).forEach(tool => {
+    if (tool.inputSchema?.required) {
+      tool.inputSchema.required = getRequiredFields(tool.inputSchema.required);
+    }
+  });
+
+  return tools;
+}
+
 // Export combined tools
-export const TOOLS = {
-  ...ENTRY_TOOLS,
-  ...ASSET_TOOLS,
-  ...SPACE_ENV_TOOLS,
-  ...CONTENT_TYPE_TOOLS,
-};
+export const TOOLS = getTools();
