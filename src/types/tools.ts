@@ -1,5 +1,5 @@
 export type HandlerArgs = {
-  spaceId: string;
+  spaceId?: string;
   environmentId?: string;
   [key: string]: any;
 };

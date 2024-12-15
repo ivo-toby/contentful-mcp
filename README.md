@@ -74,7 +74,16 @@ The project also contains a `npm run dev` command which rebuilds and reloads the
 
 ### Environment Variables
 
+Required:
 - `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN`: Your Content Management API token
+
+Optional:
+- `CONTENTFUL_SPACE_ID`: Default space ID to use for all operations
+- `CONTENTFUL_ENVIRONMENT_ID`: Default environment ID (defaults to "master" if not set)
+
+When `CONTENTFUL_SPACE_ID` is set, tools will not require the spaceId parameter. Similarly, when 
+`CONTENTFUL_ENVIRONMENT_ID` is set, the environmentId parameter becomes optional. This allows you 
+to scope the MCP server to a specific space and environment.
 
 ### Usage with Claude Desktop
 
@@ -91,7 +100,9 @@ and add the following lines:
       "command": "npx",
       "args": ["-y", "@ivotoby/contentful-management-mcp-server"],
       "env": {
-        "CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "<Your CMA token>"
+        "CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "<Your CMA token>",
+        "CONTENTFUL_SPACE_ID": "<Optional: Your Space ID>",
+        "CONTENTFUL_ENVIRONMENT_ID": "<Optional: Your Environment ID>"
       }
     }
   }
