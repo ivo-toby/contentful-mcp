@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { parseArgs } from "node:util";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -13,20 +12,6 @@ import { spaceHandlers } from "./handlers/space-handlers.js";
 import { contentTypeHandlers } from "./handlers/content-type-handlers.js";
 import { TOOLS } from "./config/tools.js";
 import { validateEnvironment } from "./utils/validation.js";
-
-// Parse command line arguments
-const { values } = parseArgs({
-  options: {
-    "management-token": {
-      type: "string",
-    },
-  },
-});
-
-// Set management token if provided via args
-if (values["management-token"]) {
-  process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = values["management-token"];
-}
 
 // Validate environment variables
 validateEnvironment();
