@@ -1,7 +1,11 @@
 import { contentfulClient } from "../config/client.js";
 import { config } from "../utils/validation.js";
 import { HandlerArgs } from "../types/tools.js";
-import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management";
+import {
+  CreateEntryProps,
+  EntryProps,
+  QueryOptions,
+} from "contentful-management";
 
 export const entryHandlers = {
   searchEntries: async (args: HandlerArgs & { query: QueryOptions }) => {
@@ -14,7 +18,7 @@ export const entryHandlers = {
 
     const entries = await contentfulClient.entry.getMany({
       ...params,
-      query: args.query
+      query: args.query,
     });
 
     return {
@@ -45,11 +49,10 @@ export const entryHandlers = {
 
   getEntry: async (args: HandlerArgs & { entryId: string }) => {
     const params = {
-+      spaceId: config.spaceId || args.spaceId,
-+      environmentId: config.environmentId || args.environmentId || "master",
-+      entryId: args.entryId,
-+
-+    };
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
+      entryId: args.entryId,
+    };
 
     const entry = await contentfulClient.entry.get(params);
     return {
@@ -84,11 +87,10 @@ export const entryHandlers = {
 
   deleteEntry: async (args: HandlerArgs & { entryId: string }) => {
     const params = {
-+      spaceId: config.spaceId || args.spaceId,
-+      environmentId: config.environmentId || args.environmentId || "master",
-+      entryId: args.entryId,
-+
-+    };
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
+      entryId: args.entryId,
+    };
 
     await contentfulClient.entry.delete(params);
     return {
@@ -100,11 +102,10 @@ export const entryHandlers = {
 
   publishEntry: async (args: HandlerArgs & { entryId: string }) => {
     const params = {
-+      spaceId: config.spaceId || args.spaceId,
-+      environmentId: config.environmentId || args.environmentId || "master",
-+      entryId: args.entryId,
-+
-+    };
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
+      entryId: args.entryId,
+    };
 
     const currentEntry = await contentfulClient.entry.get(params);
 
@@ -119,11 +120,10 @@ export const entryHandlers = {
 
   unpublishEntry: async (args: HandlerArgs & { entryId: string }) => {
     const params = {
-+      spaceId: config.spaceId || args.spaceId,
-+      environmentId: config.environmentId || args.environmentId || "master",
-+      entryId: args.entryId,
-+
-+    };
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
+      entryId: args.entryId,
+    };
 
     const currentEntry = await contentfulClient.entry.get(params);
 

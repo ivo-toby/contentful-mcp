@@ -11,7 +11,10 @@ export type HandlerResponse = {
 
 export type Handler = (args: HandlerArgs) => Promise<HandlerResponse>;
 // Tool definitions for Entry operations
-export const getEntryTools = (config: { spaceId?: string; environmentId?: string }) => ({
+export const getEntryTools = (config: {
+  spaceId?: string;
+  environmentId?: string;
+}) => ({
   SEARCH_ENTRIES: {
     name: "search_entries",
     description: "Search for entries using query parameters",
@@ -150,10 +153,13 @@ export const getEntryTools = (config: { spaceId?: string; environmentId?: string
       required: ["spaceId", "entryId"],
     },
   },
-};
+});
 
 // Tool definitions for Asset operations
-export const getAssetTools = (config: { spaceId?: string; environmentId?: string }) => ({
+export const getAssetTools = (config: {
+  spaceId?: string;
+  environmentId?: string;
+}) => ({
   UPLOAD_ASSET: {
     name: "upload_asset",
     description: "Upload a new asset",
@@ -253,10 +259,13 @@ export const getAssetTools = (config: { spaceId?: string; environmentId?: string
       required: ["spaceId", "assetId"],
     },
   },
-};
+});
 
 // Tool definitions for Content Type operations
-export const getContentTypeTools = (config: { spaceId?: string; environmentId?: string }) => ({
+export const getContentTypeTools = (config: {
+  spaceId?: string;
+  environmentId?: string;
+}) => ({
   LIST_CONTENT_TYPES: {
     name: "list_content_types",
     description: "List all content types in a space and environment",
@@ -339,10 +348,13 @@ export const getContentTypeTools = (config: { spaceId?: string; environmentId?: 
       required: ["contentTypeId", ...(config.spaceId ? [] : ["spaceId"])],
     },
   },
-};
+});
 
 // Tool definitions for Space & Environment operations
-export const getSpaceEnvTools = (config: { spaceId?: string; environmentId?: string }) => ({
+export const getSpaceEnvTools = (config: {
+  spaceId?: string;
+  environmentId?: string;
+}) => ({
   LIST_SPACES: {
     name: "list_spaces",
     description: "List all available spaces",
@@ -404,10 +416,13 @@ export const getSpaceEnvTools = (config: { spaceId?: string; environmentId?: str
       required: ["environmentId", ...(config.spaceId ? [] : ["spaceId"])],
     },
   },
-};
+});
 
 // Export tools factory
-export const getTools = (config: { spaceId?: string; environmentId?: string }) => ({
+export const getTools = (config: {
+  spaceId?: string;
+  environmentId?: string;
+}) => ({
   ...getEntryTools(config),
   ...getAssetTools(config),
   ...getSpaceEnvTools(config),

@@ -21,11 +21,10 @@ export const contentTypeHandlers = {
 
   getContentType: async (args: HandlerArgs & { contentTypeId: string }) => {
     const params = {
-+      spaceId: config.spaceId || args.spaceId,
-+      environmentId: config.environmentId || args.environmentId || "master",
-+      contentTypeId: args.contentTypeId,
-+
-+    };
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
+      contentTypeId: args.contentTypeId,
+    };
 
     const contentType = await contentfulClient.contentType.get(params);
     return {
@@ -98,11 +97,10 @@ export const contentTypeHandlers = {
 
   deleteContentType: async (args: HandlerArgs & { contentTypeId: string }) => {
     const params = {
-+      spaceId: config.spaceId || args.spaceId,
-+      environmentId: config.environmentId || args.environmentId || "master",
-+      contentTypeId: args.contentTypeId,
-+
-+    };
+      spaceId: config.spaceId || args.spaceId,
+      environmentId: config.environmentId || args.environmentId || "master",
+      contentTypeId: args.contentTypeId,
+    };
 
     await contentfulClient.contentType.delete(params);
     return {
