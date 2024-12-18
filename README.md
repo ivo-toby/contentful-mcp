@@ -7,6 +7,8 @@ An MCP server implementation that integrates with Contentful's Content Managemen
   clone this repo, you can just set it up in Claude desktop, refer to the section
   "Usage with Claude Desktop" for instructions on how to install it.
 
+<a href="https://glama.ai/mcp/servers/l2fxeaot4p"><img width="380" height="200" src="https://glama.ai/mcp/servers/l2fxeaot4p/badge" alt="contentful-mcp MCP server" /></a>
+
 ## Features
 
 - **Content Management**: Full CRUD operations for entries and assets
