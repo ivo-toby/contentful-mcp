@@ -72,21 +72,16 @@ const assetHandlers = [
   http.post('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets', async ({ request, params }) => {
     const { spaceId } = params;
     if (spaceId === 'test-space-id') {
-      const body = await request.json() as { fields?: {
-        title?: { [key: string]: string };
-        description?: { [key: string]: string };
-        file?: { [key: string]: { fileName: string; contentType: string; url: string } };
-      }};
-      
+      const body = await request.json();
       return HttpResponse.json({
         sys: { id: 'test-asset-id' },
         fields: {
-          title: body.fields?.title || { "en-US": "Test Asset" },
-          description: body.fields?.description || { "en-US": "Test Description" },
-          file: body.fields?.file || { "en-US": {
-            fileName: "test.jpg",
-            contentType: "image/jpeg",
-            url: "https://example.com/test.jpg"
+          title: { "en-US": body.fields?.title?.["en-US"] || "Test Asset" },
+          description: { "en-US": body.fields?.description?.["en-US"] || "Test Description" },
+          file: { "en-US": {
+            fileName: body.fields?.file?.["en-US"]?.fileName || "test.jpg",
+            contentType: body.fields?.file?.["en-US"]?.contentType || "image/jpeg",
+            url: body.fields?.file?.["en-US"]?.url || "https://example.com/test.jpg"
           }}
         }
       });
