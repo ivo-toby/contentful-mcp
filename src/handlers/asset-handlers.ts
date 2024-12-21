@@ -40,9 +40,7 @@ export const assetHandlers = {
       };
     },
   ) => {
-    console.log("Starting asset upload...");
     const resolvedArgs = await ensureSpaceAndEnvironment(args);
-    console.log("Space and environment resolved:", resolvedArgs);
 
     const params = {
       spaceId: resolvedArgs.spaceId,
@@ -59,9 +57,7 @@ export const assetHandlers = {
       },
     };
 
-    console.log("Creating asset...");
     const asset = await contentfulClient.asset.create(params, assetProps);
-    console.log("Asset created, processing...");
 
     const processedAsset = await contentfulClient.asset.processForAllLocales(
       params,
@@ -71,10 +67,10 @@ export const assetHandlers = {
       },
       {},
     );
-    console.log("Asset processed successfully");
 
     return formatResponse(processedAsset);
   },
+
   getAsset: async (args: HandlerArgs & { assetId: string }) => {
     const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = getBaseParams({ ...resolvedArgs, assetId: args.assetId });
