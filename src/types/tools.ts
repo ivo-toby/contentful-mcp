@@ -26,7 +26,8 @@ export const ENTRY_TOOLS = {
         },
         spaceName: {
           type: "string",
-          description: "The name of the Contentful space. Can be used instead of spaceId to identify the space.",
+          description:
+            "The name of the Contentful space. Can be used instead of spaceId to identify the space.",
         },
         environmentId: {
           type: "string",
@@ -58,7 +59,13 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID (like '46jn46y2z40k') not its name. The ID can be found in the URL when viewing the space in Contentful",
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
+        },
+        spaceName: {
+          type: "string",
+          description:
+            "The name of the Contentful space. Can be used instead of spaceId to identify the space.",
         },
         environmentId: {
           type: "string",
@@ -80,13 +87,14 @@ export const ENTRY_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { 
+        spaceId: {
           type: "string",
-          description: "The ID of the Contentful space"
+          description: "The ID of the Contentful space",
         },
         spaceName: {
           type: "string",
-          description: "The name of the Contentful space. Can be used instead of spaceId"
+          description:
+            "The name of the Contentful space. Can be used instead of spaceId",
         },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
@@ -96,11 +104,17 @@ export const ENTRY_TOOLS = {
   },
   UPDATE_ENTRY: {
     name: "update_entry",
-    description: "Update an existing entry",
+    description:
+      "Update an existing entry, always send all field values, also the fields values that have not been updated",
     inputSchema: {
       type: "object",
       properties: {
         spaceId: { type: "string" },
+        spaceName: {
+          type: "string",
+          description:
+            "The name of the Contentful space. Can be used instead of spaceId",
+        },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
         fields: { type: "object" },
@@ -264,10 +278,7 @@ export const CONTENT_TYPE_TOOLS = {
         environmentId: { type: "string", default: "master" },
       },
       required: [],
-      oneOf: [
-        { required: ["spaceId"] },
-        { required: ["spaceName"] }
-      ],
+      oneOf: [{ required: ["spaceId"] }, { required: ["spaceName"] }],
     },
   },
   GET_CONTENT_TYPE: {
@@ -300,62 +311,76 @@ export const CONTENT_TYPE_TOOLS = {
             properties: {
               id: {
                 type: "string",
-                description: "The ID of the field"
+                description: "The ID of the field",
               },
               name: {
                 type: "string",
-                description: "Display name of the field"
+                description: "Display name of the field",
               },
               type: {
                 type: "string",
-                description: "Type of the field (Text, Number, Date, Location, Media, Boolean, JSON, Link, Array, etc)",
-                enum: ["Symbol", "Text", "Integer", "Number", "Date", "Location", "Object", "Boolean", "Link", "Array"]
+                description:
+                  "Type of the field (Text, Number, Date, Location, Media, Boolean, JSON, Link, Array, etc)",
+                enum: [
+                  "Symbol",
+                  "Text",
+                  "Integer",
+                  "Number",
+                  "Date",
+                  "Location",
+                  "Object",
+                  "Boolean",
+                  "Link",
+                  "Array",
+                ],
               },
               required: {
                 type: "boolean",
                 description: "Whether this field is required",
-                default: false
+                default: false,
               },
               localized: {
                 type: "boolean",
                 description: "Whether this field can be localized",
-                default: false
+                default: false,
               },
               linkType: {
                 type: "string",
-                description: "Required for Link fields. Specifies what type of resource this field links to",
+                description:
+                  "Required for Link fields. Specifies what type of resource this field links to",
                 enum: ["Entry", "Asset"],
               },
               items: {
                 type: "object",
-                description: "Required for Array fields. Specifies the type of items in the array",
+                description:
+                  "Required for Array fields. Specifies the type of items in the array",
                 properties: {
                   type: {
                     type: "string",
-                    enum: ["Symbol", "Link"]
+                    enum: ["Symbol", "Link"],
                   },
                   linkType: {
                     type: "string",
-                    enum: ["Entry", "Asset"]
+                    enum: ["Entry", "Asset"],
                   },
                   validations: {
                     type: "array",
                     items: {
-                      type: "object"
-                    }
-                  }
-                }
+                      type: "object",
+                    },
+                  },
+                },
               },
               validations: {
                 type: "array",
                 description: "Array of validation rules for the field",
                 items: {
-                  type: "object"
-                }
-              }
+                  type: "object",
+                },
+              },
             },
-            required: ["id", "name", "type"]
-          }
+            required: ["id", "name", "type"],
+          },
         },
         description: { type: "string" },
         displayField: { type: "string" },
