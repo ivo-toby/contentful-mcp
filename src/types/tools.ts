@@ -203,7 +203,7 @@ export const ASSET_TOOLS = {
         file: {
           type: "object",
           properties: {
-            url: { type: "string" },
+            upload: { type: "string" },
             fileName: { type: "string" },
             contentType: { type: "string" },
           },
