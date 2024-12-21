@@ -207,7 +207,7 @@ export const ASSET_TOOLS = {
             fileName: { type: "string" },
             contentType: { type: "string" },
           },
-          required: ["url", "fileName", "contentType"],
+          required: ["upload", "fileName", "contentType"],
         },
       },
       required: ["spaceId", "title", "file"],
