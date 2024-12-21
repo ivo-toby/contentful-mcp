@@ -20,14 +20,22 @@ describe("Asset Handlers Integration Tests", () => {
         file: {
           fileName: "test.jpg",
           contentType: "image/jpeg",
-          upload: "https://example.com/test.jpg"
-        }
+          upload: "https://example.com/test.jpg",
+        },
       });
 
       expect(result).to.have.property("content");
       const asset = JSON.parse(result.content[0].text);
-      expect(asset.fields.title["en-US"]).to.equal("Test Asset");
-      expect(asset.fields.description["en-US"]).to.equal("Test Description");
+      expect(asset).to.have.nested.property("sys.id", "test-asset-id");
+      expect(asset).to.have.nested.property("fields.title.en-US", "Test Asset");
+      expect(asset).to.have.nested.property(
+        "fields.description.en-US",
+        "Test Description",
+      );
+      expect(asset).to.have.nested.property(
+        "fields.file.en-US.fileName",
+        "test.jpg",
+      );
     });
 
     it("should throw error for invalid space ID", async () => {
@@ -38,8 +46,8 @@ describe("Asset Handlers Integration Tests", () => {
           file: {
             fileName: "test.jpg",
             contentType: "image/jpeg",
-            upload: "https://example.com/test.jpg"
-          }
+            upload: "https://example.com/test.jpg",
+          },
         });
         expect.fail("Should have thrown an error");
       } catch (error) {
@@ -52,7 +60,7 @@ describe("Asset Handlers Integration Tests", () => {
     it("should get details of a specific asset", async () => {
       const result = await assetHandlers.getAsset({
         spaceId: testSpaceId,
-        assetId: testAssetId
+        assetId: testAssetId,
       });
 
       expect(result).to.have.property("content");
@@ -64,7 +72,7 @@ describe("Asset Handlers Integration Tests", () => {
       try {
         await assetHandlers.getAsset({
           spaceId: testSpaceId,
-          assetId: "invalid-asset-id"
+          assetId: "invalid-asset-id",
         });
         expect.fail("Should have thrown an error");
       } catch (error) {
@@ -79,7 +87,7 @@ describe("Asset Handlers Integration Tests", () => {
         spaceId: testSpaceId,
         assetId: testAssetId,
         title: "Updated Asset",
-        description: "Updated Description"
+        description: "Updated Description",
       });
 
       expect(result).to.have.property("content");
@@ -93,7 +101,7 @@ describe("Asset Handlers Integration Tests", () => {
     it("should delete an asset", async () => {
       const result = await assetHandlers.deleteAsset({
         spaceId: testSpaceId,
-        assetId: testAssetId
+        assetId: testAssetId,
       });
 
       expect(result).to.have.property("content");
@@ -105,7 +113,7 @@ describe("Asset Handlers Integration Tests", () => {
     it("should publish an asset", async () => {
       const result = await assetHandlers.publishAsset({
         spaceId: testSpaceId,
-        assetId: testAssetId
+        assetId: testAssetId,
       });
 
       expect(result).to.have.property("content");
@@ -118,7 +126,7 @@ describe("Asset Handlers Integration Tests", () => {
     it("should unpublish an asset", async () => {
       const result = await assetHandlers.unpublishAsset({
         spaceId: testSpaceId,
-        assetId: testAssetId
+        assetId: testAssetId,
       });
 
       expect(result).to.have.property("content");
