@@ -29,5 +29,9 @@ export async function ensureSpaceAndEnvironment(args: {
     args.environmentId = "master"; // Default environment
   }
 
-  return args;
+  // At this point we know spaceId and environmentId are defined
+  return {
+    spaceId: args.spaceId!,
+    environmentId: args.environmentId!
+  };
 }
