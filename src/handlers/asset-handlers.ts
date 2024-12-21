@@ -15,7 +15,7 @@ const getBaseParams = (
   // We can use sync version since ensureSpaceAndEnvironment is used in the handlers
   return {
     spaceId: args.spaceId,
-    environmentId: args.environmentId || 'master',
+    environmentId: args.environmentId || "master",
     assetId: args.assetId,
   };
 };
@@ -40,7 +40,10 @@ export const assetHandlers = {
       };
     },
   ) => {
+    console.log("Starting asset upload...");
     const resolvedArgs = await ensureSpaceAndEnvironment(args);
+    console.log("Space and environment resolved:", resolvedArgs);
+
     const params = {
       spaceId: resolvedArgs.spaceId,
       environmentId: resolvedArgs.environmentId,
@@ -56,7 +59,10 @@ export const assetHandlers = {
       },
     };
 
+    console.log("Creating asset...");
     const asset = await contentfulClient.asset.create(params, assetProps);
+    console.log("Asset created, processing...");
+
     const processedAsset = await contentfulClient.asset.processForAllLocales(
       params,
       {
@@ -65,13 +71,13 @@ export const assetHandlers = {
       },
       {},
     );
+    console.log("Asset processed successfully");
 
     return formatResponse(processedAsset);
   },
-
   getAsset: async (args: HandlerArgs & { assetId: string }) => {
-    const { spaceId, environmentId } = await ensureSpaceAndEnvironment(args);
-    const params = getBaseParams({ spaceId, environmentId, assetId: args.assetId });
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+    const params = getBaseParams({ ...resolvedArgs, assetId: args.assetId });
     const asset = await contentfulClient.asset.get(params);
     return formatResponse(asset);
   },
@@ -88,8 +94,8 @@ export const assetHandlers = {
       };
     },
   ) => {
-    const { spaceId, environmentId } = await ensureSpaceAndEnvironment(args);
-    const params = getBaseParams({ spaceId, environmentId, assetId: args.assetId });
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+    const params = getBaseParams({ ...resolvedArgs, assetId: args.assetId });
     const currentAsset = await getCurrentAsset(params);
 
     const fields: Record<string, any> = {};
@@ -113,8 +119,8 @@ export const assetHandlers = {
   },
 
   deleteAsset: async (args: HandlerArgs & { assetId: string }) => {
-    const { spaceId, environmentId } = await ensureSpaceAndEnvironment(args);
-    const params = getBaseParams({ spaceId, environmentId, assetId: args.assetId });
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+    const params = getBaseParams({ ...resolvedArgs, assetId: args.assetId });
     const currentAsset = await getCurrentAsset(params);
 
     await contentfulClient.asset.delete({
@@ -128,8 +134,8 @@ export const assetHandlers = {
   },
 
   publishAsset: async (args: HandlerArgs & { assetId: string }) => {
-    const { spaceId, environmentId } = await ensureSpaceAndEnvironment(args);
-    const params = getBaseParams({ spaceId, environmentId, assetId: args.assetId });
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+    const params = getBaseParams({ ...resolvedArgs, assetId: args.assetId });
     const currentAsset = await getCurrentAsset(params);
 
     const asset = await contentfulClient.asset.publish(params, {
@@ -141,8 +147,8 @@ export const assetHandlers = {
   },
 
   unpublishAsset: async (args: HandlerArgs & { assetId: string }) => {
-    const { spaceId, environmentId } = await ensureSpaceAndEnvironment(args);
-    const params = getBaseParams({ spaceId, environmentId, assetId: args.assetId });
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+    const params = getBaseParams({ ...resolvedArgs, assetId: args.assetId });
     const currentAsset = await getCurrentAsset(params);
 
     const asset = await contentfulClient.asset.unpublish({

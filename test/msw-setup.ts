@@ -80,6 +80,7 @@ const assetHandlers = [
   http.post(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets",
     async ({ request, params }) => {
+      console.log("MSW: Handling asset creation request");
       const { spaceId } = params;
       if (spaceId === "test-space-id") {
         const body = (await request.json()) as {
@@ -100,6 +101,7 @@ const assetHandlers = [
           sys: {
             id: "test-asset-id",
             version: 1,
+            type: "Asset",
           },
           fields: body.fields,
         });
@@ -107,11 +109,11 @@ const assetHandlers = [
       return new HttpResponse(null, { status: 404 });
     },
   ),
-
   // Process asset
   http.put(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId/files/en-US/process",
     ({ params }) => {
+      console.log("MSW: Handling asset processing request");
       const { spaceId, assetId } = params;
       if (spaceId === "test-space-id" && assetId === "test-asset-id") {
         return HttpResponse.json({
@@ -136,20 +138,31 @@ const assetHandlers = [
       return new HttpResponse(null, { status: 404 });
     },
   ),
+
   // Get asset
   http.get(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId",
     ({ params }) => {
+      console.log("MSW: Handling get processed asset request");
       const { spaceId, assetId } = params;
       if (spaceId === "test-space-id" && assetId === "test-asset-id") {
         return HttpResponse.json({
           sys: {
             id: "test-asset-id",
-            version: 1,
+            version: 2,
+            type: "Asset",
+            publishedVersion: 1,
           },
           fields: {
             title: { "en-US": "Test Asset" },
             description: { "en-US": "Test Description" },
+            file: {
+              "en-US": {
+                fileName: "test.jpg",
+                contentType: "image/jpeg",
+                url: "https://example.com/test.jpg",
+              },
+            },
           },
         });
       }

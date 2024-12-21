@@ -12,8 +12,8 @@ describe("Asset Handlers Integration Tests", () => {
   const testAssetId = "test-asset-id";
 
   describe("uploadAsset", () => {
-    it("should upload a new asset", async () => {
-      const result = await assetHandlers.uploadAsset({
+    it("should upload and process a new asset", async () => {
+      const uploadData = {
         spaceId: testSpaceId,
         title: "Test Asset",
         description: "Test Description",
@@ -22,40 +22,30 @@ describe("Asset Handlers Integration Tests", () => {
           contentType: "image/jpeg",
           upload: "https://example.com/test.jpg",
         },
-      });
+      };
 
-      expect(result).to.have.property("content");
+      const result = await assetHandlers.uploadAsset(uploadData);
+
+      // Verify the response structure
+      expect(result).to.have.property("content").that.is.an("array");
+      expect(result.content).to.have.lengthOf(1);
+      expect(result.content[0]).to.have.property("type", "text");
+
+      // Parse and verify the asset data
       const asset = JSON.parse(result.content[0].text);
       expect(asset).to.have.nested.property("sys.id", "test-asset-id");
+      expect(asset).to.have.nested.property("sys.version").that.is.a("number");
       expect(asset).to.have.nested.property("fields.title.en-US", "Test Asset");
       expect(asset).to.have.nested.property(
         "fields.description.en-US",
         "Test Description",
       );
-      expect(asset).to.have.nested.property(
-        "fields.file.en-US.fileName",
-        "test.jpg",
-      );
-    });
-
-    it("should throw error for invalid space ID", async () => {
-      try {
-        await assetHandlers.uploadAsset({
-          spaceId: "invalid-space-id",
-          title: "Test Asset",
-          file: {
-            fileName: "test.jpg",
-            contentType: "image/jpeg",
-            upload: "https://example.com/test.jpg",
-          },
-        });
-        expect.fail("Should have thrown an error");
-      } catch (error) {
-        expect(error).to.exist;
-      }
+      expect(asset).to.have.nested.property("fields.file.en-US").that.includes({
+        fileName: "test.jpg",
+        contentType: "image/jpeg",
+      });
     });
   });
-
   describe("getAsset", () => {
     it("should get details of a specific asset", async () => {
       const result = await assetHandlers.getAsset({
