@@ -14,12 +14,16 @@ describe("Space Handlers Integration Tests", () => {
   describe("listSpaces", () => {
     it("should list all available spaces", async () => {
       const result = await spaceHandlers.listSpaces();
-      expect(result).to.have.property("items");
-      expect(Array.isArray(result.items)).to.be.true;
+      expect(result).to.have.property("content");
+      expect(result.content[0]).to.have.property("type", "text");
+      
+      const spaces = JSON.parse(result.content[0].text);
+      expect(spaces).to.have.property("items");
+      expect(Array.isArray(spaces.items)).to.be.true;
       
       // Store the first space ID for subsequent tests
-      if (result.items.length > 0) {
-        testSpaceId = result.items[0].sys.id;
+      if (spaces.items.length > 0) {
+        testSpaceId = spaces.items[0].sys.id;
       }
     });
   });

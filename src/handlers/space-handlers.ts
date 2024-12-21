@@ -4,7 +4,9 @@ import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id.js";
 export const spaceHandlers = {
   listSpaces: async () => {
     const spaces = await contentfulClient.space.getMany({});
-    return spaces;
+    return {
+      content: [{ type: "text", text: JSON.stringify(spaces, null, 2) }]
+    };
   },
 
   getSpace: async (args: any) => {
