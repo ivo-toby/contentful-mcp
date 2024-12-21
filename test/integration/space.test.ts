@@ -1,5 +1,5 @@
 import { expect } from '../setup.js';
-import { spaceHandlers } from '../../src/handlers/space-handlers';
+import { spaceHandlers } from '../../src/handlers/space-handlers.js';
 
 describe('Space Handlers Integration Tests', () => {
   describe('listSpaces', () => {
