@@ -1,4 +1,5 @@
 import { contentfulClient } from "../config/client.js";
+import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id.js";
 
 export const spaceHandlers = {
   listSpaces: async () => {
@@ -18,8 +19,9 @@ export const spaceHandlers = {
   },
 
   listEnvironments: async (args: any) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const environments = await contentfulClient.environment.getMany({
-      spaceId: args.spaceId,
+      spaceId: resolvedArgs.spaceId,
     });
     return {
       content: [{ type: "text", text: JSON.stringify(environments, null, 2) }],

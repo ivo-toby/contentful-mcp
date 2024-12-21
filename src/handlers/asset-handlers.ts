@@ -1,6 +1,7 @@
 import { CreateAssetProps } from "contentful-management";
 import { contentfulClient } from "../config/client.js";
 import { HandlerArgs } from "../types/tools.js";
+import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id.js";
 
 type BaseAssetParams = {
   spaceId: string;
@@ -8,13 +9,16 @@ type BaseAssetParams = {
   assetId: string;
 };
 
-const getBaseParams = (
+const getBaseParams = async (
   args: HandlerArgs & { assetId: string },
-): BaseAssetParams => ({
-  spaceId: args.spaceId,
-  environmentId: args.environmentId || "master",
-  assetId: args.assetId,
-});
+): Promise<BaseAssetParams> => {
+  const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  return {
+    spaceId: resolvedArgs.spaceId,
+    environmentId: resolvedArgs.environmentId,
+    assetId: args.assetId,
+  };
+};
 
 const formatResponse = (data: any) => ({
   content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
@@ -36,9 +40,10 @@ export const assetHandlers = {
       };
     },
   ) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
     };
 
     const assetProps: CreateAssetProps = {

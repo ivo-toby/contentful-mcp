@@ -1,12 +1,14 @@
 import { contentfulClient } from "../config/client.js";
 import { HandlerArgs } from "../types/tools.js";
 import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management";
+import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id.js";
 
 export const entryHandlers = {
   searchEntries: async (args: HandlerArgs & { query: QueryOptions }) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
     };
 
     const entries = await contentfulClient.entry.getMany({
