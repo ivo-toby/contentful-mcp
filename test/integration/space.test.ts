@@ -179,7 +179,7 @@ describe("Space Handlers Integration Tests", () => {
       try {
         await spaceHandlers.getSpace({ spaceName: "Non Existent Space" });
         expect.fail("Should have thrown an error");
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist;
         expect(error.message).to.include('not found');
       }
