@@ -1,4 +1,5 @@
-import { createClient } from "contentful-management";
+import pkg from 'contentful-management';
+const { createClient } = pkg;
 
 const CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
 
