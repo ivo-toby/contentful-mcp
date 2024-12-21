@@ -1,7 +1,6 @@
 import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id";
 
 // Middleware to ensure tool arguments are complete
-// Middleware to ensure tool arguments are complete
 export async function handleToolRequest(toolName: string, args: any) {
   const toolsRequiringSpaceResolution = [
     "create_content_type",

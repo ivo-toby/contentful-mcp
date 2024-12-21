@@ -6,7 +6,7 @@ export async function ensureSpaceAndEnvironment(args: {
   spaceName?: string;
   spaceId?: string;
   environmentId?: string;
-}) {
+}): Promise<{ spaceId: string; environmentId: string }> {
   if (!args.spaceId && args.spaceName) {
     const spacesResponse = await spaceHandlers.listSpaces();
     const spaces: CollectionProp<SpaceProps> = spacesResponse.content;
