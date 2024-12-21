@@ -24,6 +24,10 @@ export const ENTRY_TOOLS = {
           description:
             "The ID of the Contentful space. This must be the space's ID (like '46jn46y2z40k') not its name. The ID can be found in the URL when viewing the space in Contentful",
         },
+        spaceName: {
+          type: "string",
+          description: "The name of the Contentful space. Can be used instead of spaceId to identify the space.",
+        },
         environmentId: {
           type: "string",
           description:
@@ -76,7 +80,14 @@ export const ENTRY_TOOLS = {
     inputSchema: {
       type: "object",
       properties: {
-        spaceId: { type: "string" },
+        spaceId: { 
+          type: "string",
+          description: "The ID of the Contentful space"
+        },
+        spaceName: {
+          type: "string",
+          description: "The name of the Contentful space. Can be used instead of spaceId"
+        },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
       },
@@ -252,7 +263,11 @@ export const CONTENT_TYPE_TOOLS = {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
       },
-      required: ["spaceId"],
+      required: [],
+      oneOf: [
+        { required: ["spaceId"] },
+        { required: ["spaceName"] }
+      ],
     },
   },
   GET_CONTENT_TYPE: {
