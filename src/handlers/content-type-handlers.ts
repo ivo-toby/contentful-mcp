@@ -21,9 +21,10 @@ export const contentTypeHandlers = {
   },
 
   getContentType: async (args: HandlerArgs & { contentTypeId: string }) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
       contentTypeId: args.contentTypeId,
     };
 
@@ -41,9 +42,10 @@ export const contentTypeHandlers = {
       displayField?: string;
     },
   ) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
     };
 
     const contentTypeProps: CreateContentTypeProps = {
@@ -71,9 +73,10 @@ export const contentTypeHandlers = {
       displayField?: string;
     },
   ) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
       contentTypeId: args.contentTypeId,
     };
 
@@ -97,9 +100,10 @@ export const contentTypeHandlers = {
   },
 
   deleteContentType: async (args: HandlerArgs & { contentTypeId: string }) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
       contentTypeId: args.contentTypeId,
     };
 

@@ -43,9 +43,10 @@ export const entryHandlers = {
   },
 
   getEntry: async (args: HandlerArgs & { entryId: string }) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
       entryId: args.entryId,
     };
 
@@ -61,9 +62,10 @@ export const entryHandlers = {
       fields: Record<string, any>;
     },
   ) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
       entryId: args.entryId,
     };
 
@@ -81,9 +83,10 @@ export const entryHandlers = {
   },
 
   deleteEntry: async (args: HandlerArgs & { entryId: string }) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
       entryId: args.entryId,
     };
 
@@ -96,9 +99,10 @@ export const entryHandlers = {
   },
 
   publishEntry: async (args: HandlerArgs & { entryId: string }) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
       entryId: args.entryId,
     };
 
@@ -114,9 +118,10 @@ export const entryHandlers = {
   },
 
   unpublishEntry: async (args: HandlerArgs & { entryId: string }) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
       entryId: args.entryId,
     };
 

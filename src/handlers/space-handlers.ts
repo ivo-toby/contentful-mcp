@@ -10,8 +10,9 @@ export const spaceHandlers = {
   },
 
   getSpace: async (args: any) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const space = await contentfulClient.space.get({
-      spaceId: args.spaceId,
+      spaceId: resolvedArgs.spaceId,
     });
     return {
       content: [{ type: "text", text: JSON.stringify(space, null, 2) }],
@@ -29,8 +30,9 @@ export const spaceHandlers = {
   },
 
   createEnvironment: async (args: any) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: args.spaceId,
+      spaceId: resolvedArgs.spaceId,
     };
 
     const environmentProps = {
@@ -48,9 +50,10 @@ export const spaceHandlers = {
   },
 
   deleteEnvironment: async (args: any) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     await contentfulClient.environment.delete({
-      spaceId: args.spaceId,
-      environmentId: args.environmentId,
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
     });
     return {
       content: [
