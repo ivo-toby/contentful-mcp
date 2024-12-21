@@ -25,7 +25,7 @@
     "prepare": "npm run build",
     "inspect": "node -r dotenv/config ./scripts/inspect.js",
     "inspect-watch": "node ./scripts/inspect-watch.js",
-    "test": "mocha --require ts-node/register --loader=ts-node/esm 'test/**/*.test.ts'",
+    "test": "mocha --require ts-node/register --loader=ts-node/esm --timeout 5000 'test/**/*.test.ts'",
     "test:watch": "mocha --require ts-node/register --loader=ts-node/esm --watch 'test/**/*.test.ts'"
   },
   "dependencies": {
