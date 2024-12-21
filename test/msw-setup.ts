@@ -66,5 +66,97 @@ export const handlers = [
   })
 ];
 
+// Asset handlers
+const assetHandlers = [
+  // Upload asset
+  http.post('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets', async ({ params }) => {
+    const { spaceId } = params;
+    if (spaceId === 'test-space-id') {
+      return HttpResponse.json({
+        sys: { id: 'test-asset-id' },
+        fields: {
+          title: { "en-US": "Test Asset" },
+          description: { "en-US": "Test Description" },
+          file: { "en-US": {
+            fileName: "test.jpg",
+            contentType: "image/jpeg",
+            url: "https://example.com/test.jpg"
+          }}
+        }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Get asset
+  http.get('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId', ({ params }) => {
+    const { spaceId, assetId } = params;
+    if (spaceId === 'test-space-id' && assetId === 'test-asset-id') {
+      return HttpResponse.json({
+        sys: { 
+          id: 'test-asset-id',
+          version: 1
+        },
+        fields: {
+          title: { "en-US": "Test Asset" },
+          description: { "en-US": "Test Description" }
+        }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Update asset
+  http.put('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId', ({ params }) => {
+    const { spaceId, assetId } = params;
+    if (spaceId === 'test-space-id' && assetId === 'test-asset-id') {
+      return HttpResponse.json({
+        sys: { id: 'test-asset-id' },
+        fields: {
+          title: { "en-US": "Updated Asset" },
+          description: { "en-US": "Updated Description" }
+        }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Delete asset
+  http.delete('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId', ({ params }) => {
+    const { spaceId, assetId } = params;
+    if (spaceId === 'test-space-id' && assetId === 'test-asset-id') {
+      return new HttpResponse(null, { status: 204 });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Publish asset
+  http.put('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId/published', ({ params }) => {
+    const { spaceId, assetId } = params;
+    if (spaceId === 'test-space-id' && assetId === 'test-asset-id') {
+      return HttpResponse.json({
+        sys: { 
+          id: 'test-asset-id',
+          publishedVersion: 1
+        }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Unpublish asset
+  http.delete('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId/published', ({ params }) => {
+    const { spaceId, assetId } = params;
+    if (spaceId === 'test-space-id' && assetId === 'test-asset-id') {
+      return HttpResponse.json({
+        sys: { 
+          id: 'test-asset-id'
+        }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  })
+];
+
 // Setup MSW Server
-export const server = setupServer(...handlers);
+export const server = setupServer(...handlers, ...assetHandlers);
