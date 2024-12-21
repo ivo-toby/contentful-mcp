@@ -69,15 +69,16 @@ export const handlers = [
 // Asset handlers
 const assetHandlers = [
   // Upload asset
-  http.post('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets', async ({ params }) => {
+  http.post('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets', async ({ request, params }) => {
     const { spaceId } = params;
     if (spaceId === 'test-space-id') {
+      const body = await request.json();
       return HttpResponse.json({
         sys: { id: 'test-asset-id' },
         fields: {
-          title: { "en-US": "Test Asset" },
-          description: { "en-US": "Test Description" },
-          file: { "en-US": {
+          title: body.fields.title || { "en-US": "Test Asset" },
+          description: body.fields.description || { "en-US": "Test Description" },
+          file: body.fields.file || { "en-US": {
             fileName: "test.jpg",
             contentType: "image/jpeg",
             url: "https://example.com/test.jpg"
