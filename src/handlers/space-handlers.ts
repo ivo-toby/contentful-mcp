@@ -5,7 +5,7 @@ export const spaceHandlers = {
   listSpaces: async () => {
     const spaces = await contentfulClient.space.getMany({});
     return {
-      content: spaces
+      content: [{ type: "text", text: JSON.stringify(spaces, null, 2) }]
     };
   },
 
