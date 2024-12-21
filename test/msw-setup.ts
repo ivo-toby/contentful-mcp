@@ -88,6 +88,24 @@ const assetHandlers = [
     return new HttpResponse(null, { status: 404 });
   }),
 
+  // Process asset
+  http.put('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId/files/en-US/process', ({ params }) => {
+    const { spaceId, assetId } = params;
+    if (spaceId === 'test-space-id' && assetId === 'test-asset-id') {
+      return HttpResponse.json({
+        sys: { id: 'test-asset-id' },
+        fields: {
+          file: { "en-US": {
+            fileName: "test.jpg",
+            contentType: "image/jpeg",
+            url: "https://example.com/test.jpg"
+          }}
+        }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
   // Get asset
   http.get('https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId', ({ params }) => {
     const { spaceId, assetId } = params;
