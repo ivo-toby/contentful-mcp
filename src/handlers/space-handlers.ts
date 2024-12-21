@@ -2,9 +2,9 @@ import { contentfulClient } from "../config/client.js";
 
 export const spaceHandlers = {
   listSpaces: async () => {
-    const spaces = await contentfulClient.space.getMany({}); // Add empty object as parameter
+    const spaces = await contentfulClient.space.getMany({});
     return {
-      content: [{ type: "text", text: JSON.stringify(spaces, null, 2) }],
+      content: spaces
     };
   },
 

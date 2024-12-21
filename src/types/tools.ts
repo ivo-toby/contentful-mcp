@@ -5,7 +5,7 @@ export type HandlerArgs = {
 };
 
 export type HandlerResponse = {
-  content: Array<{ type: string; text: string }>;
+  content: Array<{ type: string; text: string }> | any;
   isError?: boolean;
 };
 
