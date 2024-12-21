@@ -1,2 +1,19 @@
 #!/usr/bin/env node
-import "../dist/bundle.js";
+
+async function main() {
+  // Find the management token argument
+  const tokenIndex = process.argv.findIndex(
+    (arg) => arg === "--management-token",
+  );
+  if (tokenIndex !== -1 && process.argv[tokenIndex + 1]) {
+    process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = process.argv[tokenIndex + 1];
+  }
+
+  // Import and run the bundled server after env var is set
+  await import("../dist/bundle.js");
+}
+
+main().catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+});
