@@ -283,10 +283,24 @@ const contentTypeHandlers = [
   http.post("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types", async ({ params, request }) => {
     const { spaceId } = params;
     if (spaceId === "test-space-id") {
-      const body = await request.json();
+      const body = await request.json() as {
+        name: string;
+        fields: Array<{
+          id: string;
+          name: string;
+          type: string;
+          required?: boolean;
+        }>;
+        description?: string;
+        displayField?: string;
+      };
+      
       return HttpResponse.json({
         sys: { id: "new-content-type-id" },
-        ...body
+        name: body.name,
+        fields: body.fields,
+        description: body.description,
+        displayField: body.displayField
       });
     }
     return new HttpResponse(null, { status: 404 });
@@ -296,10 +310,24 @@ const contentTypeHandlers = [
   http.put("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId", async ({ params, request }) => {
     const { spaceId, contentTypeId } = params;
     if (spaceId === "test-space-id" && contentTypeId === "test-content-type-id") {
-      const body = await request.json();
+      const body = await request.json() as {
+        name: string;
+        fields: Array<{
+          id: string;
+          name: string;
+          type: string;
+          required?: boolean;
+        }>;
+        description?: string;
+        displayField?: string;
+      };
+      
       return HttpResponse.json({
         sys: { id: contentTypeId },
-        ...body
+        name: body.name,
+        fields: body.fields,
+        description: body.description,
+        displayField: body.displayField
       });
     }
     return new HttpResponse(null, { status: 404 });
