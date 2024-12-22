@@ -234,5 +234,86 @@ const assetHandlers = [
   ),
 ];
 
+const contentTypeHandlers = [
+  // List content types
+  http.get("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types", ({ params }) => {
+    const { spaceId } = params;
+    if (spaceId === "test-space-id") {
+      return HttpResponse.json({
+        items: [
+          {
+            sys: { id: "test-content-type-id" },
+            name: "Test Content Type",
+            fields: [
+              {
+                id: "title",
+                name: "Title",
+                type: "Text",
+                required: true
+              }
+            ]
+          }
+        ]
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Get specific content type
+  http.get("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId", ({ params }) => {
+    const { spaceId, contentTypeId } = params;
+    if (spaceId === "test-space-id" && contentTypeId === "test-content-type-id") {
+      return HttpResponse.json({
+        sys: { id: "test-content-type-id" },
+        name: "Test Content Type",
+        fields: [
+          {
+            id: "title",
+            name: "Title",
+            type: "Text",
+            required: true
+          }
+        ]
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Create content type
+  http.post("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types", async ({ params, request }) => {
+    const { spaceId } = params;
+    if (spaceId === "test-space-id") {
+      const body = await request.json();
+      return HttpResponse.json({
+        sys: { id: "new-content-type-id" },
+        ...body
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Update content type
+  http.put("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId", async ({ params, request }) => {
+    const { spaceId, contentTypeId } = params;
+    if (spaceId === "test-space-id" && contentTypeId === "test-content-type-id") {
+      const body = await request.json();
+      return HttpResponse.json({
+        sys: { id: contentTypeId },
+        ...body
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Delete content type
+  http.delete("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId", ({ params }) => {
+    const { spaceId, contentTypeId } = params;
+    if (spaceId === "test-space-id" && contentTypeId === "test-content-type-id") {
+      return new HttpResponse(null, { status: 204 });
+    }
+    return new HttpResponse(null, { status: 404 });
+  })
+];
+
 // Setup MSW Server
-export const server = setupServer(...handlers, ...assetHandlers);
+export const server = setupServer(...handlers, ...assetHandlers, ...contentTypeHandlers);
