@@ -18,7 +18,8 @@ describe("handleToolRequest", () => {
     expect(result).to.deep.equal({
       spaceName: "test-space",
       spaceId: "resolved-space-id",
-      environmentId: "resolved-env-id"
+      environmentId: "resolved-env-id",
+      skipEnvironmentValidation: true
     });
   });
 

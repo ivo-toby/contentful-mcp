@@ -19,9 +19,20 @@ export async function handleToolRequest(toolName: string, args: any) {
   ];
 
   if (toolsRequiringSpaceResolution.includes(toolName)) {
-    // Skip environment validation for environment creation and listing
-    const skipValidation = ["create_environment", "list_environments"].includes(toolName);
-    args = await ensureSpaceAndEnvironment({ ...args, skipEnvironmentValidation: skipValidation });
+    // Operations that should skip environment validation
+    const skipValidation = [
+      "create_environment", 
+      "list_environments",
+      "list_spaces",
+      "get_space",
+      "list_content_types",
+      "get_content_type"
+    ].includes(toolName);
+    
+    args = await ensureSpaceAndEnvironment({ 
+      ...args, 
+      skipEnvironmentValidation: skipValidation 
+    });
   }
   return args;
 }

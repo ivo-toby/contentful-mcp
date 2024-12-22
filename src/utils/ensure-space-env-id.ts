@@ -30,12 +30,15 @@ export async function ensureSpaceAndEnvironment(args: {
     args.environmentId = "master"; // Default environment
   }
 
-  // Skip environment validation for environment creation
+  // Skip environment validation for certain operations
   if (!args.skipEnvironmentValidation) {
     try {
       const space = await contentfulClient.space.get({ spaceId: args.spaceId! });
       await space.getEnvironment(args.environmentId);
     } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Environment validation failed: ${error.message}`);
+      }
       throw new Error("Environment not found");
     }
   }
