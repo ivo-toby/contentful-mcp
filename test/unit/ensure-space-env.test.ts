@@ -1,13 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ensureSpaceAndEnvironment } from "../../src/utils/ensure-space-env-id.js";
-import { client } from "../../src/config/client.js";
+import { contentfulClient } from "../../src/config/client.js";
 
 // Mock the Contentful client
 vi.mock("../../src/config/client.js", () => ({
-  client: {
-    getSpaces: vi.fn(),
-    getSpace: vi.fn(),
-    getEnvironment: vi.fn(),
+  contentfulClient: {
+    space: {
+      getMany: vi.fn(),
+      get: vi.fn()
+    }
   }
 }));
 
@@ -33,7 +34,7 @@ describe("ensureSpaceAndEnvironment", () => {
       name: "Test Space"
     };
 
-    client.getSpaces.mockResolvedValue({
+    contentfulClient.space.getMany.mockResolvedValue({
       items: [mockSpace]
     });
 
@@ -46,11 +47,11 @@ describe("ensureSpaceAndEnvironment", () => {
       spaceId: "resolved-space-id",
       environmentId: "master"
     });
-    expect(client.getSpaces).toHaveBeenCalledOnce();
+    expect(contentfulClient.space.getMany).toHaveBeenCalledOnce();
   });
 
   it("should throw error if space not found", async () => {
-    client.getSpaces.mockResolvedValue({
+    contentfulClient.space.getMany.mockResolvedValue({
       items: []
     });
 
@@ -76,8 +77,8 @@ describe("ensureSpaceAndEnvironment", () => {
       sys: { id: "staging" }
     };
 
-    client.getSpace.mockResolvedValue({
-      getEnvironment: vi.fn().mockResolvedValue(mockEnv)
+    contentfulClient.space.get.mockResolvedValue({
+      getEnvironment: () => Promise.resolve(mockEnv)
     });
 
     const result = await ensureSpaceAndEnvironment({
@@ -92,8 +93,8 @@ describe("ensureSpaceAndEnvironment", () => {
   });
 
   it("should throw error if environment not found", async () => {
-    client.getSpace.mockResolvedValue({
-      getEnvironment: vi.fn().mockRejectedValue(new Error("Environment not found"))
+    contentfulClient.space.get.mockResolvedValue({
+      getEnvironment: () => Promise.reject(new Error("Environment not found"))
     });
 
     await expect(ensureSpaceAndEnvironment({
