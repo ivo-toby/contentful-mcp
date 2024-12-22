@@ -1,4 +1,4 @@
-import { CollectionProp, SpaceProps } from "contentful-management";
+import { SpaceProps } from "contentful-management";
 import { spaceHandlers } from "../handlers/space-handlers.js";
 
 // Function to ensure spaceId and environmentId are provided
@@ -32,6 +32,6 @@ export async function ensureSpaceAndEnvironment(args: {
   // At this point we know spaceId and environmentId are defined
   return {
     spaceId: args.spaceId!,
-    environmentId: args.environmentId!
+    environmentId: args.environmentId!,
   };
 }
