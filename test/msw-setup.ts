@@ -279,14 +279,22 @@ const entryHandlers = [
   http.post("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries", async ({ params, request }) => {
     const { spaceId } = params;
     if (spaceId === "test-space-id") {
+      const contentType = request.headers.get('X-Contentful-Content-Type');
       const body = await request.json() as {
-        sys: { contentType: { sys: { id: string } } };
         fields: Record<string, any>;
       };
+      
       return HttpResponse.json({
         sys: { 
           id: "new-entry-id",
-          contentType: { sys: { id: body.sys.contentType.sys.id } }
+          type: "Entry",
+          contentType: { 
+            sys: { 
+              type: "Link",
+              linkType: "ContentType",
+              id: contentType 
+            } 
+          }
         },
         fields: body.fields
       });
