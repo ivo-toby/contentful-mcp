@@ -25,7 +25,7 @@ describe("ensureSpaceAndEnvironment", () => {
 
     const result = await ensureSpaceAndEnvironment(args);
     expect(result).to.deep.equal(args);
-    expect(client.getSpaces).not.toHaveBeenCalled();
+    expect(contentfulClient.space.getMany).not.toHaveBeenCalled();
   });
 
   it("should resolve spaceName to spaceId", async () => {
@@ -42,8 +42,7 @@ describe("ensureSpaceAndEnvironment", () => {
       spaceName: "Test Space"
     });
 
-    expect(result).to.deep.equal({
-      spaceName: "Test Space",
+    expect(result).toEqual({
       spaceId: "resolved-space-id",
       environmentId: "master"
     });
@@ -57,7 +56,7 @@ describe("ensureSpaceAndEnvironment", () => {
 
     await expect(ensureSpaceAndEnvironment({
       spaceName: "Non-existent Space"
-    })).rejects.toThrow("Space 'Non-existent Space' not found");
+    })).rejects.toThrow("Space with name Non-existent Space not found.");
   });
 
   it("should use default environment if not specified", async () => {
@@ -97,9 +96,11 @@ describe("ensureSpaceAndEnvironment", () => {
       getEnvironment: () => Promise.reject(new Error("Environment not found"))
     });
 
-    await expect(ensureSpaceAndEnvironment({
-      spaceId: "test-space",
-      environmentId: "non-existent"
-    })).rejects.toThrow("Environment not found");
+    await expect(async () => {
+      await ensureSpaceAndEnvironment({
+        spaceId: "test-space",
+        environmentId: "non-existent"
+      });
+    }).rejects.toThrow("Environment not found");
   });
 });
