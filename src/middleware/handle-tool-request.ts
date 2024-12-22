@@ -1,4 +1,4 @@
-import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id";
+import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id.js";
 
 // Middleware to ensure tool arguments are complete
 export async function handleToolRequest(toolName: string, args: any) {

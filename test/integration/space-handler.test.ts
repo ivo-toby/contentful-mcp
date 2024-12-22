@@ -1,4 +1,4 @@
-import { expect } from "../setup.js";
+import { expect } from "vitest";
 import { spaceHandlers } from "../../src/handlers/space-handlers.js";
 import { server } from "../msw-setup.js";
 
@@ -7,9 +7,9 @@ describe("Space Handlers Integration Tests", () => {
   let testSpaceId: string;
 
   // Start MSW Server before tests
-  before(() => server.listen());
+  beforeAll(() => server.listen());
   afterEach(() => server.resetHandlers());
-  after(() => server.close());
+  afterAll(() => server.close());
 
   describe("listSpaces", () => {
     it("should list all available spaces", async () => {

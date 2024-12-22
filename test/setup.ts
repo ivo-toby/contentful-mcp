@@ -1,11 +1,11 @@
-import { expect } from "chai";
+import { beforeAll, expect } from 'vitest';
 import dotenv from "dotenv";
 
 // Load environment variables from .env file
 dotenv.config();
 
 // Make sure we have the required environment variables
-before(() => {
+beforeAll(() => {
   const requiredEnvVars = ["CONTENTFUL_MANAGEMENT_ACCESS_TOKEN"];
 
   for (const envVar of requiredEnvVars) {
