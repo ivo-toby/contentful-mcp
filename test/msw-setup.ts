@@ -234,6 +234,114 @@ const assetHandlers = [
   ),
 ];
 
+const entryHandlers = [
+  // List entries
+  http.get("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries", ({ params }) => {
+    const { spaceId } = params;
+    if (spaceId === "test-space-id") {
+      return HttpResponse.json({
+        items: [
+          {
+            sys: { 
+              id: "test-entry-id",
+              contentType: { sys: { id: "test-content-type-id" } }
+            },
+            fields: {
+              title: { "en-US": "Test Entry" },
+              description: { "en-US": "Test Description" }
+            }
+          }
+        ]
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Get specific entry
+  http.get("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId", ({ params }) => {
+    const { spaceId, entryId } = params;
+    if (spaceId === "test-space-id" && entryId === "test-entry-id") {
+      return HttpResponse.json({
+        sys: { 
+          id: "test-entry-id",
+          contentType: { sys: { id: "test-content-type-id" } }
+        },
+        fields: {
+          title: { "en-US": "Test Entry" },
+          description: { "en-US": "Test Description" }
+        }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Create entry
+  http.post("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries", async ({ params, request }) => {
+    const { spaceId } = params;
+    if (spaceId === "test-space-id") {
+      const body = await request.json();
+      return HttpResponse.json({
+        sys: { 
+          id: "new-entry-id",
+          contentType: { sys: { id: body.sys.contentType.sys.id } }
+        },
+        fields: body.fields
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Update entry
+  http.put("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId", async ({ params, request }) => {
+    const { spaceId, entryId } = params;
+    if (spaceId === "test-space-id" && entryId === "test-entry-id") {
+      const body = await request.json();
+      return HttpResponse.json({
+        sys: { 
+          id: entryId,
+          contentType: { sys: { id: "test-content-type-id" } }
+        },
+        fields: body.fields
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Delete entry
+  http.delete("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId", ({ params }) => {
+    const { spaceId, entryId } = params;
+    if (spaceId === "test-space-id" && entryId === "test-entry-id") {
+      return new HttpResponse(null, { status: 204 });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Publish entry
+  http.put("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId/published", ({ params }) => {
+    const { spaceId, entryId } = params;
+    if (spaceId === "test-space-id" && entryId === "test-entry-id") {
+      return HttpResponse.json({
+        sys: { 
+          id: entryId,
+          publishedVersion: 1
+        }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Unpublish entry
+  http.delete("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId/published", ({ params }) => {
+    const { spaceId, entryId } = params;
+    if (spaceId === "test-space-id" && entryId === "test-entry-id") {
+      return HttpResponse.json({
+        sys: { id: entryId }
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  })
+];
+
 const contentTypeHandlers = [
   // List content types
   http.get("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types", ({ params }) => {
@@ -344,4 +452,4 @@ const contentTypeHandlers = [
 ];
 
 // Setup MSW Server
-export const server = setupServer(...handlers, ...assetHandlers, ...contentTypeHandlers);
+export const server = setupServer(...handlers, ...assetHandlers, ...contentTypeHandlers, ...entryHandlers);
