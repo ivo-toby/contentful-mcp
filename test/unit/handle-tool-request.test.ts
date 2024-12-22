@@ -10,7 +10,7 @@ describe("handleToolRequest", () => {
   beforeEach(() => {
     // Stub the ensureSpaceAndEnvironment function
     ensureSpaceAndEnvironmentStub = sinon.stub(spaceEnvUtils, "ensureSpaceAndEnvironment");
-    ensureSpaceAndEnvironmentStub.callsFake(async (args) => ({
+    ensureSpaceAndEnvironmentStub.callsFake(async (args: Record<string, unknown>) => ({
       ...args,
       spaceId: "resolved-space-id",
       environmentId: "resolved-env-id"
