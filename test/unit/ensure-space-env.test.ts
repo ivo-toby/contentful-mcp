@@ -7,7 +7,9 @@ vi.mock("../../src/config/client.js", () => ({
   contentfulClient: {
     space: {
       getMany: vi.fn(),
-      get: vi.fn()
+      get: vi.fn().mockImplementation(() => ({
+        getEnvironment: vi.fn().mockResolvedValue({ sys: { id: 'master' } })
+      }))
     }
   }
 }));
@@ -23,6 +25,11 @@ describe("ensureSpaceAndEnvironment", () => {
       environmentId: "master"
     };
 
+    const mockSpace = {
+      getEnvironment: vi.fn().mockResolvedValue({ sys: { id: 'master' } })
+    };
+    vi.mocked(contentfulClient.space.get).mockResolvedValue(mockSpace);
+
     const result = await ensureSpaceAndEnvironment(args);
     expect(result).to.deep.equal(args);
     expect(contentfulClient.space.getMany).not.toHaveBeenCalled();
@@ -34,7 +41,7 @@ describe("ensureSpaceAndEnvironment", () => {
       name: "Test Space"
     };
 
-    contentfulClient.space.getMany.mockResolvedValue({
+    vi.mocked(contentfulClient.space.getMany).mockResolvedValue({
       items: [mockSpace]
     });
 
