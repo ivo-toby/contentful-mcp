@@ -329,8 +329,7 @@ export const ASSET_TOOLS = {
 export const CONTENT_TYPE_TOOLS = {
   LIST_CONTENT_TYPES: {
     name: "list_content_types",
-    description:
-      "List all content types in a space and environment, always ask for the correct spaceId or spaceName",
+    description: "List content types in a space. Requires either spaceName or spaceId parameter to identify the target space.",
     inputSchema: {
       type: "object",
       properties: {
