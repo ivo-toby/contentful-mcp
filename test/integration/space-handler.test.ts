@@ -1,4 +1,4 @@
-import { expect } from "../setup.js";
+import { expect } from "vitest";
 import { spaceHandlers } from "../../src/handlers/space-handlers.js";
 import { server } from "../msw-setup.js";
 

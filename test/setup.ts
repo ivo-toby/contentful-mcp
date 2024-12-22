@@ -1,4 +1,4 @@
-import { beforeAll } from 'vitest';
+import { beforeAll, expect } from 'vitest';
 import dotenv from "dotenv";
 
 // Load environment variables from .env file
@@ -14,3 +14,5 @@ beforeAll(() => {
     }
   }
 });
+
+export { expect };

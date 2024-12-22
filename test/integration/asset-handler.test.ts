@@ -1,4 +1,4 @@
-import { expect } from "../setup.js";
+import { expect } from "vitest";
 import { assetHandlers } from "../../src/handlers/asset-handlers.js";
 import { server } from "../msw-setup.js";
 
