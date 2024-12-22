@@ -1,17 +1,12 @@
-import { expect } from "chai";
+import { describe, it, expect, vi } from 'vitest';
 import { handleToolRequest } from "../../src/middleware/handle-tool-request.js";
-import { describe, it } from "mocha";
 
-// Mock implementation of ensureSpaceAndEnvironment
-const mockEnsureSpaceAndEnvironment = async (args: Record<string, unknown>) => ({
-  ...args,
-  spaceId: "resolved-space-id",
-  environmentId: "resolved-env-id",
-});
-
-// Mock the module
 vi.mock("../../src/utils/ensure-space-env-id.js", () => ({
-  ensureSpaceAndEnvironment: mockEnsureSpaceAndEnvironment
+  ensureSpaceAndEnvironment: async (args: Record<string, unknown>) => ({
+    ...args,
+    spaceId: "resolved-space-id",
+    environmentId: "resolved-env-id",
+  })
 }));
 
 describe("handleToolRequest", () => {

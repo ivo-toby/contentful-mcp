@@ -25,8 +25,8 @@
     "prepare": "npm run build",
     "inspect": "node -r dotenv/config ./scripts/inspect.js",
     "inspect-watch": "node ./scripts/inspect-watch.js",
-    "test": "vitest run",
-    "test:watch": "vitest watch"
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest watch --config vitest.config.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.0.1",
