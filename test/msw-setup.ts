@@ -22,6 +22,19 @@ export const handlers = [
       return HttpResponse.json({
         sys: { id: "test-space-id" },
         name: "Test Space",
+        getEnvironment: () => Promise.resolve({ sys: { id: 'master' } })
+      });
+    }
+    return new HttpResponse(null, { status: 404 });
+  }),
+
+  // Get environment
+  http.get("https://api.contentful.com/spaces/:spaceId/environments/:environmentId", ({ params }) => {
+    const { spaceId, environmentId } = params;
+    if (spaceId === "test-space-id" && (environmentId === "master" || environmentId.startsWith("test-env-"))) {
+      return HttpResponse.json({
+        sys: { id: environmentId },
+        name: environmentId
       });
     }
     return new HttpResponse(null, { status: 404 });
