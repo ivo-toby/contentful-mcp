@@ -1,16 +1,22 @@
 #!/usr/bin/env node
 
-// Import prompt schemas
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
-  ListPromptsRequestSchema,
-  GetPromptRequestSchema,
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { PROMPTS } from "./config/prompts.js";
+import { entryHandlers } from "./handlers/entry-handlers.js";
+import { assetHandlers } from "./handlers/asset-handlers.js";
+import { spaceHandlers } from "./handlers/space-handlers.js";
+import { contentTypeHandlers } from "./handlers/content-type-handlers.js";
+import { TOOLS } from "./config/tools.js";
+import { validateEnvironment } from "./utils/validation.js";
 
 // Validate environment variables
 validateEnvironment();
 
-// Create MCP server with prompts capability
+// Create MCP server
 const server = new Server(
   {
     name: "contentful-mcp-server",
@@ -19,56 +25,36 @@ const server = new Server(
   {
     capabilities: {
       tools: TOOLS,
-      prompts: {},
     },
   },
 );
 
-// Set up request handlers for prompts
-server.setRequestHandler(ListPromptsRequestSchema, async () => ({
-  prompts: Object.values(PROMPTS),
+// Set up request handlers
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: Object.values(TOOLS),
 }));
 
-server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  const prompt = PROMPTS[request.params.name];
-  if (!prompt) {
-    throw new Error(`Prompt not found: ${request.params.name}`);
-  }
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  try {
+    const { name, arguments: args } = request.params;
+    const handler = getHandler(name);
 
-  // Implement prompt logic here
-  if (request.params.name === "get-asset-details") {
-    const assetId = request.params.arguments?.assetId;
+    if (!handler) {
+      throw new Error(`Unknown tool: ${name}`);
+    }
+
+    return handler(args);
+  } catch (error) {
     return {
-      messages: [
+      content: [
         {
-          role: "user",
-          content: {
-            type: "text",
-            text: `Please provide details for the asset with ID: ${assetId}.`,
-          },
+          type: "text",
+          text: `Error: ${error instanceof Error ? error.message : String(error)}`,
         },
       ],
+      isError: true,
     };
   }
-
-  if (request.params.name === "list-all-assets") {
-    const spaceId = request.params.arguments?.spaceId;
-    return {
-      messages: [
-        {
-          role: "user",
-          content: {
-            type: "text",
-            text: `List all assets available in space with ID: ${spaceId}.`,
-          },
-        },
-      ],
-    };
-  }
-
-  // Add logic for other prompts as needed
-
-  throw new Error("Prompt implementation not found");
 });
 
 // Helper function to map tool names to handlers
