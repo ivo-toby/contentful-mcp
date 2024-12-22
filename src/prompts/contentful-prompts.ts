@@ -10,6 +10,17 @@ export const CONTENTFUL_PROMPTS = {
       }
     ]
   },
+  "space-identification": {
+    name: "space-identification",
+    description: "Guide for identifying the correct Contentful space for operations",
+    arguments: [
+      {
+        name: "operation",
+        description: "Operation you want to perform",
+        required: true
+      }
+    ]
+  },
   "content-modeling-guide": {
     name: "content-modeling-guide",
     description: "Guide through content modeling decisions and best practices",
