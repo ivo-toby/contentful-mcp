@@ -7,7 +7,7 @@
   "main": "./dist/bundle.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com:ivo-toby/contentful-mcp.git"
+    "url": "git+https://github.com/ivo-toby/contentful-mcp.git"
   },
   "bin": {
     "mcp-server-contentful": "./bin/mcp-server.js"
