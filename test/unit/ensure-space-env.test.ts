@@ -92,11 +92,13 @@ describe("ensureSpaceAndEnvironment", () => {
   });
 
   it("should throw error if environment not found", async () => {
-    contentfulClient.space.get.mockResolvedValue({
-      getEnvironment: () => Promise.reject(new Error("Environment not found"))
-    });
+    const mockSpace = {
+      getEnvironment: vi.fn().mockRejectedValue(new Error("Environment not found"))
+    };
+    
+    vi.mocked(contentfulClient.space.get).mockResolvedValue(mockSpace);
 
-    await expect(() => ensureSpaceAndEnvironment({
+    await expect(ensureSpaceAndEnvironment({
       spaceId: "test-space",
       environmentId: "non-existent"
     })).rejects.toThrow("Environment not found");
