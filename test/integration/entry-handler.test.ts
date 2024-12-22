@@ -12,11 +12,13 @@ describe("Entry Handlers Integration Tests", () => {
   const testEntryId = "test-entry-id";
   const testContentTypeId = "test-content-type-id";
 
-  describe("listEntries", () => {
-    it("should list all entries", async () => {
-      const result = await entryHandlers.listEntries({
+  describe("searchEntries", () => {
+    it("should search all entries", async () => {
+      const result = await entryHandlers.searchEntries({
         spaceId: testSpaceId,
-        contentTypeId: testContentTypeId
+        query: {
+          content_type: testContentTypeId
+        }
       });
 
       expect(result).to.have.property("content").that.is.an("array");

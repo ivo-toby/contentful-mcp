@@ -235,8 +235,8 @@ const assetHandlers = [
 ];
 
 const entryHandlers = [
-  // List entries
-  http.get("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries", ({ params }) => {
+  // Search entries
+  http.get("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries", ({ params, request }) => {
     const { spaceId } = params;
     if (spaceId === "test-space-id") {
       return HttpResponse.json({
