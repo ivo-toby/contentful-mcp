@@ -5,7 +5,11 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { CONTENTFUL_PROMPTS } from "./prompts/contentful-prompts.js";
+import { handlePrompt } from "./prompts/handlers.js";
 import { entryHandlers } from "./handlers/entry-handlers.js";
 import { assetHandlers } from "./handlers/asset-handlers.js";
 import { spaceHandlers } from "./handlers/space-handlers.js";
@@ -25,6 +29,7 @@ const server = new Server(
   {
     capabilities: {
       tools: TOOLS,
+      prompts: {}
     },
   },
 );
@@ -33,6 +38,16 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: Object.values(TOOLS),
 }));
+
+// Set up request handlers
+server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+  prompts: Object.values(CONTENTFUL_PROMPTS)
+}));
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+  return handlePrompt(name, args);
+});
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {

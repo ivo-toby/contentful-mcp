@@ -5,7 +5,7 @@ import {
   CONTENT_TYPE_TOOLS,
 } from "../types/tools.js";
 
-// Define available tools
+// Define available tools with enhanced descriptions
 export const TOOLS = {
   ...ENTRY_TOOLS, // Entry tools
   ...ASSET_TOOLS, // Asset tools
