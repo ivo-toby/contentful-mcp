@@ -3,67 +3,67 @@ import { CONTENTFUL_PROMPTS } from "./contentful-prompts";
 
 export async function handlePrompt(
   name: string,
-  arguments?: Record<string, string>
+  args?: Record<string, string>,
 ): Promise<GetPromptResult> {
   switch (name) {
     case "explain-api-concepts":
       return {
         messages: [
           {
-            role: "system",
+            role: "assistant",
             content: {
               type: "text",
-              text: "I am a Contentful API expert. I'll explain key concepts and their relationships."
-            }
+              text: "I am a Contentful API expert. I'll explain key concepts and their relationships.",
+            },
           },
           {
             role: "user",
             content: {
               type: "text",
-              text: `Please explain the Contentful concept: ${arguments?.concept}`
-            }
-          }
-        ]
+              text: `Please explain the Contentful concept: ${args?.concept}`,
+            },
+          },
+        ],
       };
 
     case "content-modeling-guide":
       return {
         messages: [
           {
-            role: "system",
+            role: "assistant",
             content: {
               type: "text",
-              text: "I am a Contentful content modeling expert. I'll help you design your content structure."
-            }
+              text: "I am a Contentful content modeling expert. I'll help you design your content structure.",
+            },
           },
           {
             role: "user",
             content: {
               type: "text",
-              text: `Help me design a content model for this use case: ${arguments?.useCase}`
-            }
-          }
-        ]
+              text: `Help me design a content model for this use case: ${args?.useCase}`,
+            },
+          },
+        ],
       };
 
     case "api-operation-help":
       return {
         messages: [
           {
-            role: "system",
+            role: "assistant",
             content: {
               type: "text",
-              text: "I am a Contentful API operations expert. I'll help you understand and implement API operations."
-            }
+              text: "I am a Contentful API operations expert. I'll help you understand and implement API operations.",
+            },
           },
           {
             role: "user",
             content: {
               type: "text",
-              text: `Explain how to perform a ${arguments?.operation} operation on a ${arguments?.resourceType}`
-            }
-          }
-        ]
+              text: `Explain how to perform a ${args?.operation} operation on a ${args?.resourceType}`,
+            },
+          },
+        ],
       };
 
     default:
