@@ -4,9 +4,9 @@ import { server } from "../msw-setup.js";
 
 describe("Entry Handlers Integration Tests", () => {
   // Start MSW Server before tests
-  before(() => server.listen());
+  beforeAll(() => server.listen());
   afterEach(() => server.resetHandlers());
-  after(() => server.close());
+  afterAll(() => server.close());
 
   const testSpaceId = "test-space-id";
   const testEntryId = "test-entry-id";
