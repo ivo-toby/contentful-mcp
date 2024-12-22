@@ -2,14 +2,12 @@ name: PR Check
 
 on:
   pull_request:
-    branches:
-      - main
-      - master
+    branches: [main, master]
     types: [opened, synchronize, reopened]
 
 jobs:
-  test:
-    name: Run Tests
+  pr_check:
+    name: PR Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
