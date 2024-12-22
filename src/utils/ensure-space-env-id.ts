@@ -1,7 +1,8 @@
 import { SpaceProps } from "contentful-management";
 import { spaceHandlers } from "../handlers/space-handlers.js";
+import { contentfulClient } from "../config/client.js";
 
-// Function to ensure spaceId and environmentId are provided
+// Function to ensure spaceId and environmentId are provided and valid
 export async function ensureSpaceAndEnvironment(args: {
   spaceName?: string;
   spaceId?: string;
@@ -29,7 +30,15 @@ export async function ensureSpaceAndEnvironment(args: {
     args.environmentId = "master"; // Default environment
   }
 
-  // At this point we know spaceId and environmentId are defined
+  // Validate that the environment exists
+  try {
+    const space = await contentfulClient.space.get({ spaceId: args.spaceId! });
+    await space.getEnvironment(args.environmentId);
+  } catch (error) {
+    throw new Error("Environment not found");
+  }
+
+  // At this point we know spaceId and environmentId are defined and valid
   return {
     spaceId: args.spaceId!,
     environmentId: args.environmentId!,
