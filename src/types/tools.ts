@@ -21,11 +21,13 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: {
           type: "string",
@@ -57,11 +59,13 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: {
           type: "string",
@@ -85,11 +89,13 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
@@ -106,11 +112,13 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
@@ -127,11 +135,13 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
@@ -147,11 +157,13 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
@@ -167,11 +179,13 @@ export const ENTRY_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
@@ -191,11 +205,13 @@ export const ASSET_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         title: { type: "string" },
@@ -221,11 +237,13 @@ export const ASSET_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         assetId: { type: "string" },
@@ -241,11 +259,13 @@ export const ASSET_TOOLS = {
       properties: {
         spaceId: {
           type: "string",
-          description: "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear."
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         spaceName: {
           type: "string",
-          description: "Human-readable name of the space. If provided, it will be resolved to a spaceId."
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         assetId: { type: "string" },
@@ -309,7 +329,8 @@ export const ASSET_TOOLS = {
 export const CONTENT_TYPE_TOOLS = {
   LIST_CONTENT_TYPES: {
     name: "list_content_types",
-    description: "List all content types in a space and environment",
+    description:
+      "List all content types in a space and environment, always ask for the correct spaceId or spaceName",
     inputSchema: {
       type: "object",
       properties: {
