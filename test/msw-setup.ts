@@ -279,7 +279,10 @@ const entryHandlers = [
   http.post("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries", async ({ params, request }) => {
     const { spaceId } = params;
     if (spaceId === "test-space-id") {
-      const body = await request.json();
+      const body = await request.json() as {
+        sys: { contentType: { sys: { id: string } } };
+        fields: Record<string, any>;
+      };
       return HttpResponse.json({
         sys: { 
           id: "new-entry-id",
@@ -295,7 +298,9 @@ const entryHandlers = [
   http.put("https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId", async ({ params, request }) => {
     const { spaceId, entryId } = params;
     if (spaceId === "test-space-id" && entryId === "test-entry-id") {
-      const body = await request.json();
+      const body = await request.json() as {
+        fields: Record<string, any>;
+      };
       return HttpResponse.json({
         sys: { 
           id: entryId,
