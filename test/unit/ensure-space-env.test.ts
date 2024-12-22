@@ -96,11 +96,9 @@ describe("ensureSpaceAndEnvironment", () => {
       getEnvironment: () => Promise.reject(new Error("Environment not found"))
     });
 
-    await expect(async () => {
-      await ensureSpaceAndEnvironment({
-        spaceId: "test-space",
-        environmentId: "non-existent"
-      });
-    }).rejects.toThrow("Environment not found");
+    await expect(ensureSpaceAndEnvironment({
+      spaceId: "test-space",
+      environmentId: "non-existent"
+    })).rejects.toThrow("Environment not found");
   });
 });
