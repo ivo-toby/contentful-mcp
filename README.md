@@ -1,4 +1,5 @@
 # Contentful MCP Server
+[![smithery badge](https://smithery.ai/badge/@ivotoby/contentful-management-mcp-server)](https://smithery.ai/server/@ivotoby/contentful-management-mcp-server)
 
 An MCP server implementation that integrates with Contentful's Content Management API, providing comprehensive content management capabilities.
 
@@ -98,6 +99,14 @@ and add the following lines:
     }
   }
 }
+```
+
+### Installing via Smithery
+
+To install Contentful Management Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@ivotoby/contentful-management-mcp-server):
+
+```bash
+npx -y @smithery/cli install @ivotoby/contentful-management-mcp-server --client claude
 ```
 
 ### Developing and using Claude desktop
