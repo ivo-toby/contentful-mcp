@@ -1,4 +1,5 @@
 # Contentful MCP Server
+
 [![smithery badge](https://smithery.ai/badge/@ivotoby/contentful-management-mcp-server)](https://smithery.ai/server/@ivotoby/contentful-management-mcp-server)
 
 An MCP server implementation that integrates with Contentful's Content Management API, providing comprehensive content management capabilities.
@@ -54,6 +55,7 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 - **create_content_type**: Create new content type
 - **update_content_type**: Update content type
 - **delete_content_type**: Remove content type
+- **publish_content_type**: Publish a content type
 
 ## Development Tools
 
@@ -149,3 +151,4 @@ MIT License
 ## Fine print
 
 This MCP Server enables Claude (or other agents that can consume MCP resources) to update, delete content, spaces and content-models. So be sure what you allow Claude to do with your Contentful spaces!
+
