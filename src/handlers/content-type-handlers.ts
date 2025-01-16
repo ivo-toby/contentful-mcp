@@ -117,4 +117,25 @@ export const contentTypeHandlers = {
       ],
     };
   },
+
+  publishContentType: async (args: HandlerArgs & { contentTypeId: string }) => {
+    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+    const params = {
+      spaceId: resolvedArgs.spaceId,
+      environmentId: resolvedArgs.environmentId,
+      contentTypeId: args.contentTypeId,
+    };
+
+    const contentType = await contentfulClient.contentType.get(params);
+    await contentfulClient.contentType.publish(params, contentType);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Content type ${args.contentTypeId} published successfully`,
+        },
+      ],
+    };
+  },
 };

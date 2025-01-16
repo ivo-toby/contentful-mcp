@@ -29,7 +29,7 @@ const server = new Server(
   {
     capabilities: {
       tools: TOOLS,
-      prompts: {},
+      prompts: CONTENTFUL_PROMPTS,
     },
   },
 );

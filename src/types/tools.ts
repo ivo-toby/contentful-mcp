@@ -482,6 +482,28 @@ export const CONTENT_TYPE_TOOLS = {
       required: ["spaceId", "contentTypeId"],
     },
   },
+  PUBLISH_CONTENT_TYPE: {
+    name: "publish_content_type",
+    description: "Publish a content type",
+    inputSchema: {
+      type: "object",
+      properties: {
+        spaceId: {
+          type: "string",
+          description:
+            "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
+        },
+        spaceName: {
+          type: "string",
+          description:
+            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
+        },
+        environmentId: { type: "string", default: "master" },
+        contentTypeId: { type: "string" },
+      },
+      required: ["spaceId", "contentTypeId", "environmentId"],
+    },
+  },
 };
 
 // Tool definitions for Space & Environment operations
