@@ -14,7 +14,7 @@ import { entryHandlers } from "./handlers/entry-handlers.js";
 import { assetHandlers } from "./handlers/asset-handlers.js";
 import { spaceHandlers } from "./handlers/space-handlers.js";
 import { contentTypeHandlers } from "./handlers/content-type-handlers.js";
-import { TOOLS } from "./config/tools.js";
+import { TOOLS } from "./types/tools.js";
 import { validateEnvironment } from "./utils/validation.js";
 
 // Validate environment variables

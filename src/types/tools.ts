@@ -338,8 +338,7 @@ export const CONTENT_TYPE_TOOLS = {
         spaceId: { type: "string" },
         environmentId: { type: "string", default: "master" },
       },
-      required: [],
-      oneOf: [{ required: ["spaceId"] }, { required: ["spaceName"] }],
+      required: ["spaceId"],
     },
   },
   GET_CONTENT_TYPE: {
