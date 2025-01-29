@@ -114,7 +114,9 @@ function getHandler(name: string) {
 async function runServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("Contentful MCP Server running on stdio");
+  console.error(
+    `Contentful MCP Server running on stdio using contentful host ${process.env.CONTENTFUL_HOST}`,
+  );
 }
 
 runServer().catch((error) => {
