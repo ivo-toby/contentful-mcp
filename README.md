@@ -79,7 +79,10 @@ The project also contains a `npm run dev` command which rebuilds and reloads the
 
 ### Environment Variables
 
-- `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN`: Your Content Management API token
+These variables can also be set as arguments
+
+- `CONTENTFUL_HOST` / `--host`: Contentful Management API Endpoint (defaults to https://api.contentful.com)
+- `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` / `--management-token`: Your Content Management API token
 
 ### Usage with Claude Desktop
 
@@ -101,6 +104,20 @@ and add the following lines:
     }
   }
 }
+```
+
+If your MCPClient does not support setting environment variables you can also set the management token using an argument like this:
+
+```
+{
+  "mcpServers": {
+    "contentful": {
+      "command": "npx",
+      "args": ["-y", "@ivotoby/contentful-management-mcp-server",'--management-token', "<your token>", '--host', 'http://api.contentful.com'],
+    }
+  }
+}
+
 ```
 
 ### Installing via Smithery
@@ -151,4 +168,3 @@ MIT License
 ## Fine print
 
 This MCP Server enables Claude (or other agents that can consume MCP resources) to update, delete content, spaces and content-models. So be sure what you allow Claude to do with your Contentful spaces!
-
