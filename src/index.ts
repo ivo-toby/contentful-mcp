@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js"
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   ListPromptsRequestSchema,
   GetPromptRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
-import { CONTENTFUL_PROMPTS } from "./prompts/contentful-prompts.js";
-import { handlePrompt } from "./prompts/handlers.js";
-import { entryHandlers } from "./handlers/entry-handlers.js";
-import { assetHandlers } from "./handlers/asset-handlers.js";
-import { spaceHandlers } from "./handlers/space-handlers.js";
-import { contentTypeHandlers } from "./handlers/content-type-handlers.js";
-import { TOOLS } from "./types/tools.js";
-import { validateEnvironment } from "./utils/validation.js";
+} from "@modelcontextprotocol/sdk/types.js"
+import { CONTENTFUL_PROMPTS } from "./prompts/contentful-prompts.js"
+import { handlePrompt } from "./prompts/handlers.js"
+import { entryHandlers } from "./handlers/entry-handlers.js"
+import { assetHandlers } from "./handlers/asset-handlers.js"
+import { spaceHandlers } from "./handlers/space-handlers.js"
+import { contentTypeHandlers } from "./handlers/content-type-handlers.js"
+import { getTools } from "./types/tools.js"
+import { validateEnvironment } from "./utils/validation.js"
 
 // Validate environment variables
-validateEnvironment();
+validateEnvironment()
 
 // Create MCP server
 const server = new Server(
@@ -28,37 +28,37 @@ const server = new Server(
   },
   {
     capabilities: {
-      tools: TOOLS,
+      tools: getTools(),
       prompts: CONTENTFUL_PROMPTS,
     },
   },
-);
+)
 
 // Set up request handlers
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: Object.values(TOOLS),
-}));
+  tools: Object.values(getTools()),
+}))
 
 // Set up request handlers
 server.setRequestHandler(ListPromptsRequestSchema, async () => ({
   prompts: Object.values(CONTENTFUL_PROMPTS),
-}));
+}))
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
-  return handlePrompt(name, args);
-});
+  const { name, arguments: args } = request.params
+  return handlePrompt(name, args)
+})
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
-    const { name, arguments: args } = request.params;
-    const handler = getHandler(name);
+    const { name, arguments: args } = request.params
+    const handler = getHandler(name)
 
     if (!handler) {
-      throw new Error(`Unknown tool: ${name}`);
+      throw new Error(`Unknown tool: ${name}`)
     }
 
-    return handler(args);
+    return handler(args)
   } catch (error) {
     return {
       content: [
@@ -68,9 +68,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         },
       ],
       isError: true,
-    };
+    }
   }
-});
+})
 
 // Helper function to map tool names to handlers
 function getHandler(name: string) {
@@ -105,21 +105,21 @@ function getHandler(name: string) {
     create_content_type: contentTypeHandlers.createContentType,
     update_content_type: contentTypeHandlers.updateContentType,
     delete_content_type: contentTypeHandlers.deleteContentType,
-  };
+  }
 
-  return handlers[name as keyof typeof handlers];
+  return handlers[name as keyof typeof handlers]
 }
 
 // Start the server
 async function runServer() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  const transport = new StdioServerTransport()
+  await server.connect(transport)
   console.error(
     `Contentful MCP Server running on stdio using contentful host ${process.env.CONTENTFUL_HOST}`,
-  );
+  )
 }
 
 runServer().catch((error) => {
-  console.error("Fatal error running server:", error);
-  process.exit(1);
-});
+  console.error("Fatal error running server:", error)
+  process.exit(1)
+})
