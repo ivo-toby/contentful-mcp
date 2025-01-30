@@ -280,7 +280,7 @@ export const CONTENT_TYPE_TOOLS = {
   LIST_CONTENT_TYPES: {
     name: "list_content_types",
     description:
-      "List content types in a space. Requires either spaceName or spaceId parameter to identify the target space.",
+      "List content types in a space. Requires either spaceId parameter to identify the target space.",
     inputSchema: {
       type: "object",
       properties: {
