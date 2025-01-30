@@ -1,14 +1,11 @@
 import { contentfulClient } from "../config/client.js";
-import { HandlerArgs } from "../types/tools.js";
 import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management";
-import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id.js";
 
 export const entryHandlers = {
-  searchEntries: async (args: HandlerArgs & { query: QueryOptions }) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  searchEntries: async (args: { spaceId: string; environmentId: string; query: QueryOptions }) => {
     const params = {
-      spaceId: resolvedArgs.spaceId,
-      environmentId: resolvedArgs.environmentId,
+      spaceId: args.spaceId,
+      environmentId: args.environmentId,
     };
 
     const entries = await contentfulClient.entry.getMany({
@@ -21,14 +18,16 @@ export const entryHandlers = {
     };
   },
   createEntry: async (
-    args: HandlerArgs & {
+    args: {
+      spaceId: string;
+      environmentId: string;
       contentTypeId: string;
       fields: Record<string, any>;
     },
   ) => {
     const params = {
       spaceId: args.spaceId,
-      environmentId: args.environmentId || "master",
+      environmentId: args.environmentId,
       contentTypeId: args.contentTypeId,
     };
 
@@ -42,11 +41,10 @@ export const entryHandlers = {
     };
   },
 
-  getEntry: async (args: HandlerArgs & { entryId: string }) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  getEntry: async (args: { spaceId: string; environmentId: string; entryId: string }) => {
     const params = {
-      spaceId: resolvedArgs.spaceId,
-      environmentId: resolvedArgs.environmentId,
+      spaceId: args.spaceId,
+      environmentId: args.environmentId,
       entryId: args.entryId,
     };
 
@@ -57,15 +55,16 @@ export const entryHandlers = {
   },
 
   updateEntry: async (
-    args: HandlerArgs & {
+    args: {
+      spaceId: string;
+      environmentId: string;
       entryId: string;
       fields: Record<string, any>;
     },
   ) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
     const params = {
-      spaceId: resolvedArgs.spaceId,
-      environmentId: resolvedArgs.environmentId,
+      spaceId: args.spaceId,
+      environmentId: args.environmentId,
       entryId: args.entryId,
     };
 
@@ -82,11 +81,10 @@ export const entryHandlers = {
     };
   },
 
-  deleteEntry: async (args: HandlerArgs & { entryId: string }) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  deleteEntry: async (args: { spaceId: string; environmentId: string; entryId: string }) => {
     const params = {
-      spaceId: resolvedArgs.spaceId,
-      environmentId: resolvedArgs.environmentId,
+      spaceId: args.spaceId,
+      environmentId: args.environmentId,
       entryId: args.entryId,
     };
 
@@ -98,11 +96,10 @@ export const entryHandlers = {
     };
   },
 
-  publishEntry: async (args: HandlerArgs & { entryId: string }) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  publishEntry: async (args: { spaceId: string; environmentId: string; entryId: string }) => {
     const params = {
-      spaceId: resolvedArgs.spaceId,
-      environmentId: resolvedArgs.environmentId,
+      spaceId: args.spaceId,
+      environmentId: args.environmentId,
       entryId: args.entryId,
     };
 
@@ -117,11 +114,10 @@ export const entryHandlers = {
     };
   },
 
-  unpublishEntry: async (args: HandlerArgs & { entryId: string }) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  unpublishEntry: async (args: { spaceId: string; environmentId: string; entryId: string }) => {
     const params = {
-      spaceId: resolvedArgs.spaceId,
-      environmentId: resolvedArgs.environmentId,
+      spaceId: args.spaceId,
+      environmentId: args.environmentId,
       entryId: args.entryId,
     };
 
