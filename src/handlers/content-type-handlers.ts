@@ -4,14 +4,12 @@ import {
   CreateContentTypeProps,
 } from "contentful-management";
 import { HandlerArgs } from "../types/tools.js";
-import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id.js";
 
 export const contentTypeHandlers = {
-  listContentTypes: async (args: HandlerArgs) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  listContentTypes: async (args: { spaceId: string; environmentId: string }) => {
     const params = {
-      spaceId: resolvedArgs.spaceId,
-      environmentId: resolvedArgs.environmentId,
+      spaceId: args.spaceId,
+      environmentId: args.environmentId,
     };
 
     const contentTypes = await contentfulClient.contentType.getMany(params);

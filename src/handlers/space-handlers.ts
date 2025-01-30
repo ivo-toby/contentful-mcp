@@ -1,5 +1,4 @@
 import { contentfulClient } from "../config/client.js";
-import { ensureSpaceAndEnvironment } from "../utils/ensure-space-env-id.js";
 
 export const spaceHandlers = {
   listSpaces: async () => {
@@ -9,30 +8,27 @@ export const spaceHandlers = {
     };
   },
 
-  getSpace: async (args: any) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  getSpace: async (args: { spaceId: string }) => {
     const space = await contentfulClient.space.get({
-      spaceId: resolvedArgs.spaceId,
+      spaceId: args.spaceId,
     });
     return {
       content: [{ type: "text", text: JSON.stringify(space, null, 2) }],
     };
   },
 
-  listEnvironments: async (args: any) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  listEnvironments: async (args: { spaceId: string }) => {
     const environments = await contentfulClient.environment.getMany({
-      spaceId: resolvedArgs.spaceId,
+      spaceId: args.spaceId,
     });
     return {
       content: [{ type: "text", text: JSON.stringify(environments, null, 2) }],
     };
   },
 
-  createEnvironment: async (args: any) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  createEnvironment: async (args: { spaceId: string; environmentId: string; name: string }) => {
     const params = {
-      spaceId: resolvedArgs.spaceId,
+      spaceId: args.spaceId,
     };
 
     const environmentProps = {
@@ -49,11 +45,10 @@ export const spaceHandlers = {
     };
   },
 
-  deleteEnvironment: async (args: any) => {
-    const resolvedArgs = await ensureSpaceAndEnvironment(args);
+  deleteEnvironment: async (args: { spaceId: string; environmentId: string }) => {
     await contentfulClient.environment.delete({
-      spaceId: resolvedArgs.spaceId,
-      environmentId: resolvedArgs.environmentId,
+      spaceId: args.spaceId,
+      environmentId: args.environmentId,
     });
     return {
       content: [
