@@ -152,11 +152,6 @@ export const ENTRY_TOOLS = {
           description:
             "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
-        spaceName: {
-          type: "string",
-          description:
-            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
-        },
         environmentId: { type: "string", default: "master" },
         entryId: { type: "string" },
       },
@@ -177,11 +172,6 @@ export const ASSET_TOOLS = {
           type: "string",
           description:
             "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
-        },
-        spaceName: {
-          type: "string",
-          description:
-            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         title: { type: "string" },
@@ -210,11 +200,6 @@ export const ASSET_TOOLS = {
           description:
             "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
-        spaceName: {
-          type: "string",
-          description:
-            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
-        },
         environmentId: { type: "string", default: "master" },
         assetId: { type: "string" },
       },
@@ -231,11 +216,6 @@ export const ASSET_TOOLS = {
           type: "string",
           description:
             "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
-        },
-        spaceName: {
-          type: "string",
-          description:
-            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         assetId: { type: "string" },
@@ -460,11 +440,6 @@ export const CONTENT_TYPE_TOOLS = {
           type: "string",
           description:
             "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
-        },
-        spaceName: {
-          type: "string",
-          description:
-            "Human-readable name of the space. If provided, it will be resolved to a spaceId.",
         },
         environmentId: { type: "string", default: "master" },
         contentTypeId: { type: "string" },
