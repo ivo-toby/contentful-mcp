@@ -84,6 +84,14 @@ These variables can also be set as arguments
 - `CONTENTFUL_HOST` / `--host`: Contentful Management API Endpoint (defaults to https://api.contentful.com)
 - `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` / `--management-token`: Your Content Management API token
 
+### Space and Environment Scoping (EXPERIMENTAL)
+
+You can scope the spaceId and EnvironmentId to ensure the LLM will only do operations on the defined space/env ID's.
+This is mainly to support agents that are to operate within specific spaces. If both `SPACE_ID` and `ENVIRONMENT_ID` env-vars are set
+the tools will not report needing these values and the handlers will use the environment vars to do CMA operations.
+You will also loose access to the tools in the space-handler, since these tools are across spaces.
+You can also add the `SPACE_ID` and `ENVIRONMENT_ID` by using arguments `--space-id` and `--environment-id`
+
 ### Usage with Claude Desktop
 
 You do not need to clone this repo to use this MCP, you can simply add it to

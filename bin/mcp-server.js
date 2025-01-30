@@ -1,25 +1,33 @@
 #!/usr/bin/env node
+/* eslint-disable no-undef */
 
 async function main() {
   // Find the management token argument
-  const tokenIndex = process.argv.findIndex(
-    (arg) => arg === "--management-token",
-  );
+  const tokenIndex = process.argv.findIndex((arg) => arg === "--management-token")
   if (tokenIndex !== -1 && process.argv[tokenIndex + 1]) {
-    process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN =
-      process.argv[tokenIndex + 1];
+    process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = process.argv[tokenIndex + 1]
   }
 
-  const hostIndex = process.argv.findIndex((arg) => arg === "--host");
+  const hostIndex = process.argv.findIndex((arg) => arg === "--host")
   if (hostIndex !== -1 && process.argv[hostIndex + 1]) {
-    process.env.CONTENTFUL_HOST = process.argv[hostIndex + 1];
+    process.env.CONTENTFUL_HOST = process.argv[hostIndex + 1]
+  }
+
+  const envIdIndex = process.argv.findIndex((arg) => arg === "--environment-id")
+  if (envIdIndex !== -1 && process.argv[envIdIndex + 1]) {
+    process.env.ENVIRONMENT_ID = process.argv[envIdIndex + 1]
+  }
+
+  const spaceIdIndex = process.argv.findIndex((arg) => arg === "--space-id")
+  if (spaceIdIndex !== -1 && process.argv[spaceIdIndex + 1]) {
+    process.env.SPACE_ID = process.argv[spaceIdIndex + 1]
   }
 
   // Import and run the bundled server after env var is set
-  await import("../dist/bundle.js");
+  await import("../dist/bundle.js")
 }
 
 main().catch((error) => {
-  console.error("Failed to start server:", error);
-  process.exit(1);
-});
+  console.error("Failed to start server:", error)
+  process.exit(1)
+})
