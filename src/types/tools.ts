@@ -12,7 +12,8 @@ export type HandlerResponse = {
 export type Handler = (args: HandlerArgs) => Promise<HandlerResponse>;
 
 // Tool definitions for Entry operations
-export const ENTRY_TOOLS = {
+export const getEntryTools = ()=> {
+  return {
   SEARCH_ENTRIES: {
     name: "search_entries",
     description: "Search for entries using query parameters",
@@ -22,6 +23,7 @@ export const ENTRY_TOOLS = {
         spaceId: {
           type: "string",
           description:
+
             "The ID of the Contentful space. This must be the space's ID, not its name, ask for this ID if it's unclear.",
         },
         environmentId: {
@@ -158,10 +160,12 @@ export const ENTRY_TOOLS = {
       required: ["spaceId", "entryId"],
     },
   },
-};
+  }
+}
 
 // Tool definitions for Asset operations
-export const ASSET_TOOLS = {
+export const getAssetTools = () => {
+  return {
   UPLOAD_ASSET: {
     name: "upload_asset",
     description: "Upload a new asset",
@@ -273,10 +277,12 @@ export const ASSET_TOOLS = {
       required: ["spaceId", "assetId"],
     },
   },
+  }
 };
 
 // Tool definitions for Content Type operations
-export const CONTENT_TYPE_TOOLS = {
+export const getContentTypeTools =() => {
+  return {
   LIST_CONTENT_TYPES: {
     name: "list_content_types",
     description:
@@ -447,10 +453,12 @@ export const CONTENT_TYPE_TOOLS = {
       required: ["spaceId", "contentTypeId", "environmentId"],
     },
   },
+  }
 };
 
 // Tool definitions for Space & Environment operations
-export const SPACE_ENV_TOOLS = {
+export const getSpaceEnvTools = ()=> {
+  return {
   LIST_SPACES: {
     name: "list_spaces",
     description: "List all available spaces",
@@ -506,12 +514,15 @@ export const SPACE_ENV_TOOLS = {
       required: ["spaceId", "environmentId"],
     },
   },
+  }
 };
 
 // Export combined tools
-export const TOOLS = {
-  ...ENTRY_TOOLS,
-  ...ASSET_TOOLS,
-  ...SPACE_ENV_TOOLS,
-  ...CONTENT_TYPE_TOOLS,
+export const getTools() => {
+  return {
+  ...getEntryTools(),
+  ...getAssetTools(),
+  ...getContentTypeTools(),
+  ...getSpaceEnvTools(),
+  }
 };

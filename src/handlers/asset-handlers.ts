@@ -39,9 +39,12 @@ export const assetHandlers = {
       };
     },
   ) => {
+    const spaceId = process.env.SPACE_ID || args.spaceId;
+    const environmentId = process.env.ENVIRONMENT_ID || args.environmentId;
+
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId,
+      spaceId,
+      environmentId,
     };
 
     const assetProps: CreateAssetProps = {

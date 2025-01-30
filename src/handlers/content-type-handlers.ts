@@ -7,9 +7,12 @@ import { HandlerArgs } from "../types/tools.js";
 
 export const contentTypeHandlers = {
   listContentTypes: async (args: { spaceId: string; environmentId: string }) => {
+    const spaceId = process.env.SPACE_ID || args.spaceId;
+    const environmentId = process.env.ENVIRONMENT_ID || args.environmentId;
+
     const params = {
-      spaceId: args.spaceId,
-      environmentId: args.environmentId,
+      spaceId,
+      environmentId,
     };
 
     const contentTypes = await contentfulClient.contentType.getMany(params);

@@ -14,7 +14,7 @@ import { entryHandlers } from "./handlers/entry-handlers.js";
 import { assetHandlers } from "./handlers/asset-handlers.js";
 import { spaceHandlers } from "./handlers/space-handlers.js";
 import { contentTypeHandlers } from "./handlers/content-type-handlers.js";
-import { TOOLS } from "./types/tools.js";
+import { getTools } from "./types/tools.js";
 import { validateEnvironment } from "./utils/validation.js";
 
 // Validate environment variables
@@ -28,7 +28,7 @@ const server = new Server(
   },
   {
     capabilities: {
-      tools: TOOLS,
+      tools: getTools(),
       prompts: CONTENTFUL_PROMPTS,
     },
   },
@@ -36,7 +36,7 @@ const server = new Server(
 
 // Set up request handlers
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: Object.values(TOOLS),
+  tools: Object.values(getTools()),
 }));
 
 // Set up request handlers

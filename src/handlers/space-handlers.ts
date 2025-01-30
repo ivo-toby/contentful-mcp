@@ -9,9 +9,12 @@ export const spaceHandlers = {
   },
 
   getSpace: async (args: { spaceId: string }) => {
-    const space = await contentfulClient.space.get({
-      spaceId: args.spaceId,
-    });
+    const spaceId = process.env.SPACE_ID || args.spaceId;
+    if (!spaceId) {
+      throw new Error("spaceId is required.");
+    }
+
+    const space = await contentfulClient.space.get({ spaceId });
     return {
       content: [{ type: "text", text: JSON.stringify(space, null, 2) }],
     };

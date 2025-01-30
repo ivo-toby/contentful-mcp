@@ -66,25 +66,6 @@ export async function handlePrompt(
         ],
       };
 
-    case "space-identification":
-      return {
-        messages: [
-          {
-            role: "assistant",
-            content: {
-              type: "text",
-              text: "I'll help you identify the correct Contentful space for your operation.",
-            },
-          },
-          {
-            role: "user",
-            content: {
-              type: "text",
-              text: `Before performing the ${arguments?.operation} operation, you need to specify either:\n\n1. spaceName: The human-readable name of your space\n2. spaceId: The unique identifier of your space\n\nWhich would you like to provide?`,
-            },
-          },
-        ],
-      };
     default:
       throw new Error(`Unknown prompt: ${name}`);
   }
