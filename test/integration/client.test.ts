@@ -59,12 +59,15 @@ describe("getContentfulClient", () => {
     const { getContentfulClient } = await import("../../src/config/client")
     await getContentfulClient()
 
-    expect(getManagementToken).toHaveBeenCalledWith("test-private-key", {
-      appInstallationId: "test-app-id",
-      spaceId: "test-space-id",
-      environmentId: "test-environment-id",
-      host: "api.contentful.com",
-    })
+    expect(getManagementToken).toHaveBeenCalledWith(
+      "-----BEGIN RSA PRIVATE KEY-----\ntest-private-key\n-----END RSA PRIVATE KEY-----",
+      {
+        appInstallationId: "test-app-id",
+        spaceId: "test-space-id",
+        environmentId: "test-environment-id",
+        host: "https://api.contentful.com",
+      },
+    )
 
     expect(mockCreateClient).toHaveBeenCalledWith(
       {
@@ -74,7 +77,6 @@ describe("getContentfulClient", () => {
       { type: "plain" },
     )
   })
-
   it("throws if neither CONTENTFUL_MANAGEMENT_ACCESS_TOKEN nor PRIVATE_KEY is available", async () => {
     delete process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
     delete process.env.PRIVATE_KEY

@@ -11,32 +11,30 @@ const {
 } = process.env
 
 export const getContentfulClient = async () => {
+  let formattedKey = ""
   if (!CONTENTFUL_MANAGEMENT_ACCESS_TOKEN && !PRIVATE_KEY) {
     throw new Error("No Contentful management token or private key found...")
   }
+  if (PRIVATE_KEY) {
+    const formatKey = (key: string) => {
+      // Remove existing headers, spaces, and line breaks
+      const cleanKey = key
+        .replace("-----BEGIN RSA PRIVATE KEY-----", "")
+        .replace("-----END RSA PRIVATE KEY-----", "")
+        .replace(/\s/g, "")
 
-  const formatKey = (key: string) => {
-    // Remove existing headers, spaces, and line breaks
-    const cleanKey = key
-      .replace("-----BEGIN RSA PRIVATE KEY-----", "")
-      .replace("-----END RSA PRIVATE KEY-----", "")
-      .replace(/\s/g, "")
+      // Split into 64-character lines
+      const chunks = cleanKey.match(/.{1,64}/g) || []
 
-    // Split into 64-character lines
-    const chunks = cleanKey.match(/.{1,64}/g) || []
+      // Reassemble with proper format
+      return ["-----BEGIN RSA PRIVATE KEY-----", ...chunks, "-----END RSA PRIVATE KEY-----"].join(
+        "\n",
+      )
+    }
 
-    // Reassemble with proper format
-    return ["-----BEGIN RSA PRIVATE KEY-----", ...chunks, "-----END RSA PRIVATE KEY-----"].join(
-      "\n",
-    )
+    formattedKey = formatKey(PRIVATE_KEY!)
   }
 
-  const formattedKey = formatKey(PRIVATE_KEY!)
-
-  console.error("Formatted key:")
-  console.error(formattedKey)
-
-  //console.error(`key : ${formattedKey}`)
   const accessToken =
     CONTENTFUL_MANAGEMENT_ACCESS_TOKEN ||
     (await getManagementToken(formattedKey!, {
