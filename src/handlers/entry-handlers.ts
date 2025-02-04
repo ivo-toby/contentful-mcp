@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { contentfulClient } from "../config/client.js"
+import { getContentfulClient } from "../config/client.js"
 import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management"
 
 export const entryHandlers = {
@@ -12,6 +12,7 @@ export const entryHandlers = {
       environmentId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const entries = await contentfulClient.entry.getMany({
       ...params,
       query: args.query,
@@ -40,6 +41,7 @@ export const entryHandlers = {
       fields: args.fields,
     }
 
+    const contentfulClient = await getContentfulClient()
     const entry = await contentfulClient.entry.create(params, entryProps)
     return {
       content: [{ type: "text", text: JSON.stringify(entry, null, 2) }],
@@ -56,6 +58,7 @@ export const entryHandlers = {
       entryId: args.entryId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const entry = await contentfulClient.entry.get(params)
     return {
       content: [{ type: "text", text: JSON.stringify(entry, null, 2) }],
@@ -77,6 +80,7 @@ export const entryHandlers = {
       entryId: args.entryId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const currentEntry = await contentfulClient.entry.get(params)
 
     const entryProps: EntryProps = {
@@ -100,6 +104,7 @@ export const entryHandlers = {
       entryId: args.entryId,
     }
 
+    const contentfulClient = await getContentfulClient()
     await contentfulClient.entry.delete(params)
     return {
       content: [{ type: "text", text: `Entry ${args.entryId} deleted successfully` }],
@@ -116,6 +121,7 @@ export const entryHandlers = {
       entryId: args.entryId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const currentEntry = await contentfulClient.entry.get(params)
 
     const entry = await contentfulClient.entry.publish(params, {
@@ -137,6 +143,7 @@ export const entryHandlers = {
       entryId: args.entryId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const currentEntry = await contentfulClient.entry.get(params)
 
     // Add version to params for unpublish

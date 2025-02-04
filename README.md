@@ -92,6 +92,18 @@ the tools will not report needing these values and the handlers will use the env
 You will also loose access to the tools in the space-handler, since these tools are across spaces.
 You can also add the `SPACE_ID` and `ENVIRONMENT_ID` by using arguments `--space-id` and `--environment-id`
 
+#### Using App Identity
+
+Instead of providing a Management token you can also leverage [App Identity](https://www.contentful.com/developers/docs/extensibility/app-framework/app-identity/)
+for handling authentication. You would have to setup and install a Contentful App and set the following parameters when calling the MCP-server:
+
+- `--app-id` = the app Id which is providing the Apptoken
+- `--private-key` = the private key you created in the user-interface with your app, tied to `app_id`
+- `--space-id` = the spaceId in which the app is installed
+- `--environment-id` = the environmentId (within the space) in which the app is installed.
+
+With these values the MCP server will request a temporary AppToken to do content operation in the defined space/environment-id. This especially useful when using this MCP server in backend systems that act as MCP-client (like chat-agents)
+
 ### Usage with Claude Desktop
 
 You do not need to clone this repo to use this MCP, you can simply add it to
