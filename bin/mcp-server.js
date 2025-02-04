@@ -23,6 +23,16 @@ async function main() {
     process.env.SPACE_ID = process.argv[spaceIdIndex + 1]
   }
 
+  const keyIdIndex = process.argv.findIndex((arg) => arg === "--private-key")
+  if (keyIdIndex !== -1 && process.argv[keyIdIndex + 1]) {
+    process.env.PRIVATE_KEY = process.argv[keyIdIndex + 1]
+  }
+
+  const appIdIndex = process.argv.findIndex((arg) => arg === "--app-id")
+  if (appIdIndex !== -1 && process.argv[appIdIndex + 1]) {
+    process.env.APP_ID = process.argv[appIdIndex + 1]
+  }
+
   // Import and run the bundled server after env var is set
   await import("../dist/bundle.js")
 }

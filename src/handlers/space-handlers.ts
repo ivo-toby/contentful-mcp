@@ -1,7 +1,8 @@
-import { contentfulClient } from "../config/client.js"
+import { getContentfulClient } from "../config/client.js"
 
 export const spaceHandlers = {
   listSpaces: async () => {
+    const contentfulClient = await getContentfulClient()
     const spaces = await contentfulClient.space.getMany({})
     return {
       content: [{ type: "text", text: JSON.stringify(spaces, null, 2) }],
@@ -14,6 +15,7 @@ export const spaceHandlers = {
       throw new Error("spaceId is required.")
     }
 
+    const contentfulClient = await getContentfulClient()
     const space = await contentfulClient.space.get({ spaceId })
     return {
       content: [{ type: "text", text: JSON.stringify(space, null, 2) }],
@@ -21,6 +23,7 @@ export const spaceHandlers = {
   },
 
   listEnvironments: async (args: { spaceId: string }) => {
+    const contentfulClient = await getContentfulClient()
     const environments = await contentfulClient.environment.getMany({
       spaceId: args.spaceId,
     })
@@ -38,6 +41,7 @@ export const spaceHandlers = {
       name: args.name,
     }
 
+    const contentfulClient = await getContentfulClient()
     const environment = await contentfulClient.environment.create(
       params,
       args.environmentId,
@@ -49,6 +53,7 @@ export const spaceHandlers = {
   },
 
   deleteEnvironment: async (args: { spaceId: string; environmentId: string }) => {
+    const contentfulClient = await getContentfulClient()
     await contentfulClient.environment.delete({
       spaceId: args.spaceId,
       environmentId: args.environmentId,

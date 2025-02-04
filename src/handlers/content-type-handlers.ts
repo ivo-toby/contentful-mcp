@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { contentfulClient } from "../config/client.js"
+import { getContentfulClient } from "../config/client.js"
 import { ContentTypeProps, CreateContentTypeProps } from "contentful-management"
 
 export const contentTypeHandlers = {
@@ -12,6 +12,7 @@ export const contentTypeHandlers = {
       environmentId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const contentTypes = await contentfulClient.contentType.getMany(params)
     return {
       content: [{ type: "text", text: JSON.stringify(contentTypes, null, 2) }],
@@ -32,6 +33,7 @@ export const contentTypeHandlers = {
       contentTypeId: args.contentTypeId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const contentType = await contentfulClient.contentType.get(params)
     return {
       content: [{ type: "text", text: JSON.stringify(contentType, null, 2) }],
@@ -61,6 +63,7 @@ export const contentTypeHandlers = {
       displayField: args.displayField || args.fields[0]?.id || "",
     }
 
+    const contentfulClient = await getContentfulClient()
     const contentType = await contentfulClient.contentType.create(params, contentTypeProps)
     return {
       content: [{ type: "text", text: JSON.stringify(contentType, null, 2) }],
@@ -85,6 +88,7 @@ export const contentTypeHandlers = {
       contentTypeId: args.contentTypeId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const currentContentType = await contentfulClient.contentType.get(params)
 
     const contentTypeProps: ContentTypeProps = {
@@ -115,6 +119,7 @@ export const contentTypeHandlers = {
       contentTypeId: args.contentTypeId,
     }
 
+    const contentfulClient = await getContentfulClient()
     await contentfulClient.contentType.delete(params)
     return {
       content: [
@@ -140,6 +145,7 @@ export const contentTypeHandlers = {
       contentTypeId: args.contentTypeId,
     }
 
+    const contentfulClient = await getContentfulClient()
     const contentType = await contentfulClient.contentType.get(params)
     await contentfulClient.contentType.publish(params, contentType)
 

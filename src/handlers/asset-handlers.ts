@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CreateAssetProps } from "contentful-management"
-import { contentfulClient } from "../config/client.js"
+import { getContentfulClient } from "../config/client.js"
 
 type BaseAssetParams = {
   spaceId: string
@@ -13,6 +13,7 @@ const formatResponse = (data: any) => ({
 })
 
 const getCurrentAsset = async (params: BaseAssetParams) => {
+  const contentfulClient = await getContentfulClient()
   return contentfulClient.asset.get(params)
 }
 
@@ -44,6 +45,7 @@ export const assetHandlers = {
       },
     }
 
+    const contentfulClient = await getContentfulClient()
     const asset = await contentfulClient.asset.create(params, assetProps)
 
     const processedAsset = await contentfulClient.asset.processForAllLocales(
@@ -67,6 +69,8 @@ export const assetHandlers = {
       environmentId,
       assetId: args.assetId,
     }
+
+    const contentfulClient = await getContentfulClient()
     const asset = await contentfulClient.asset.get(params)
     return formatResponse(asset)
   },
@@ -108,6 +112,7 @@ export const assetHandlers = {
       sys: currentAsset.sys,
     }
 
+    const contentfulClient = await getContentfulClient()
     const asset = await contentfulClient.asset.update(params, updateParams)
 
     return formatResponse(asset)
@@ -124,6 +129,7 @@ export const assetHandlers = {
     }
     const currentAsset = await getCurrentAsset(params)
 
+    const contentfulClient = await getContentfulClient()
     await contentfulClient.asset.delete({
       ...params,
       version: currentAsset.sys.version,
@@ -145,9 +151,10 @@ export const assetHandlers = {
     }
     const currentAsset = await getCurrentAsset(params)
 
+    const contentfulClient = await getContentfulClient()
     const asset = await contentfulClient.asset.publish(params, {
       sys: currentAsset.sys,
-      fields: currentAsset.fields, // Add the fields property
+      fields: currentAsset.fields,
     })
 
     return formatResponse(asset)
@@ -164,6 +171,7 @@ export const assetHandlers = {
     }
     const currentAsset = await getCurrentAsset(params)
 
+    const contentfulClient = await getContentfulClient()
     const asset = await contentfulClient.asset.unpublish({
       ...params,
       version: currentAsset.sys.version,
