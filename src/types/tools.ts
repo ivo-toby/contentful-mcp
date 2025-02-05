@@ -32,7 +32,8 @@ export const getEntryTools = () => {
   return {
     SEARCH_ENTRIES: {
       name: "search_entries",
-      description: "Search for entries using query parameters",
+      description:
+        "Search for entries using query parameters, do not search for too much entries at once in order to keep the token usage in check",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
