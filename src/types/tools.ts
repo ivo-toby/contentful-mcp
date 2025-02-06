@@ -33,7 +33,7 @@ export const getEntryTools = () => {
     SEARCH_ENTRIES: {
       name: "search_entries",
       description:
-        "Search for entries using query parameters, use the skip and limit parameters to paginate to max 3 results at a time, suggest the user to retrieve more ",
+        "Search for entries using query parameters. Returns a maximum of 3 items per request. Use skip parameter to paginate through results.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -43,14 +43,24 @@ export const getEntryTools = () => {
             properties: {
               content_type: { type: "string" },
               select: { type: "string" },
-              limit: { type: "number" },
-              skip: { type: "number" },
+              limit: { 
+                type: "number",
+                default: 3,
+                maximum: 3,
+                description: "Maximum number of items to return (max: 3)"
+              },
+              skip: { 
+                type: "number",
+                default: 0,
+                description: "Number of items to skip for pagination"
+              },
               order: { type: "string" },
               query: { type: "string" },
             },
+            required: ["limit", "skip"]
           },
         },
-        required: ["query", "skip", "limit"],
+        required: ["query"],
       }),
     },
     CREATE_ENTRY: {
@@ -227,11 +237,23 @@ export const getContentTypeTools = () => {
     LIST_CONTENT_TYPES: {
       name: "list_content_types",
       description:
-        "List content types in a space. Requires either spaceId parameter to identify the target space.",
+        "List content types in a space. Returns a maximum of 3 items per request. Use skip parameter to paginate through results.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
-        properties: {},
-        required: [],
+        properties: {
+          limit: {
+            type: "number",
+            default: 3,
+            maximum: 3,
+            description: "Maximum number of items to return (max: 3)"
+          },
+          skip: {
+            type: "number",
+            default: 0,
+            description: "Number of items to skip for pagination"
+          }
+        },
+        required: ["limit", "skip"],
       }),
     },
     GET_CONTENT_TYPE: {

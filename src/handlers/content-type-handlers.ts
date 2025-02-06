@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getContentfulClient } from "../config/client.js"
+import { summarizeData } from "../utils/summarizer.js"
 import { ContentTypeProps, CreateContentTypeProps } from "contentful-management"
 
 export const contentTypeHandlers = {
@@ -13,9 +14,21 @@ export const contentTypeHandlers = {
     }
 
     const contentfulClient = await getContentfulClient()
-    const contentTypes = await contentfulClient.contentType.getMany(params)
+    const contentTypes = await contentfulClient.contentType.getMany({
+      ...params,
+      query: {
+        limit: Math.min(args.limit || 3, 3),
+        skip: args.skip || 0
+      }
+    })
+
+    const summarized = summarizeData(contentTypes.items, {
+      maxItems: 3,
+      remainingMessage: "To see more content types, please ask me to retrieve the next page."
+    })
+
     return {
-      content: [{ type: "text", text: JSON.stringify(contentTypes, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(summarized, null, 2) }],
     }
   },
 
