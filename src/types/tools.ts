@@ -65,7 +65,8 @@ export const getEntryTools = () => {
     },
     CREATE_ENTRY: {
       name: "create_entry",
-      description: "Create a new entry in Contentful",
+      description:
+        "Create a new entry in Contentful, before executing this function, you need to know the contentTypeId and the fields of that contentType, you can get the fields definition by using the GET_CONTENT_TYPE tool. ",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
