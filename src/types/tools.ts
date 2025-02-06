@@ -142,8 +142,29 @@ export const getEntryTools = () => {
 // Tool definitions for Asset operations
 export const getAssetTools = () => {
   return {
+    LIST_ASSETS: {
+      name: "list_assets",
+      description: "List assets in a space. Returns a maximum of 3 items per request. Use skip parameter to paginate through results.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            default: 3,
+            maximum: 3,
+            description: "Maximum number of items to return (max: 3)"
+          },
+          skip: {
+            type: "number",
+            default: 0,
+            description: "Number of items to skip for pagination"
+          }
+        },
+        required: ["limit", "skip"]
+      }),
+    },
     UPLOAD_ASSET: {
-      name: "upload_asset",
+      name: "upload_asset", 
       description: "Upload a new asset",
       inputSchema: getSpaceEnvProperties({
         type: "object",
