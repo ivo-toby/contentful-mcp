@@ -66,7 +66,7 @@ export const getEntryTools = () => {
     CREATE_ENTRY: {
       name: "create_entry",
       description:
-        "Create a new entry in Contentful, before executing this function, you need to know the contentTypeId and the fields of that contentType, you can get the fields definition by using the GET_CONTENT_TYPE tool. ",
+        "Create a new entry in Contentful, before executing this function, you need to know the contentTypeId (not the content type NAME) and the fields of that contentType, you can get the fields definition by using the GET_CONTENT_TYPE tool. ",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -144,7 +144,8 @@ export const getAssetTools = () => {
   return {
     LIST_ASSETS: {
       name: "list_assets",
-      description: "List assets in a space. Returns a maximum of 3 items per request. Use skip parameter to paginate through results.",
+      description:
+        "List assets in a space. Returns a maximum of 3 items per request. Use skip parameter to paginate through results.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -152,19 +153,19 @@ export const getAssetTools = () => {
             type: "number",
             default: 3,
             maximum: 3,
-            description: "Maximum number of items to return (max: 3)"
+            description: "Maximum number of items to return (max: 3)",
           },
           skip: {
             type: "number",
             default: 0,
-            description: "Number of items to skip for pagination"
-          }
+            description: "Number of items to skip for pagination",
+          },
         },
-        required: ["limit", "skip"]
+        required: ["limit", "skip"],
       }),
     },
     UPLOAD_ASSET: {
-      name: "upload_asset", 
+      name: "upload_asset",
       description: "Upload a new asset",
       inputSchema: getSpaceEnvProperties({
         type: "object",
