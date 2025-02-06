@@ -18,6 +18,18 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 - **Content Types**: Manage content type definitions
 - **Localization**: Support for multiple locales
 - **Publishing**: Control content publishing workflow
+- **Smart Pagination**: List operations return maximum 3 items per request to prevent context window overflow, with built-in pagination support
+
+## Pagination
+
+To prevent context window overflow in LLMs, list operations (like search_entries and list_assets) are limited to 3 items per request. Each response includes:
+- Total number of available items
+- Current page of items (max 3)
+- Number of remaining items
+- Skip value for the next page
+- Message prompting the LLM to offer retrieving more items
+
+This pagination system allows the LLM to efficiently handle large datasets while maintaining context window limits.
 
 ## Tools
 
@@ -33,6 +45,7 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 
 ### Asset Management
 
+- **list_assets**: List assets with pagination (3 items per page)
 - **upload_asset**: Upload new assets with metadata
 - **get_asset**: Retrieve asset details and information
 - **update_asset**: Update asset metadata and files
