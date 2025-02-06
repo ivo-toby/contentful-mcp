@@ -8,7 +8,7 @@ export interface SummarizeOptions {
 }
 
 export const summarizeData = (data: any, options: SummarizeOptions = {}): any => {
-  const { maxItems = 10, remainingMessage = "To see more items, please ask me to retrieve them." } =
+  const { maxItems = 3, remainingMessage = "To see more items, please ask me to retrieve the next page." } =
     options
 
   // Handle Contentful-style responses with items and total
@@ -26,6 +26,7 @@ export const summarizeData = (data: any, options: SummarizeOptions = {}): any =>
       showing: maxItems,
       remaining: total - maxItems,
       message: remainingMessage,
+      skip: maxItems // Add skip value for next page
     }
   }
 
@@ -41,6 +42,7 @@ export const summarizeData = (data: any, options: SummarizeOptions = {}): any =>
       showing: maxItems,
       remaining: data.length - maxItems,
       message: remainingMessage,
+      skip: maxItems // Add skip value for next page
     }
   }
 
