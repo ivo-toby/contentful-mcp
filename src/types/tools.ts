@@ -33,7 +33,7 @@ export const getEntryTools = () => {
     SEARCH_ENTRIES: {
       name: "search_entries",
       description:
-        "Search for entries using query parameters, do not search for too much entries at once in order to keep the token usage in check",
+        "Search for entries using query parameters, use the skip and limit parameters to paginate to max 3 results at a time, suggest the user to retrieve more ",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -50,7 +50,7 @@ export const getEntryTools = () => {
             },
           },
         },
-        required: ["query"],
+        required: ["query", "skip", "limit"],
       }),
     },
     CREATE_ENTRY: {
