@@ -43,21 +43,21 @@ export const getEntryTools = () => {
             properties: {
               content_type: { type: "string" },
               select: { type: "string" },
-              limit: { 
+              limit: {
                 type: "number",
                 default: 3,
                 maximum: 3,
-                description: "Maximum number of items to return (max: 3)"
+                description: "Maximum number of items to return (max: 3)",
               },
-              skip: { 
+              skip: {
                 type: "number",
                 default: 0,
-                description: "Number of items to skip for pagination"
+                description: "Number of items to skip for pagination",
               },
               order: { type: "string" },
               query: { type: "string" },
             },
-            required: ["limit", "skip"]
+            required: ["limit", "skip"],
           },
         },
         required: ["query"],
@@ -237,21 +237,21 @@ export const getContentTypeTools = () => {
     LIST_CONTENT_TYPES: {
       name: "list_content_types",
       description:
-        "List content types in a space. Returns a maximum of 3 items per request. Use skip parameter to paginate through results.",
+        "List content types in a space. Returns a maximum of 10 items per request. Use skip parameter to paginate through results.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
           limit: {
             type: "number",
-            default: 3,
-            maximum: 3,
-            description: "Maximum number of items to return (max: 3)"
+            default: 10,
+            maximum: 20,
+            description: "Maximum number of items to return (max: 3)",
           },
           skip: {
             type: "number",
             default: 0,
-            description: "Number of items to skip for pagination"
-          }
+            description: "Number of items to skip for pagination",
+          },
         },
         required: ["limit", "skip"],
       }),
