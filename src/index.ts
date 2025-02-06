@@ -91,6 +91,7 @@ function getHandler(name: string) {
     delete_asset: assetHandlers.deleteAsset,
     publish_asset: assetHandlers.publishAsset,
     unpublish_asset: assetHandlers.unpublishAsset,
+    list_assets: assetHandlers.listAssets,
 
     // Space & Environment operations
     list_spaces: spaceHandlers.listSpaces,

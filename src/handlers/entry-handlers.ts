@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getContentfulClient } from "../config/client.js"
+import { summarizeData } from "../utils/summarizer.js"
 import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management"
 
 export const entryHandlers = {
@@ -15,11 +16,20 @@ export const entryHandlers = {
     const contentfulClient = await getContentfulClient()
     const entries = await contentfulClient.entry.getMany({
       ...params,
-      query: args.query,
+      query: {
+        ...args.query,
+        limit: Math.min(args.query.limit || 3, 3),
+        skip: args.query.skip || 0
+      },
+    })
+
+    const summarized = summarizeData(entries, {
+      maxItems: 3,
+      remainingMessage: "To see more entries, please ask me to retrieve the next page."
     })
 
     return {
-      content: [{ type: "text", text: JSON.stringify(entries, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(summarized, null, 2) }],
     }
   },
   createEntry: async (args: {

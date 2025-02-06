@@ -18,7 +18,6 @@ export const contentTypeHandlers = {
       content: [{ type: "text", text: JSON.stringify(contentTypes, null, 2) }],
     }
   },
-
   getContentType: async (args: {
     spaceId: string
     environmentId: string
