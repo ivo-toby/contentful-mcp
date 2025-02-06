@@ -23,7 +23,7 @@ export const entryHandlers = {
       },
     })
 
-    const summarized = summarizeData(entries.items, {
+    const summarized = summarizeData(entries, {
       maxItems: 3,
       remainingMessage: "To see more entries, please ask me to retrieve the next page."
     })
