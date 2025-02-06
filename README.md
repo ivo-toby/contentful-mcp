@@ -33,6 +33,7 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 
 ### Asset Management
 
+- **list_assets**: List assets with pagination (3 items per page)
 - **upload_asset**: Upload new assets with metadata
 - **get_asset**: Retrieve asset details and information
 - **update_asset**: Update asset metadata and files
