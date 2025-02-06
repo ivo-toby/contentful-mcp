@@ -20,11 +20,11 @@ const getCurrentAsset = async (params: BaseAssetParams) => {
 import { summarizeData } from "../utils/summarizer.js"
 
 export const assetHandlers = {
-  listAssets: async (args: { 
-    spaceId: string; 
-    environmentId: string;
-    limit: number;
-    skip: number;
+  listAssets: async (args: {
+    spaceId: string
+    environmentId: string
+    limit: number
+    skip: number
   }) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
@@ -34,16 +34,16 @@ export const assetHandlers = {
       environmentId,
       query: {
         limit: Math.min(args.limit || 3, 3),
-        skip: args.skip || 0
-      }
+        skip: args.skip || 0,
+      },
     }
 
     const contentfulClient = await getContentfulClient()
     const assets = await contentfulClient.asset.getMany(params)
-    
+
     const summarized = summarizeData(assets, {
       maxItems: 3,
-      remainingMessage: "To see more assets, please ask me to retrieve the next page."
+      remainingMessage: "To see more assets, please ask me to retrieve the next page.",
     })
 
     return formatResponse(summarized)
