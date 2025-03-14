@@ -60,7 +60,7 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
 
     // Get the current version of each entity
-    const entityVersions = await Promise.all(
+    const entityVersions: VersionedLink[] = await Promise.all(
       args.entities.map(async (entity) => {
         try {
           // Get the current version of the entity
@@ -76,14 +76,17 @@ export const bulkActionHandlers = {
                 assetId: entity.sys.id
               });
           
-          return {
+          // Explicitly create a VersionedLink with the correct type
+          const versionedLink: VersionedLink = {
             sys: {
-              type: "Link",
+              type: "Link" as const,
               linkType: entity.sys.type as "Entry" | "Asset",
               id: entity.sys.id,
               version: currentEntity.sys.version
             }
           };
+          
+          return versionedLink;
         } catch (error) {
           console.error(`Error fetching entity ${entity.sys.id}: ${error}`);
           throw new Error(`Failed to get version for entity ${entity.sys.id}. All entities must have a version.`);
@@ -147,7 +150,7 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
 
     // Get the current version of each entity
-    const entityVersions = await Promise.all(
+    const entityVersions: VersionedLink[] = await Promise.all(
       args.entities.map(async (entity) => {
         try {
           // Get the current version of the entity
@@ -163,14 +166,17 @@ export const bulkActionHandlers = {
                 assetId: entity.sys.id
               });
           
-          return {
+          // Explicitly create a VersionedLink with the correct type
+          const versionedLink: VersionedLink = {
             sys: {
-              type: "Link",
+              type: "Link" as const,
               linkType: entity.sys.type as "Entry" | "Asset",
               id: entity.sys.id,
               version: currentEntity.sys.version
             }
           };
+          
+          return versionedLink;
         } catch (error) {
           console.error(`Error fetching entity ${entity.sys.id}: ${error}`);
           throw new Error(`Failed to get version for entity ${entity.sys.id}. All entities must have a version.`);
@@ -234,7 +240,7 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
 
     // Get the current version of each entry
-    const entityVersions = await Promise.all(
+    const entityVersions: VersionedLink[] = await Promise.all(
       args.entryIds.map(async (id) => {
         try {
           // Get the current version of the entry
@@ -244,14 +250,17 @@ export const bulkActionHandlers = {
             entryId: id
           });
           
-          return {
+          // Explicitly create a VersionedLink with the correct type
+          const versionedLink: VersionedLink = {
             sys: {
-              type: "Link",
+              type: "Link" as const,
               linkType: "Entry",
               id,
               version: currentEntry.sys.version
             }
           };
+          
+          return versionedLink;
         } catch (error) {
           console.error(`Error fetching entry ${id}: ${error}`);
           throw new Error(`Failed to get version for entry ${id}. All entries must have a version.`);
