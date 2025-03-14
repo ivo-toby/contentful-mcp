@@ -1,5 +1,294 @@
 # AI Actions MCP Integration Plan
 
+## LLM-Friendly Variable Names Enhancement Plan (✅ Implemented)
+
+### Problem Statement
+Currently, AI Action variables are exposed to LLMs with their original IDs, which are non-descriptive (e.g., `8igfdwv6dy8y`, `7xjf8r2k4q3p`). This makes it difficult for an LLM to understand what data to provide when invoking these tools, especially considering that AI Actions operate on content entries and fields.
+
+### Proposed Solution
+We will enhance the AI Action tool generation to provide more descriptive parameter names and documentation while maintaining compatibility with the Contentful API's variable ID requirements.
+
+#### Key Components:
+1. **Variable ID to Name Mapping**:
+   - Create a mapping system to convert cryptic variable IDs to human-readable names
+   - Maintain an internal mapping of friendly names back to the original IDs for API calls
+
+2. **Enhanced Tool Schema Generation**:
+   - Generate tool schemas with friendly parameter names
+   - Add rich context in parameter descriptions including variable type and purpose
+   - Standardize naming patterns for common variable types (e.g., "input_text" for StandardInput)
+
+3. **Parameter Translation Layer**:
+   - Add a translation layer in the invocation handler that maps friendly parameter names back to original IDs
+   - Maintain all original variable validation and processing
+
+### Key Benefits:
+- LLMs will understand the purpose of each parameter
+- Tool documentation will be more comprehensive
+- No changes to the Contentful API integration
+- Maintains backward compatibility with original variable IDs
+
+### Implementation Details
+
+#### 1. Create Variable Name Mapping Functions
+
+```typescript
+// Transforms cryptic variable IDs to human-readable names
+function getReadableName(variable: Variable): string {
+  // If there's a human-readable name provided, use it (converted to snake_case)
+  if (variable.name) {
+    return toSnakeCase(variable.name);
+  }
+
+  // For standard inputs, use descriptive names based on type
+  switch(variable.type) {
+    case "StandardInput":
+      return "input_text";
+    case "MediaReference":
+      return "media_asset_id";
+    case "Reference":
+      return "entry_reference_id";
+    case "Locale":
+      return "target_locale";
+    default:
+      // For others, create a prefixed version 
+      return `${variable.type.toLowerCase()}_${variable.id.substring(0, 5)}`;
+  }
+}
+
+// Maps from friendly names back to variable IDs
+function createReverseMapping(action: AiActionEntity): Map<string, string> {
+  const mapping = new Map<string, string>();
+  
+  for (const variable of action.instruction.variables || []) {
+    const friendlyName = getReadableName(variable);
+    mapping.set(friendlyName, variable.id);
+  }
+  
+  return mapping;
+}
+```
+
+#### 2. Enhance Tool Schema Generation
+
+Update the `generateAiActionToolSchema` function to use friendly names:
+
+```typescript
+export function generateAiActionToolSchema(action: AiActionEntity) {
+  // Create property definitions with friendly names
+  const properties: Record<string, any> = {};
+  
+  // Store the ID mapping for this action
+  const reverseMapping = createReverseMapping(action);
+  idMappings.set(action.sys.id, reverseMapping);
+  
+  // Add properties for each variable with friendly names
+  for (const variable of (action.instruction.variables || [])) {
+    const friendlyName = getReadableName(variable);
+    properties[friendlyName] = getEnhancedVariableSchema(variable);
+  }
+  
+  // Add common properties
+  properties.outputFormat = {
+    type: "string",
+    enum: ["Markdown", "RichText", "PlainText"],
+    default: "Markdown",
+    description: "Format for the output content"
+  };
+  
+  properties.waitForCompletion = {
+    type: "boolean",
+    default: true,
+    description: "Whether to wait for the AI Action to complete"
+  };
+  
+  // Get required field names in their friendly format
+  const requiredVars = getRequiredVariables(action.instruction.variables || [])
+    .map(id => {
+      const variable = action.instruction.variables.find(v => v.id === id);
+      return variable ? getReadableName(variable) : id;
+    });
+  
+  const toolSchema = {
+    name: `ai_action_${action.sys.id}`,
+    description: getEnhancedToolDescription(action),
+    inputSchema: getSpaceEnvProperties({
+      type: "object",
+      properties,
+      required: requiredVars
+    })
+  };
+  
+  return toolSchema;
+}
+```
+
+#### 3. Enhance Variable Schema
+
+```typescript
+function getEnhancedVariableSchema(variable: Variable): any {
+  // Create a rich description that includes type information
+  let description = variable.description || `${variable.name || 'Variable'}`;
+  
+  // Add type information
+  description += ` (Type: ${variable.type})`;
+  
+  // Add additional context based on type
+  switch(variable.type) {
+    case "MediaReference":
+      description += ". Provide an asset ID from your Contentful space";
+      break;
+    case "Reference":
+      description += ". Provide an entry ID from your Contentful space";
+      break;
+    case "Locale":
+      description += ". Use format like 'en-US', 'de-DE', etc.";
+      break;
+    case "StringOptionsList":
+      if (variable.configuration && "values" in variable.configuration) {
+        description += `. Choose one of: ${variable.configuration.values.join(", ")}`;
+      }
+      break;
+  }
+  
+  const schema = {
+    type: "string",
+    description
+  };
+  
+  // Add enums for StringOptionsList
+  if (variable.type === "StringOptionsList" && 
+      variable.configuration && 
+      "values" in variable.configuration) {
+    schema.enum = variable.configuration.values;
+  }
+  
+  return schema;
+}
+```
+
+#### 4. Enhance Tool Description
+
+```typescript
+function getEnhancedToolDescription(action: AiActionEntity): string {
+  // Start with the name and description
+  let description = `${action.name}: ${action.description}`;
+  
+  // Add contextual information about what this AI Action does
+  description += "\n\nThis AI Action works on content entries and fields in Contentful. ";
+  
+  // Add variable information summary
+  if (action.instruction.variables && action.instruction.variables.length > 0) {
+    description += `\n\nRequired inputs: ${action.instruction.variables
+      .filter(v => !isOptionalVariable(v))
+      .map(v => v.name || getReadableName(v))
+      .join(", ")}.`;
+  }
+  
+  // Add model information
+  description += `\n\nUses ${action.configuration.modelType} model with temperature ${action.configuration.modelTemperature}.`;
+  
+  return description;
+}
+```
+
+#### 5. Parameter Translation Layer
+
+```typescript
+// Store ID mappings globally
+const idMappings = new Map<string, Map<string, string>>();
+
+// Translation function for invocation handler
+function translateParametersToVariableIds(actionId: string, params: Record<string, any>): Record<string, any> {
+  const mapping = idMappings.get(actionId);
+  if (!mapping) {
+    return params; // No mapping found, return as is
+  }
+  
+  const result: Record<string, any> = {};
+  
+  // Copy non-variable parameters (like outputFormat) directly
+  for (const [key, value] of Object.entries(params)) {
+    if (key === 'outputFormat' || key === 'waitForCompletion') {
+      result[key] = value;
+      continue;
+    }
+    
+    // Check if we have a mapping for this friendly name
+    const originalId = mapping.get(key);
+    if (originalId) {
+      result[originalId] = value;
+    } else {
+      // No mapping found, keep the original key
+      result[key] = value;
+    }
+  }
+  
+  return result;
+}
+```
+
+#### 6. Update the Invocation Handler
+
+```typescript
+// Handler for dynamic AI Action tools
+async function handleAiActionInvocation(actionId: string, args: any) {
+  try {
+    // 1. Translate friendly parameter names to original IDs
+    const translatedArgs = translateParametersToVariableIds(actionId, args);
+    
+    // 2. Get invocation parameters from the tool context
+    const params = aiActionToolContext.getInvocationParams(actionId, translatedArgs);
+    
+    // 3. Invoke the AI Action
+    return aiActionHandlers.invokeAiAction({
+      ...params,
+      variables: translatedArgs
+    });
+  } catch (error) {
+    return {
+      isError: true,
+      message: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+```
+
+### Integration with Existing Code
+
+This enhancement will be integrated by updating the `ai-action-tool-generator.ts` file with the new parameter mapping functionality, and modifying the `handleAiActionInvocation` function in `index.ts` to use the translation layer.
+
+The solution maintains all existing functionality while adding LLM-friendly parameter names and enhanced documentation for better usability.
+
+## Entity Path Enhancement Plan (✅ Implemented)
+
+### Problem Statement
+When working with AI Actions that process content from Contentful entries and assets, we need to specify which field within the entity should be processed. The default implementation didn't support the `entityPath` parameter needed for this functionality.
+
+### Solution Implemented
+We've enhanced the AI Action tool generation and invocation to fully support field-level operations:
+
+1. **Entity Path Parameters**:
+   - For each Reference or MediaReference variable, we now generate an additional `*_path` parameter
+   - This parameter allows specifying the exact field path to process (e.g., "fields.title.en-US")
+   - Clear documentation in tool descriptions explains how to use these parameters
+
+2. **Path Mapping System**:
+   - Added a mapping system to track friendly path parameter names to original IDs
+   - Ensures proper translation between user-friendly names and API-required format
+
+3. **Enhanced Documentation**:
+   - Added clear instructions about how to use entity paths
+   - Included warnings that results are NOT automatically applied to fields
+   - Explained the relationship between source fields and generated content
+
+4. **Improved Error Handling**:
+   - Added robust validation and debugging for path parameters
+   - Clear console logging during server startup shows all path mappings
+
+This enhancement ensures that AI Actions can be properly used to process specific fields within entries and assets, matching the behavior of the Contentful UI.
+
+
 ## Overview
 This document outlines the approach for integrating Contentful AI Actions into the MCP server, allowing users to discover and invoke AI Actions directly through the MCP interface.
 
