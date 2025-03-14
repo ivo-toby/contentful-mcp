@@ -244,8 +244,13 @@ async function loadAiActions() {
       status: "published"
     })
     
-    // Check for errors
-    if ("isError" in response) {
+    // Check for errors or undefined response
+    if (!response) {
+      console.error("Error loading AI Actions: No response received")
+      return
+    }
+    
+    if (typeof response === 'object' && 'isError' in response) {
       console.error(`Error loading AI Actions: ${response.message}`)
       return
     }

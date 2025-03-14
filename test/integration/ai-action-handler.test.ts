@@ -22,13 +22,13 @@ vi.mock("../../src/config/ai-actions-client", () => ({
 const mockAiAction = {
   sys: {
     id: "action1",
-    type: "AiAction",
+    type: "AiAction" as const,
     createdAt: "2023-01-01T00:00:00Z",
     updatedAt: "2023-01-02T00:00:00Z",
     version: 1,
-    space: { sys: { id: "space1", linkType: "Space", type: "Link" } },
-    createdBy: { sys: { id: "user1", linkType: "User", type: "Link" } },
-    updatedBy: { sys: { id: "user1", linkType: "User", type: "Link" } }
+    space: { sys: { id: "space1", linkType: "Space", type: "Link" as const } },
+    createdBy: { sys: { id: "user1", linkType: "User", type: "Link" as const } },
+    updatedBy: { sys: { id: "user1", linkType: "User", type: "Link" as const } }
   },
   name: "Test Action",
   description: "A test action",
@@ -43,7 +43,7 @@ const mockAiAction = {
 }
 
 const mockAiActionCollection = {
-  sys: { type: "Array" },
+  sys: { type: "Array" as const },
   items: [mockAiAction],
   total: 1,
   skip: 0,
@@ -53,14 +53,14 @@ const mockAiActionCollection = {
 const mockInvocation = {
   sys: {
     id: "inv1",
-    type: "AiActionInvocation",
-    space: { sys: { id: "space1", linkType: "Space", type: "Link" } },
-    environment: { sys: { id: "master", linkType: "Environment", type: "Link" } },
-    aiAction: { sys: { id: "action1", linkType: "AiAction", type: "Link" } },
-    status: "COMPLETED"
+    type: "AiActionInvocation" as const,
+    space: { sys: { id: "space1", linkType: "Space", type: "Link" as const } },
+    environment: { sys: { id: "master", linkType: "Environment", type: "Link" as const } },
+    aiAction: { sys: { id: "action1", linkType: "AiAction", type: "Link" as const } },
+    status: "COMPLETED" as const
   },
   result: {
-    type: "text",
+    type: "text" as const,
     content: "Generated content",
     metadata: {
       invocationResult: {
@@ -68,11 +68,11 @@ const mockInvocation = {
           sys: {
             id: "action1",
             linkType: "AiAction",
-            type: "Link",
+            type: "Link" as const,
             version: 1
           }
         },
-        outputFormat: "PlainText",
+        outputFormat: "PlainText" as const,
         promptTokens: 50,
         completionTokens: 100,
         modelId: "gpt-4",

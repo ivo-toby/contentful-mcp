@@ -1,25 +1,48 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { server } from '../msw-setup'
-import { aiActionsClient } from "../../src/config/ai-actions-client"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 
-// Mock data
+// Mock the client module first, before any other imports
+vi.mock("../../src/config/client", () => {
+  // Create mock functions for the raw client
+  const mockRawClient = {
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn()
+  }
+  
+  return {
+    getContentfulClient: vi.fn().mockResolvedValue({ 
+      raw: mockRawClient 
+    })
+  }
+})
+
+// Now import the client that will use the mocked getContentfulClient
+import { aiActionsClient } from "../../src/config/ai-actions-client"
+import { getContentfulClient } from "../../src/config/client"
+
+// Constants for alpha header (for test assertions)
+const ALPHA_HEADER_NAME = 'X-Contentful-Enable-Alpha-Feature'
+const ALPHA_HEADER_VALUE = 'ai-service'
+
+// Mock data with const assertions for TypeScript
 const mockAiAction = {
   sys: {
     id: "mockActionId",
-    type: "AiAction",
+    type: "AiAction" as const,
     createdAt: "2023-01-01T00:00:00Z",
     updatedAt: "2023-01-02T00:00:00Z",
     version: 1,
-    space: { sys: { id: "mockSpace", linkType: "Space", type: "Link" } },
-    createdBy: { sys: { id: "user1", linkType: "User", type: "Link" } },
-    updatedBy: { sys: { id: "user1", linkType: "User", type: "Link" } }
+    space: { sys: { id: "mockSpace", linkType: "Space", type: "Link" as const } },
+    createdBy: { sys: { id: "user1", linkType: "User", type: "Link" as const } },
+    updatedBy: { sys: { id: "user1", linkType: "User", type: "Link" as const } }
   },
   name: "Mock Action",
   description: "A mock AI action",
   instruction: {
-    template: "This is a {{variable}} template",
+    template: "This is a template with {{variable}}",
     variables: [
-      { id: "variable", type: "Text", name: "Variable" }
+      { id: "variable", type: "Text" as const, name: "Variable" }
     ]
   },
   configuration: {
@@ -29,7 +52,7 @@ const mockAiAction = {
 }
 
 const mockAiActionCollection = {
-  sys: { type: "Array" },
+  sys: { type: "Array" as const },
   items: [mockAiAction],
   total: 1,
   skip: 0,
@@ -39,14 +62,14 @@ const mockAiActionCollection = {
 const mockInvocation = {
   sys: {
     id: "mockInvocationId",
-    type: "AiActionInvocation",
-    space: { sys: { id: "mockSpace", linkType: "Space", type: "Link" } },
-    environment: { sys: { id: "master", linkType: "Environment", type: "Link" } },
-    aiAction: { sys: { id: "mockActionId", linkType: "AiAction", type: "Link" } },
-    status: "COMPLETED"
+    type: "AiActionInvocation" as const,
+    space: { sys: { id: "mockSpace", linkType: "Space", type: "Link" as const } },
+    environment: { sys: { id: "master", linkType: "Environment", type: "Link" as const } },
+    aiAction: { sys: { id: "mockActionId", linkType: "AiAction", type: "Link" as const } },
+    status: "COMPLETED" as const
   },
   result: {
-    type: "text",
+    type: "text" as const,
     content: "Generated content",
     metadata: {
       invocationResult: {
@@ -54,11 +77,11 @@ const mockInvocation = {
           sys: {
             id: "mockActionId",
             linkType: "AiAction",
-            type: "Link",
+            type: "Link" as const,
             version: 1
           }
         },
-        outputFormat: "PlainText",
+        outputFormat: "PlainText" as const,
         promptTokens: 50,
         completionTokens: 100,
         modelId: "gpt-4",
@@ -68,52 +91,56 @@ const mockInvocation = {
   }
 }
 
-// Mock process.env
-vi.mock("../../src/config/client", () => ({
-  getContentfulClient: vi.fn().mockResolvedValue({
-    raw: {
-      get: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn()
-    }
-  })
-}))
-
 describe("AI Actions Client", () => {
-  // No need to set up new handlers, we'll use the existing server
-  // and mock the client responses
-  
-  it("should list AI Actions", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.get.mockResolvedValueOnce({ data: mockAiActionCollection })
+  let mockClientRaw: any
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    
+    // Get the mocked client to work with in tests
+    const client = await getContentfulClient()
+    mockClientRaw = client.raw
+  })
+
+  it("should list AI Actions with alpha header", async () => {
+    mockClientRaw.get.mockResolvedValueOnce({ data: mockAiActionCollection })
     
     const result = await aiActionsClient.listAiActions({ spaceId: "mockSpace" })
     
-    expect(mockClient.raw.get).toHaveBeenCalledWith("/spaces/mockSpace/ai/actions?limit=100&skip=0")
+    // Verify the alpha header was included
+    expect(mockClientRaw.get).toHaveBeenCalledWith(
+      "/spaces/mockSpace/environments/master/ai/actions?limit=100&skip=0", 
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE
+        })
+      })
+    )
     expect(result.items).toHaveLength(1)
     expect(result.items[0].name).toBe("Mock Action")
   })
   
-  it("should get an AI Action", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.get.mockResolvedValueOnce({ data: mockAiAction })
+  it("should get an AI Action with alpha header", async () => {
+    mockClientRaw.get.mockResolvedValueOnce({ data: mockAiAction })
     
     const result = await aiActionsClient.getAiAction({
       spaceId: "mockSpace",
       aiActionId: "mockActionId"
     })
     
-    expect(mockClient.raw.get).toHaveBeenCalledWith("/spaces/mockSpace/ai/actions/mockActionId")
+    expect(mockClientRaw.get).toHaveBeenCalledWith(
+      "/spaces/mockSpace/environments/master/ai/actions/mockActionId",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE
+        })
+      })
+    )
     expect(result.name).toBe("Mock Action")
   })
   
-  it("should create an AI Action", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.post.mockResolvedValueOnce({ data: mockAiAction })
+  it("should create an AI Action with alpha header", async () => {
+    mockClientRaw.post.mockResolvedValueOnce({ data: mockAiAction })
     
     const actionData = {
       name: "New Action",
@@ -133,14 +160,21 @@ describe("AI Actions Client", () => {
       actionData
     })
     
-    expect(mockClient.raw.post).toHaveBeenCalledWith("/spaces/mockSpace/ai/actions", actionData)
+    expect(mockClientRaw.post).toHaveBeenCalledWith(
+      "/spaces/mockSpace/environments/master/ai/actions", 
+      actionData,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE
+        })
+      })
+    )
     expect(result.name).toBe("Mock Action")
   })
   
-  it("should update an AI Action", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.put.mockResolvedValueOnce({
+  it("should update an AI Action with alpha header", async () => {
+    mockClientRaw.get.mockResolvedValueOnce({ data: mockAiAction })
+    mockClientRaw.put.mockResolvedValueOnce({
       data: {
         ...mockAiAction,
         name: "Updated Action"
@@ -151,12 +185,12 @@ describe("AI Actions Client", () => {
       name: "Updated Action",
       description: "An updated AI action",
       instruction: {
-        template: "Template",
+        template: "Updated template",
         variables: []
       },
       configuration: {
         modelType: "gpt-4",
-        modelTemperature: 0.5
+        modelTemperature: 0.7
       }
     }
     
@@ -167,18 +201,22 @@ describe("AI Actions Client", () => {
       actionData
     })
     
-    expect(mockClient.raw.put).toHaveBeenCalledWith(
-      "/spaces/mockSpace/ai/actions/mockActionId",
+    expect(mockClientRaw.put).toHaveBeenCalledWith(
+      "/spaces/mockSpace/environments/master/ai/actions/mockActionId",
       actionData,
-      { headers: { "X-Contentful-Version": "1" } }
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE,
+          "X-Contentful-Version": "1"
+        })
+      })
     )
-    expect(result.name).toBe("Updated Action")
+    expect(result).toHaveProperty("name", "Updated Action")
   })
   
-  it("should delete an AI Action", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.delete.mockResolvedValueOnce({})
+  it("should delete an AI Action with alpha header", async () => {
+    mockClientRaw.get.mockResolvedValueOnce({ data: mockAiAction })
+    mockClientRaw.delete.mockResolvedValueOnce({})
     
     await aiActionsClient.deleteAiAction({
       spaceId: "mockSpace",
@@ -186,23 +224,27 @@ describe("AI Actions Client", () => {
       version: 1
     })
     
-    expect(mockClient.raw.delete).toHaveBeenCalledWith(
-      "/spaces/mockSpace/ai/actions/mockActionId",
-      { headers: { "X-Contentful-Version": "1" } }
+    expect(mockClientRaw.delete).toHaveBeenCalledWith(
+      "/spaces/mockSpace/environments/master/ai/actions/mockActionId",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE,
+          "X-Contentful-Version": "1"
+        })
+      })
     )
   })
   
-  it("should publish an AI Action", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.put.mockResolvedValueOnce({
+  it("should publish an AI Action with alpha header", async () => {
+    mockClientRaw.get.mockResolvedValueOnce({ data: mockAiAction })
+    mockClientRaw.put.mockResolvedValueOnce({
       data: {
         ...mockAiAction,
         sys: {
           ...mockAiAction.sys,
           publishedAt: "2023-01-03T00:00:00Z",
           publishedVersion: 1,
-          publishedBy: { sys: { id: "user1", linkType: "User", type: "Link" } }
+          publishedBy: { sys: { id: "user1", linkType: "User", type: "Link" as const } }
         }
       }
     })
@@ -213,32 +255,40 @@ describe("AI Actions Client", () => {
       version: 1
     })
     
-    expect(mockClient.raw.put).toHaveBeenCalledWith(
-      "/spaces/mockSpace/ai/actions/mockActionId/published",
+    expect(mockClientRaw.put).toHaveBeenCalledWith(
+      "/spaces/mockSpace/environments/master/ai/actions/mockActionId/published",
       {},
-      { headers: { "X-Contentful-Version": "1" } }
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE,
+          "X-Contentful-Version": "1"
+        })
+      })
     )
-    expect(result.sys.publishedAt).toBe("2023-01-03T00:00:00Z")
+    expect(result.sys).toHaveProperty("publishedAt", "2023-01-03T00:00:00Z")
   })
   
-  it("should unpublish an AI Action", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.delete.mockResolvedValueOnce({ data: mockAiAction })
+  it("should unpublish an AI Action with alpha header", async () => {
+    mockClientRaw.delete.mockResolvedValueOnce({ data: mockAiAction })
     
     const result = await aiActionsClient.unpublishAiAction({
       spaceId: "mockSpace",
       aiActionId: "mockActionId"
     })
     
-    expect(mockClient.raw.delete).toHaveBeenCalledWith("/spaces/mockSpace/ai/actions/mockActionId/published")
+    expect(mockClientRaw.delete).toHaveBeenCalledWith(
+      "/spaces/mockSpace/environments/master/ai/actions/mockActionId/published",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE
+        })
+      })
+    )
     expect(result.name).toBe("Mock Action")
   })
   
-  it("should invoke an AI Action", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.post.mockResolvedValueOnce({ data: mockInvocation })
+  it("should invoke an AI Action with alpha header", async () => {
+    mockClientRaw.post.mockResolvedValueOnce({ data: mockInvocation })
     
     const invocationData = {
       outputFormat: "PlainText" as const,
@@ -251,19 +301,26 @@ describe("AI Actions Client", () => {
       invocationData
     })
     
-    expect(mockClient.raw.post).toHaveBeenCalledWith(
+    expect(mockClientRaw.post).toHaveBeenCalledWith(
       "/spaces/mockSpace/environments/master/ai/actions/mockActionId/invoke",
       invocationData,
-      { headers: { "X-Contentful-Include-Invocation-Metadata": "true" } }
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE,
+          "X-Contentful-Include-Invocation-Metadata": "true"
+        })
+      })
     )
     expect(result.sys.status).toBe("COMPLETED")
     expect(result.result?.content).toBe("Generated content")
   })
   
-  it("should get an AI Action invocation", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    mockClient.raw.get.mockResolvedValueOnce({ data: mockInvocation })
+  it("should get an AI Action invocation with alpha header", async () => {
+    // Make sure we reset the mock to avoid any previous mock calls affecting this test
+    mockClientRaw.get.mockReset()
+    
+    // Mock with the correct invocation response
+    mockClientRaw.get.mockResolvedValueOnce({ data: mockInvocation })
     
     const result = await aiActionsClient.getAiActionInvocation({
       spaceId: "mockSpace",
@@ -271,34 +328,42 @@ describe("AI Actions Client", () => {
       invocationId: "mockInvocationId"
     })
     
-    expect(mockClient.raw.get).toHaveBeenCalledWith(
+    // Verify the correct API endpoint was called with the alpha header
+    expect(mockClientRaw.get).toHaveBeenCalledWith(
       "/spaces/mockSpace/environments/master/ai/actions/mockActionId/invocations/mockInvocationId",
-      { headers: { "X-Contentful-Include-Invocation-Metadata": "true" } }
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE,
+          "X-Contentful-Include-Invocation-Metadata": "true"
+        })
+      })
     )
+    
+    // Just check critical properties rather than exact equality
+    expect(result.sys.id).toBe("mockInvocationId")
+    expect(result.sys.type).toBe("AiActionInvocation")
     expect(result.sys.status).toBe("COMPLETED")
+    expect(result.result?.content).toBe("Generated content")
   })
   
-  it("should poll an AI Action invocation until completion", async () => {
-    const { getContentfulClient } = await import("../../src/config/client")
-    const mockClient = await getContentfulClient()
-    
+  it("should poll an AI Action invocation with alpha header", async () => {
     // Reset mock call count
-    mockClient.raw.get.mockReset()
+    mockClientRaw.get.mockReset()
     
     // First call returns IN_PROGRESS status
-    mockClient.raw.get.mockResolvedValueOnce({
+    mockClientRaw.get.mockResolvedValueOnce({
       data: {
         ...mockInvocation,
         sys: {
           ...mockInvocation.sys,
-          status: "IN_PROGRESS"
+          status: "IN_PROGRESS" as const
         },
         result: undefined
       }
     })
     
     // Second call returns COMPLETED status
-    mockClient.raw.get.mockResolvedValueOnce({ data: mockInvocation })
+    mockClientRaw.get.mockResolvedValueOnce({ data: mockInvocation })
     
     // Spy on setTimeout to avoid actual waiting
     vi.spyOn(global, "setTimeout").mockImplementation((callback: any) => {
@@ -312,7 +377,19 @@ describe("AI Actions Client", () => {
       invocationId: "mockInvocationId"
     }, 2, 100, 100)
     
-    expect(mockClient.raw.get).toHaveBeenCalledTimes(2)
+    // Verify both API calls included the alpha header
+    expect(mockClientRaw.get).toHaveBeenCalledTimes(2)
+    expect(mockClientRaw.get).toHaveBeenNthCalledWith(
+      1,
+      "/spaces/mockSpace/environments/master/ai/actions/mockActionId/invocations/mockInvocationId",
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE,
+          "X-Contentful-Include-Invocation-Metadata": "true"
+        })
+      })
+    )
+    
     expect(result.sys.status).toBe("COMPLETED")
     expect(result.result?.content).toBe("Generated content")
     

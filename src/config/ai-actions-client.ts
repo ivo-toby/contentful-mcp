@@ -8,6 +8,50 @@ import type {
   StatusFilter
 } from "../types/ai-actions"
 
+// Alpha header required for AI Actions (temporary - will be removed in 2-3 weeks)
+// TODO: Remove alpha header after 2-3 weeks (around May 2025) when it's no longer required
+const ALPHA_HEADER_NAME = 'X-Contentful-Enable-Alpha-Feature'
+const ALPHA_HEADER_VALUE = 'ai-service'
+
+/**
+ * Add alpha header to request options
+ * @param options Request options
+ * @returns Options with alpha header added
+ */
+function withAlphaHeader(options: any = {}): any {
+  const headers = options.headers || {}
+  return {
+    ...options,
+    headers: {
+      ...headers,
+      [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE
+    }
+  }
+}
+
+/**
+ * Extract data from response, handling both direct response and response.data formats
+ * @param response API response from contentful-management client
+ * @returns Extracted data
+ */
+function extractResponseData<T>(response: any): T {
+  // If we have a response but no data property, check if the response itself is the data
+  if (response && !response.data && typeof response === 'object') {
+    // For collections (AI Action listing)
+    if ('items' in response && 'sys' in response && response.sys.type === 'Array') {
+      return response as T
+    }
+    
+    // For single entities (AI Action retrieval)
+    if ('sys' in response) {
+      return response as T
+    }
+  }
+  
+  // Default to the data property
+  return (response as any).data as T
+}
+
 /**
  * Parameters for AI Action API operations
  */
@@ -31,12 +75,14 @@ export interface GetAiActionParams {
 // Create AI Action
 export interface CreateAiActionParams {
   spaceId: string
+  environmentId?: string
   actionData: AiActionSchemaParsed
 }
 
 // Update AI Action
 export interface UpdateAiActionParams {
   spaceId: string
+  environmentId?: string
   aiActionId: string
   version: number
   actionData: AiActionSchemaParsed
@@ -45,6 +91,7 @@ export interface UpdateAiActionParams {
 // Delete AI Action
 export interface DeleteAiActionParams {
   spaceId: string
+  environmentId?: string
   aiActionId: string
   version: number
 }
@@ -52,6 +99,7 @@ export interface DeleteAiActionParams {
 // Publish AI Action
 export interface PublishAiActionParams {
   spaceId: string
+  environmentId?: string
   aiActionId: string
   version: number
 }
@@ -59,6 +107,7 @@ export interface PublishAiActionParams {
 // Unpublish AI Action
 export interface UnpublishAiActionParams {
   spaceId: string
+  environmentId?: string
   aiActionId: string
 }
 
@@ -95,7 +144,14 @@ export const aiActionsClient = {
     const client = await getContentfulClient()
     
     // Build the URL for listing AI actions
-    let url = `/spaces/${spaceId}/ai/actions`
+    let url = `/spaces/${spaceId}`
+    
+    // Add environment if specified (API uses space-level endpoint for AI Actions)
+    if (environmentId) {
+      url += `/environments/${environmentId}`
+    }
+    
+    url += '/ai/actions'
     const queryParams = new URLSearchParams()
     
     queryParams.append("limit", limit.toString())
@@ -109,8 +165,12 @@ export const aiActionsClient = {
       url += `?${queryString}`
     }
     
-    const response = await client.raw.get(url)
-    return (response as any).data as AiActionEntityCollection
+    try {
+      const response = await client.raw.get(url, withAlphaHeader())
+      return extractResponseData<AiActionEntityCollection>(response)
+    } catch (error) {
+      throw error
+    }
   },
 
   /**
@@ -123,9 +183,21 @@ export const aiActionsClient = {
   }: GetAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
     
-    const url = `/spaces/${spaceId}/ai/actions/${aiActionId}`
-    const response = await client.raw.get(url)
-    return (response as any).data as AiActionEntity
+    let url = `/spaces/${spaceId}`
+    
+    // Add environment if specified
+    if (environmentId) {
+      url += `/environments/${environmentId}`
+    }
+    
+    url += `/ai/actions/${aiActionId}`
+    
+    try {
+      const response = await client.raw.get(url, withAlphaHeader())
+      return extractResponseData<AiActionEntity>(response)
+    } catch (error) {
+      throw error
+    }
   },
 
   /**
@@ -133,13 +205,26 @@ export const aiActionsClient = {
    */
   async createAiAction({
     spaceId,
+    environmentId = "master",
     actionData
   }: CreateAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
     
-    const url = `/spaces/${spaceId}/ai/actions`
-    const response = await client.raw.post(url, actionData)
-    return (response as any).data as AiActionEntity
+    let url = `/spaces/${spaceId}`
+    
+    // Add environment if specified
+    if (environmentId) {
+      url += `/environments/${environmentId}`
+    }
+    
+    url += `/ai/actions`
+    
+    try {
+      const response = await client.raw.post(url, actionData, withAlphaHeader())
+      return extractResponseData<AiActionEntity>(response)
+    } catch (error) {
+      throw error
+    }
   },
 
   /**
@@ -147,19 +232,27 @@ export const aiActionsClient = {
    */
   async updateAiAction({
     spaceId,
+    environmentId = "master",
     aiActionId,
     version,
     actionData
   }: UpdateAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
     
-    const url = `/spaces/${spaceId}/ai/actions/${aiActionId}`
+    let url = `/spaces/${spaceId}`
+    
+    // Add environment if specified
+    if (environmentId) {
+      url += `/environments/${environmentId}`
+    }
+    
+    url += `/ai/actions/${aiActionId}`
     const headers = {
       "X-Contentful-Version": version.toString()
     }
     
-    const response = await client.raw.put(url, actionData, { headers })
-    return (response as any).data as AiActionEntity
+    const response = await client.raw.put(url, actionData, withAlphaHeader({ headers }))
+    return extractResponseData<AiActionEntity>(response)
   },
 
   /**
@@ -167,17 +260,25 @@ export const aiActionsClient = {
    */
   async deleteAiAction({
     spaceId,
+    environmentId = "master",
     aiActionId,
     version
   }: DeleteAiActionParams): Promise<void> {
     const client = await getContentfulClient()
     
-    const url = `/spaces/${spaceId}/ai/actions/${aiActionId}`
+    let url = `/spaces/${spaceId}`
+    
+    // Add environment if specified
+    if (environmentId) {
+      url += `/environments/${environmentId}`
+    }
+    
+    url += `/ai/actions/${aiActionId}`
     const headers = {
       "X-Contentful-Version": version.toString()
     }
     
-    await client.raw.delete(url, { headers })
+    await client.raw.delete(url, withAlphaHeader({ headers }))
   },
 
   /**
@@ -185,18 +286,26 @@ export const aiActionsClient = {
    */
   async publishAiAction({
     spaceId,
+    environmentId = "master",
     aiActionId,
     version
   }: PublishAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
     
-    const url = `/spaces/${spaceId}/ai/actions/${aiActionId}/published`
+    let url = `/spaces/${spaceId}`
+    
+    // Add environment if specified
+    if (environmentId) {
+      url += `/environments/${environmentId}`
+    }
+    
+    url += `/ai/actions/${aiActionId}/published`
     const headers = {
       "X-Contentful-Version": version.toString()
     }
     
-    const response = await client.raw.put(url, {}, { headers })
-    return (response as any).data as AiActionEntity
+    const response = await client.raw.put(url, {}, withAlphaHeader({ headers }))
+    return extractResponseData<AiActionEntity>(response)
   },
 
   /**
@@ -204,13 +313,21 @@ export const aiActionsClient = {
    */
   async unpublishAiAction({
     spaceId,
+    environmentId = "master",
     aiActionId
   }: UnpublishAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
     
-    const url = `/spaces/${spaceId}/ai/actions/${aiActionId}/published`
-    const response = await client.raw.delete(url)
-    return (response as any).data as AiActionEntity
+    let url = `/spaces/${spaceId}`
+    
+    // Add environment if specified
+    if (environmentId) {
+      url += `/environments/${environmentId}`
+    }
+    
+    url += `/ai/actions/${aiActionId}/published`
+    const response = await client.raw.delete(url, withAlphaHeader())
+    return extractResponseData<AiActionEntity>(response)
   },
 
   /**
@@ -234,8 +351,8 @@ export const aiActionsClient = {
       "X-Contentful-Include-Invocation-Metadata": "true"
     }
     
-    const response = await client.raw.post(url, invocationData, { headers })
-    return (response as any).data as AiActionInvocation
+    const response = await client.raw.post(url, invocationData, withAlphaHeader({ headers }))
+    return extractResponseData<AiActionInvocation>(response)
   },
 
   /**
@@ -259,8 +376,8 @@ export const aiActionsClient = {
       "X-Contentful-Include-Invocation-Metadata": "true"
     }
     
-    const response = await client.raw.get(url, { headers })
-    return (response as any).data as AiActionInvocation
+    const response = await client.raw.get(url, withAlphaHeader({ headers }))
+    return extractResponseData<AiActionInvocation>(response)
   },
 
   /**

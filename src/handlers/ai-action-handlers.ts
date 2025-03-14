@@ -4,10 +4,9 @@ import type {
   AiActionEntityCollection,
   AiActionInvocation,
   AiActionInvocationType,
-  InvocationStatus,
   StatusFilter,
   AiActionSchemaParsed,
-  OutputFormat
+  OutputFormat,
 } from "../types/ai-actions"
 
 /**
@@ -29,6 +28,7 @@ export interface GetAiActionParams {
 
 export interface CreateAiActionParams {
   spaceId: string
+  environmentId?: string
   name: string
   description: string
   instruction: {
@@ -45,6 +45,7 @@ export interface CreateAiActionParams {
 
 export interface UpdateAiActionParams {
   spaceId: string
+  environmentId?: string
   aiActionId: string
   name: string
   description: string
@@ -62,16 +63,19 @@ export interface UpdateAiActionParams {
 
 export interface DeleteAiActionParams {
   spaceId: string
+  environmentId?: string
   aiActionId: string
 }
 
 export interface PublishAiActionParams {
   spaceId: string
+  environmentId?: string
   aiActionId: string
 }
 
 export interface UnpublishAiActionParams {
   spaceId: string
+  environmentId?: string
   aiActionId: string
 }
 
@@ -95,7 +99,7 @@ export interface InvokeAiActionWithRawVariablesParams extends InvokeAiActionBase
 }
 
 // Union type for both invocation parameter types
-export type InvokeAiActionParams = 
+export type InvokeAiActionParams =
   | InvokeAiActionWithVariablesParams
   | InvokeAiActionWithRawVariablesParams
 
@@ -109,7 +113,7 @@ export interface GetAiActionInvocationParams {
 /**
  * Error handling utility
  */
-function formatError(error: any): { isError: true, message: string } {
+function formatError(error: any): { isError: true; message: string } {
   const message = error?.response?.data?.message || error?.message || "Unknown error"
   return { isError: true, message }
 }
@@ -121,18 +125,20 @@ export const aiActionHandlers = {
   /**
    * List AI Actions
    */
-  async listAiActions(params: ListAiActionsParams): Promise<AiActionEntityCollection | { isError: true, message: string }> {
+  async listAiActions(
+    params: ListAiActionsParams,
+  ): Promise<AiActionEntityCollection | { isError: true; message: string }> {
     try {
       const { spaceId, environmentId, limit, skip, status } = params
-      
+
       const result = await aiActionsClient.listAiActions({
         spaceId,
         environmentId,
         limit,
         skip,
-        status
+        status,
       })
-      
+
       return result
     } catch (error) {
       return formatError(error)
@@ -142,16 +148,18 @@ export const aiActionHandlers = {
   /**
    * Get a specific AI Action
    */
-  async getAiAction(params: GetAiActionParams): Promise<AiActionEntity | { isError: true, message: string }> {
+  async getAiAction(
+    params: GetAiActionParams,
+  ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
       const { spaceId, environmentId, aiActionId } = params
-      
+
       const result = await aiActionsClient.getAiAction({
         spaceId,
         environmentId,
-        aiActionId
+        aiActionId,
       })
-      
+
       return result
     } catch (error) {
       return formatError(error)
@@ -161,23 +169,27 @@ export const aiActionHandlers = {
   /**
    * Create a new AI Action
    */
-  async createAiAction(params: CreateAiActionParams): Promise<AiActionEntity | { isError: true, message: string }> {
+  async createAiAction(
+    params: CreateAiActionParams,
+  ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const { spaceId, name, description, instruction, configuration, testCases } = params
-      
+      const { spaceId, environmentId, name, description, instruction, configuration, testCases } =
+        params
+
       const actionData: AiActionSchemaParsed = {
         name,
         description,
         instruction,
         configuration,
-        testCases
+        testCases,
       }
-      
+
       const result = await aiActionsClient.createAiAction({
         spaceId,
-        actionData
+        environmentId,
+        actionData,
       })
-      
+
       return result
     } catch (error) {
       return formatError(error)
@@ -187,31 +199,44 @@ export const aiActionHandlers = {
   /**
    * Update an existing AI Action
    */
-  async updateAiAction(params: UpdateAiActionParams): Promise<AiActionEntity | { isError: true, message: string }> {
+  async updateAiAction(
+    params: UpdateAiActionParams,
+  ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const { spaceId, aiActionId, name, description, instruction, configuration, testCases } = params
-      
+      const {
+        spaceId,
+        environmentId,
+        aiActionId,
+        name,
+        description,
+        instruction,
+        configuration,
+        testCases,
+      } = params
+
       // First, get the current action to get the version
       const currentAction = await aiActionsClient.getAiAction({
         spaceId,
-        aiActionId
+        environmentId,
+        aiActionId,
       })
-      
+
       const actionData: AiActionSchemaParsed = {
         name,
         description,
         instruction,
         configuration,
-        testCases
+        testCases,
       }
-      
+
       const result = await aiActionsClient.updateAiAction({
         spaceId,
+        environmentId,
         aiActionId,
         version: currentAction.sys.version,
-        actionData
+        actionData,
       })
-      
+
       return result
     } catch (error) {
       return formatError(error)
@@ -221,22 +246,26 @@ export const aiActionHandlers = {
   /**
    * Delete an AI Action
    */
-  async deleteAiAction(params: DeleteAiActionParams): Promise<{ success: true } | { isError: true, message: string }> {
+  async deleteAiAction(
+    params: DeleteAiActionParams,
+  ): Promise<{ success: true } | { isError: true; message: string }> {
     try {
-      const { spaceId, aiActionId } = params
-      
+      const { spaceId, environmentId, aiActionId } = params
+
       // First, get the current action to get the version
       const currentAction = await aiActionsClient.getAiAction({
         spaceId,
-        aiActionId
+        environmentId,
+        aiActionId,
       })
-      
+
       await aiActionsClient.deleteAiAction({
         spaceId,
+        environmentId,
         aiActionId,
-        version: currentAction.sys.version
+        version: currentAction.sys.version,
       })
-      
+
       return { success: true }
     } catch (error) {
       return formatError(error)
@@ -246,22 +275,26 @@ export const aiActionHandlers = {
   /**
    * Publish an AI Action
    */
-  async publishAiAction(params: PublishAiActionParams): Promise<AiActionEntity | { isError: true, message: string }> {
+  async publishAiAction(
+    params: PublishAiActionParams,
+  ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const { spaceId, aiActionId } = params
-      
+      const { spaceId, environmentId, aiActionId } = params
+
       // First, get the current action to get the version
       const currentAction = await aiActionsClient.getAiAction({
         spaceId,
-        aiActionId
+        environmentId,
+        aiActionId,
       })
-      
+
       const result = await aiActionsClient.publishAiAction({
         spaceId,
+        environmentId,
         aiActionId,
-        version: currentAction.sys.version
+        version: currentAction.sys.version,
       })
-      
+
       return result
     } catch (error) {
       return formatError(error)
@@ -271,15 +304,18 @@ export const aiActionHandlers = {
   /**
    * Unpublish an AI Action
    */
-  async unpublishAiAction(params: UnpublishAiActionParams): Promise<AiActionEntity | { isError: true, message: string }> {
+  async unpublishAiAction(
+    params: UnpublishAiActionParams,
+  ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const { spaceId, aiActionId } = params
-      
+      const { spaceId, environmentId, aiActionId } = params
+
       const result = await aiActionsClient.unpublishAiAction({
         spaceId,
-        aiActionId
+        environmentId,
+        aiActionId,
       })
-      
+
       return result
     } catch (error) {
       return formatError(error)
@@ -289,50 +325,60 @@ export const aiActionHandlers = {
   /**
    * Invoke an AI Action
    */
-  async invokeAiAction(params: InvokeAiActionParams): Promise<AiActionInvocation | { isError: true, message: string }> {
+  async invokeAiAction(
+    params: InvokeAiActionParams,
+  ): Promise<AiActionInvocation | { isError: true; message: string }> {
     try {
-      const { spaceId, environmentId, aiActionId, outputFormat = "Markdown", waitForCompletion = true } = params
-      
+      const {
+        spaceId,
+        environmentId,
+        aiActionId,
+        outputFormat = "Markdown",
+        waitForCompletion = true,
+      } = params
+
       // Prepare variables based on the input format
       let variables = []
-      
+
       if ("variables" in params && params.variables) {
         // Convert simple key-value variables to the expected format
         variables = Object.entries(params.variables).map(([id, value]) => ({
           id,
-          value
+          value,
         }))
       } else if ("rawVariables" in params && params.rawVariables) {
         // Use raw variables directly (for complex types like references)
         variables = params.rawVariables
       }
-      
+
       const invocationData: AiActionInvocationType = {
         outputFormat,
-        variables
+        variables,
       }
-      
+
       const invocationResult = await aiActionsClient.invokeAiAction({
         spaceId,
         environmentId,
         aiActionId,
-        invocationData
+        invocationData,
       })
-      
+
       // If waitForCompletion is false or the status is already COMPLETED, return immediately
-      if (!waitForCompletion || 
-          invocationResult.sys.status === "COMPLETED" ||
-          invocationResult.sys.status === "FAILED" ||
-          invocationResult.sys.status === "CANCELLED") {
+      if (
+        !waitForCompletion ||
+        invocationResult.sys.status === "COMPLETED" ||
+        invocationResult.sys.status === "FAILED" ||
+        invocationResult.sys.status === "CANCELLED"
+      ) {
         return invocationResult
       }
-      
+
       // Otherwise, poll until completion
       return await aiActionsClient.pollInvocation({
         spaceId,
         environmentId,
         aiActionId,
-        invocationId: invocationResult.sys.id
+        invocationId: invocationResult.sys.id,
       })
     } catch (error) {
       return formatError(error)
@@ -342,20 +388,23 @@ export const aiActionHandlers = {
   /**
    * Get an AI Action invocation result
    */
-  async getAiActionInvocation(params: GetAiActionInvocationParams): Promise<AiActionInvocation | { isError: true, message: string }> {
+  async getAiActionInvocation(
+    params: GetAiActionInvocationParams,
+  ): Promise<AiActionInvocation | { isError: true; message: string }> {
     try {
       const { spaceId, environmentId, aiActionId, invocationId } = params
-      
+
       const result = await aiActionsClient.getAiActionInvocation({
         spaceId,
         environmentId,
         aiActionId,
-        invocationId
+        invocationId,
       })
-      
+
       return result
     } catch (error) {
       return formatError(error)
     }
-  }
+  },
 }
+

@@ -2,6 +2,8 @@
 
 This package extends the Contentful MCP server with full support for AI Actions, allowing users to discover, manage, and invoke AI Actions directly from the MCP interface.
 
+> **Note:** AI Actions is currently an alpha feature and requires the `X-Contentful-Alpha: ai-actions` header for all requests.
+
 ## Features
 
 ### Static Management Tools
