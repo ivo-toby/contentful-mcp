@@ -1,6 +1,19 @@
 import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 
+// Mock data for bulk actions
+const mockBulkAction = {
+  sys: {
+    id: "test-bulk-action-id",
+    status: "succeeded",
+    version: 1
+  },
+  succeeded: [
+    { sys: { id: "test-entry-id", type: "Entry" } },
+    { sys: { id: "test-asset-id", type: "Asset" } }
+  ]
+};
+
 // Define handlers
 export const handlers = [
   // List spaces
@@ -72,6 +85,78 @@ export const handlers = [
       }
       return new HttpResponse(null, { status: 404 });
     },
+  ),
+];
+
+// Bulk action handlers
+const bulkActionHandlers = [
+  // Create bulk publish action
+  http.post(
+    "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/bulk_actions/publish",
+    async ({ params }) => {
+      const { spaceId, environmentId } = params;
+      if (spaceId === "test-space-id") {
+        return HttpResponse.json({
+          ...mockBulkAction,
+          sys: {
+            ...mockBulkAction.sys,
+            id: "test-bulk-action-id",
+            status: "created"
+          }
+        }, { status: 201 });
+      }
+      return new HttpResponse(null, { status: 404 });
+    }
+  ),
+
+  // Create bulk unpublish action
+  http.post(
+    "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/bulk_actions/unpublish",
+    async ({ params }) => {
+      const { spaceId, environmentId } = params;
+      if (spaceId === "test-space-id") {
+        return HttpResponse.json({
+          ...mockBulkAction,
+          sys: {
+            ...mockBulkAction.sys,
+            id: "test-bulk-action-id",
+            status: "created"
+          }
+        }, { status: 201 });
+      }
+      return new HttpResponse(null, { status: 404 });
+    }
+  ),
+
+  // Create bulk validate action
+  http.post(
+    "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/bulk_actions/validate",
+    async ({ params }) => {
+      const { spaceId, environmentId } = params;
+      if (spaceId === "test-space-id") {
+        return HttpResponse.json({
+          ...mockBulkAction,
+          sys: {
+            ...mockBulkAction.sys,
+            id: "test-bulk-action-id",
+            status: "created"
+          }
+        }, { status: 201 });
+      }
+      return new HttpResponse(null, { status: 404 });
+    }
+  ),
+
+  // Get bulk action status
+  http.get(
+    "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/bulk_actions/:bulkActionId",
+    ({ params }) => {
+      const { spaceId, bulkActionId } = params;
+      if (spaceId === "test-space-id" && bulkActionId === "test-bulk-action-id") {
+        return HttpResponse.json(mockBulkAction);
+      }
+      return new HttpResponse(null, { status: 404 });
+    }
   ),
 ];
 
@@ -545,4 +630,5 @@ export const server = setupServer(
   ...assetHandlers,
   ...contentTypeHandlers,
   ...entryHandlers,
+  ...bulkActionHandlers,
 );
