@@ -27,9 +27,10 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
     
     // Create the bulk action
-    const bulkAction = await contentfulClient.environment.createPublishBulkAction({
+    const bulkAction = await contentfulClient.bulkAction.publish({
       spaceId,
       environmentId,
+      action: "publish",
       payload: {
         entities: {
           sys: {
@@ -47,7 +48,7 @@ export const bulkActionHandlers = {
       bulkActionId: bulkAction.sys.id
     })
     
-    while (action.sys.status === "inProgress") {
+    while (action.sys.status === "inProgress" || action.sys.status === "created") {
       await new Promise(resolve => setTimeout(resolve, 1000))
       action = await contentfulClient.bulkAction.get({
         spaceId,
@@ -77,9 +78,10 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
     
     // Create the bulk action
-    const bulkAction = await contentfulClient.environment.createUnpublishBulkAction({
+    const bulkAction = await contentfulClient.bulkAction.unpublish({
       spaceId,
       environmentId,
+      action: "unpublish",
       payload: {
         entities: {
           sys: {
@@ -97,7 +99,7 @@ export const bulkActionHandlers = {
       bulkActionId: bulkAction.sys.id
     })
     
-    while (action.sys.status === "inProgress") {
+    while (action.sys.status === "inProgress" || action.sys.status === "created") {
       await new Promise(resolve => setTimeout(resolve, 1000))
       action = await contentfulClient.bulkAction.get({
         spaceId,
@@ -127,9 +129,10 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
     
     // Create the bulk action
-    const bulkAction = await contentfulClient.environment.createValidateBulkAction({
+    const bulkAction = await contentfulClient.bulkAction.validate({
       spaceId,
       environmentId,
+      action: "validate",
       payload: {
         entities: {
           sys: {
@@ -153,7 +156,7 @@ export const bulkActionHandlers = {
       bulkActionId: bulkAction.sys.id
     })
     
-    while (action.sys.status === "inProgress") {
+    while (action.sys.status === "inProgress" || action.sys.status === "created") {
       await new Promise(resolve => setTimeout(resolve, 1000))
       action = await contentfulClient.bulkAction.get({
         spaceId,
