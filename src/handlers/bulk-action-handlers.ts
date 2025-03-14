@@ -21,24 +21,39 @@ type BulkValidateParams = {
 
 export const bulkActionHandlers = {
   bulkPublish: async (args: BulkPublishParams) => {
+    const spaceId = process.env.SPACE_ID || args.spaceId
+    const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
+
     const contentfulClient = await getContentfulClient()
-    const space = await contentfulClient.space.get({ spaceId: args.spaceId })
-    const environment = await space.getEnvironment(args.environmentId)
     
-    const bulkAction = await environment.createPublishBulkAction({
-      entities: {
-        sys: {
-          type: "Array",
+    // Create the bulk action
+    const bulkAction = await contentfulClient.environment.createPublishBulkAction({
+      spaceId,
+      environmentId,
+      payload: {
+        entities: {
+          sys: {
+            type: "Array",
+          },
+          items: args.entities,
         },
-        items: args.entities,
       },
     })
     
     // Wait for the bulk action to complete
-    let action = await bulkAction.get()
+    let action = await contentfulClient.bulkAction.get({
+      spaceId,
+      environmentId,
+      bulkActionId: bulkAction.sys.id
+    })
+    
     while (action.sys.status === "inProgress") {
       await new Promise(resolve => setTimeout(resolve, 1000))
-      action = await bulkAction.get()
+      action = await contentfulClient.bulkAction.get({
+        spaceId,
+        environmentId,
+        bulkActionId: bulkAction.sys.id
+      })
     }
     
     return {
@@ -56,24 +71,39 @@ export const bulkActionHandlers = {
   },
   
   bulkUnpublish: async (args: BulkUnpublishParams) => {
+    const spaceId = process.env.SPACE_ID || args.spaceId
+    const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
+
     const contentfulClient = await getContentfulClient()
-    const space = await contentfulClient.space.get({ spaceId: args.spaceId })
-    const environment = await space.getEnvironment(args.environmentId)
     
-    const bulkAction = await environment.createUnpublishBulkAction({
-      entities: {
-        sys: {
-          type: "Array",
+    // Create the bulk action
+    const bulkAction = await contentfulClient.environment.createUnpublishBulkAction({
+      spaceId,
+      environmentId,
+      payload: {
+        entities: {
+          sys: {
+            type: "Array",
+          },
+          items: args.entities,
         },
-        items: args.entities,
       },
     })
     
     // Wait for the bulk action to complete
-    let action = await bulkAction.get()
+    let action = await contentfulClient.bulkAction.get({
+      spaceId,
+      environmentId,
+      bulkActionId: bulkAction.sys.id
+    })
+    
     while (action.sys.status === "inProgress") {
       await new Promise(resolve => setTimeout(resolve, 1000))
-      action = await bulkAction.get()
+      action = await contentfulClient.bulkAction.get({
+        spaceId,
+        environmentId,
+        bulkActionId: bulkAction.sys.id
+      })
     }
     
     return {
@@ -91,30 +121,45 @@ export const bulkActionHandlers = {
   },
   
   bulkValidate: async (args: BulkValidateParams) => {
+    const spaceId = process.env.SPACE_ID || args.spaceId
+    const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
+
     const contentfulClient = await getContentfulClient()
-    const space = await contentfulClient.space.get({ spaceId: args.spaceId })
-    const environment = await space.getEnvironment(args.environmentId)
     
-    const bulkAction = await environment.createValidateBulkAction({
-      entities: {
-        sys: {
-          type: "Array",
-        },
-        items: args.entryIds.map(id => ({
+    // Create the bulk action
+    const bulkAction = await contentfulClient.environment.createValidateBulkAction({
+      spaceId,
+      environmentId,
+      payload: {
+        entities: {
           sys: {
-            type: "Link",
-            linkType: "Entry",
-            id
-          }
-        })),
+            type: "Array",
+          },
+          items: args.entryIds.map(id => ({
+            sys: {
+              type: "Link",
+              linkType: "Entry",
+              id
+            }
+          })),
+        },
       },
     })
     
     // Wait for the bulk action to complete
-    let action = await bulkAction.get()
+    let action = await contentfulClient.bulkAction.get({
+      spaceId,
+      environmentId,
+      bulkActionId: bulkAction.sys.id
+    })
+    
     while (action.sys.status === "inProgress") {
       await new Promise(resolve => setTimeout(resolve, 1000))
-      action = await bulkAction.get()
+      action = await contentfulClient.bulkAction.get({
+        spaceId,
+        environmentId,
+        bulkActionId: bulkAction.sys.id
+      })
     }
     
     return {
