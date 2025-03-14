@@ -65,11 +65,25 @@ export const handlers = [
     async ({ params, request }) => {
       const { spaceId } = params;
       if (spaceId === "test-space-id") {
-        const envId = await request.text();
-        return HttpResponse.json({
-          sys: { id: envId },
-          name: envId,
-        });
+        try {
+          // Get data from request body
+          const body = await request.json();
+          console.log("Request body:", JSON.stringify(body));
+          
+          // In the real API implementation, the environmentId is taken 
+          // from the second argument to client.environment.create
+          // We need to extract it from the name in our mock
+          const environmentId = body.name;
+          
+          // Return correctly structured response with environment ID
+          return HttpResponse.json({
+            sys: { id: environmentId },
+            name: environmentId
+          });
+        } catch (error) {
+          console.error("Error processing environment creation:", error);
+          return new HttpResponse(null, { status: 500 });
+        }
       }
       return new HttpResponse(null, { status: 404 });
     },

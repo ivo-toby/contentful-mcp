@@ -1,50 +1,49 @@
 import { expect, vi } from "vitest"
 import { server } from "../msw-setup.js"
 
-// Define mock values
+// Define mock values first - these can be before vi.mock
 const TEST_ENTRY_ID = "test-entry-id"
 const TEST_ASSET_ID = "test-asset-id"
 const TEST_BULK_ACTION_ID = "test-bulk-action-id"
 
-// Create mock implementation
-const mockClient = {
-  entry: {
-    get: vi.fn().mockResolvedValue({
-      sys: { id: TEST_ENTRY_ID, version: 1 },
+// Mock the client module without using variables defined later
+vi.mock("../../src/config/client.ts", () => {
+  return {
+    getContentfulClient: vi.fn().mockResolvedValue({
+      entry: {
+        get: vi.fn().mockResolvedValue({
+          sys: { id: "test-entry-id", version: 1 },
+        }),
+      },
+      asset: {
+        get: vi.fn().mockResolvedValue({
+          sys: { id: "test-asset-id", version: 1 },
+        }),
+      },
+      bulkAction: {
+        publish: vi.fn().mockResolvedValue({
+          sys: { id: "test-bulk-action-id", status: "created" },
+        }),
+        unpublish: vi.fn().mockResolvedValue({
+          sys: { id: "test-bulk-action-id", status: "created" },
+        }),
+        validate: vi.fn().mockResolvedValue({
+          sys: { id: "test-bulk-action-id", status: "created" },
+        }),
+        get: vi.fn().mockResolvedValue({
+          sys: { id: "test-bulk-action-id", status: "succeeded" },
+          succeeded: [
+            { sys: { id: "test-entry-id", type: "Entry" } },
+            { sys: { id: "test-asset-id", type: "Asset" } },
+          ],
+        }),
+      },
     }),
-  },
-  asset: {
-    get: vi.fn().mockResolvedValue({
-      sys: { id: TEST_ASSET_ID, version: 1 },
-    }),
-  },
-  bulkAction: {
-    publish: vi.fn().mockResolvedValue({
-      sys: { id: TEST_BULK_ACTION_ID, status: "created" },
-    }),
-    unpublish: vi.fn().mockResolvedValue({
-      sys: { id: TEST_BULK_ACTION_ID, status: "created" },
-    }),
-    validate: vi.fn().mockResolvedValue({
-      sys: { id: TEST_BULK_ACTION_ID, status: "created" },
-    }),
-    get: vi.fn().mockResolvedValue({
-      sys: { id: TEST_BULK_ACTION_ID, status: "succeeded" },
-      succeeded: [
-        { sys: { id: TEST_ENTRY_ID, type: "Entry" } },
-        { sys: { id: TEST_ASSET_ID, type: "Asset" } },
-      ],
-    }),
-  },
-}
-
-// Mock the client module
-vi.mock("../../src/config/client.js", () => ({
-  getContentfulClient: vi.fn().mockResolvedValue(mockClient)
-}))
+  }
+})
 
 // Import handlers after mocking
-import { bulkActionHandlers } from "../../src/handlers/bulk-action-handlers.js"
+import { bulkActionHandlers } from "../../src/handlers/bulk-action-handlers.ts"
 
 describe("Bulk Action Handlers Integration Tests", () => {
   // Start MSW Server before tests
@@ -61,8 +60,8 @@ describe("Bulk Action Handlers Integration Tests", () => {
         spaceId: testSpaceId,
         environmentId: testEnvironmentId,
         entities: [
-          { sys: { id: testEntryId, type: "Entry" } },
-          { sys: { id: testAssetId, type: "Asset" } },
+          { sys: { id: TEST_ENTRY_ID, type: "Entry" } },
+          { sys: { id: TEST_ASSET_ID, type: "Asset" } },
         ],
       })
 
@@ -78,8 +77,8 @@ describe("Bulk Action Handlers Integration Tests", () => {
         spaceId: testSpaceId,
         environmentId: testEnvironmentId,
         entities: [
-          { sys: { id: testEntryId, type: "Entry" } },
-          { sys: { id: testAssetId, type: "Asset" } },
+          { sys: { id: TEST_ENTRY_ID, type: "Entry" } },
+          { sys: { id: TEST_ASSET_ID, type: "Asset" } },
         ],
       })
 
@@ -94,7 +93,7 @@ describe("Bulk Action Handlers Integration Tests", () => {
       const result = await bulkActionHandlers.bulkValidate({
         spaceId: testSpaceId,
         environmentId: testEnvironmentId,
-        entryIds: [testEntryId],
+        entryIds: [TEST_ENTRY_ID],
       })
 
       expect(result).to.have.property("content").that.is.an("array")
