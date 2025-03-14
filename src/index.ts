@@ -14,6 +14,7 @@ import { entryHandlers } from "./handlers/entry-handlers.js"
 import { assetHandlers } from "./handlers/asset-handlers.js"
 import { spaceHandlers } from "./handlers/space-handlers.js"
 import { contentTypeHandlers } from "./handlers/content-type-handlers.js"
+import { bulkActionHandlers } from "./handlers/bulk-action-handlers.js"
 import { getTools } from "./types/tools.js"
 import { validateEnvironment } from "./utils/validation.js"
 
@@ -83,6 +84,11 @@ function getHandler(name: string) {
     publish_entry: entryHandlers.publishEntry,
     unpublish_entry: entryHandlers.unpublishEntry,
     search_entries: entryHandlers.searchEntries,
+    
+    // Bulk operations
+    bulk_publish: bulkActionHandlers.bulkPublish,
+    bulk_unpublish: bulkActionHandlers.bulkUnpublish,
+    bulk_validate: bulkActionHandlers.bulkValidate,
 
     // Asset operations
     upload_asset: assetHandlers.uploadAsset,

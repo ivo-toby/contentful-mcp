@@ -18,6 +18,7 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 - **Content Types**: Manage content type definitions
 - **Localization**: Support for multiple locales
 - **Publishing**: Control content publishing workflow
+- **Bulk Operations**: Execute bulk publishing, unpublishing, and validation across multiple entries and assets
 - **Smart Pagination**: List operations return maximum 3 items per request to prevent context window overflow, with built-in pagination support
 
 ## Pagination
@@ -31,6 +32,17 @@ To prevent context window overflow in LLMs, list operations (like search_entries
 
 This pagination system allows the LLM to efficiently handle large datasets while maintaining context window limits.
 
+## Bulk Operations
+
+The bulk operations feature provides efficient management of multiple content items simultaneously:
+
+- **Asynchronous Processing**: Operations run asynchronously and provide status updates
+- **Efficient Content Management**: Process multiple entries or assets in a single API call
+- **Status Tracking**: Monitor progress with success and failure counts
+- **Resource Optimization**: Reduce API calls and improve performance for batch operations
+
+These bulk operation tools are ideal for content migrations, mass updates, or batch publishing workflows.
+
 ## Tools
 
 ### Entry Management
@@ -42,6 +54,12 @@ This pagination system allows the LLM to efficiently handle large datasets while
 - **delete_entry**: Remove entries
 - **publish_entry**: Publish entries
 - **unpublish_entry**: Unpublish entries
+
+### Bulk Operations
+
+- **bulk_publish**: Publish multiple entries and assets in a single operation. Accepts an array of entities (entries and assets) and processes their publication as a batch.
+- **bulk_unpublish**: Unpublish multiple entries and assets in a single operation. Similar to bulk_publish but removes content from the delivery API.
+- **bulk_validate**: Validate multiple entries for content consistency, references, and required fields. Returns validation results without modifying content.
 
 ### Asset Management
 
@@ -80,6 +98,7 @@ The project includes an MCP Inspector tool that helps with development and debug
 - **Watch Mode**: Use `npm run inspect:watch` to automatically restart the inspector when files change
 - **Visual Interface**: The inspector provides a web interface to test and debug MCP tools
 - **Real-time Testing**: Try out tools and see their responses immediately
+- **Bulk Operations Testing**: Test and monitor bulk operations with visual feedback on progress and results
 
 The project also contains a `npm run dev` command which rebuilds and reloads the MCP server on every change.
 

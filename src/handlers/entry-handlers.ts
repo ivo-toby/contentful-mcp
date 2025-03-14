@@ -121,10 +121,31 @@ export const entryHandlers = {
     }
   },
 
-  publishEntry: async (args: { spaceId: string; environmentId: string; entryId: string }) => {
+  publishEntry: async (args: { 
+    spaceId: string; 
+    environmentId: string; 
+    entryId: string | string[] 
+  }) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
 
+    // If entryId is an array, use bulkPublish instead
+    if (Array.isArray(args.entryId)) {
+      const bulkActionHandlers = await import("./bulk-action-handlers.js").then(module => module.bulkActionHandlers)
+      
+      // Map entry IDs to the expected format for bulkPublish
+      const entities = args.entryId.map(id => ({
+        sys: { id, type: "Entry" as const }
+      }))
+      
+      return bulkActionHandlers.bulkPublish({
+        spaceId,
+        environmentId,
+        entities
+      })
+    }
+    
+    // Handle single entry publishing
     const params = {
       spaceId,
       environmentId,
@@ -138,15 +159,37 @@ export const entryHandlers = {
       sys: currentEntry.sys,
       fields: currentEntry.fields,
     })
+    
     return {
       content: [{ type: "text", text: JSON.stringify(entry, null, 2) }],
     }
   },
 
-  unpublishEntry: async (args: { spaceId: string; environmentId: string; entryId: string }) => {
+  unpublishEntry: async (args: { 
+    spaceId: string; 
+    environmentId: string; 
+    entryId: string | string[] 
+  }) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
 
+    // If entryId is an array, use bulkUnpublish instead
+    if (Array.isArray(args.entryId)) {
+      const bulkActionHandlers = await import("./bulk-action-handlers.js").then(module => module.bulkActionHandlers)
+      
+      // Map entry IDs to the expected format for bulkUnpublish
+      const entities = args.entryId.map(id => ({
+        sys: { id, type: "Entry" as const }
+      }))
+      
+      return bulkActionHandlers.bulkUnpublish({
+        spaceId,
+        environmentId,
+        entities
+      })
+    }
+    
+    // Handle single entry unpublishing
     const params = {
       spaceId,
       environmentId,
