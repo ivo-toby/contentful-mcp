@@ -124,22 +124,46 @@ export const getEntryTools = () => {
     },
     PUBLISH_ENTRY: {
       name: "publish_entry",
-      description: "Publish an entry",
+      description:
+        "Publish an entry or multiple entries. Accepts either a single entryId (string) or an array of entryIds (up to 100 entries). For a single entry, it uses the standard publish operation. For multiple entries, it automatically uses bulk publishing.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
-          entryId: { type: "string" },
+          entryId: { 
+            oneOf: [
+              { type: "string" },
+              { 
+                type: "array", 
+                items: { type: "string" },
+                maxItems: 100,
+                description: "Array of entry IDs to publish (max: 100)"
+              }
+            ],
+            description: "ID of the entry to publish, or an array of entry IDs (max: 100)"
+          },
         },
         required: ["entryId"],
       }),
     },
     UNPUBLISH_ENTRY: {
       name: "unpublish_entry",
-      description: "Unpublish an entry",
+      description:
+        "Unpublish an entry or multiple entries. Accepts either a single entryId (string) or an array of entryIds (up to 100 entries). For a single entry, it uses the standard unpublish operation. For multiple entries, it automatically uses bulk unpublishing.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
-          entryId: { type: "string" },
+          entryId: { 
+            oneOf: [
+              { type: "string" },
+              { 
+                type: "array", 
+                items: { type: "string" },
+                maxItems: 100,
+                description: "Array of entry IDs to unpublish (max: 100)"
+              }
+            ],
+            description: "ID of the entry to unpublish, or an array of entry IDs (max: 100)"
+          },
         },
         required: ["entryId"],
       }),
@@ -515,25 +539,25 @@ export const getBulkActionTools = () => {
                 sys: {
                   type: "object",
                   properties: {
-                    id: { 
+                    id: {
                       type: "string",
-                      description: "ID of the entry or asset"
+                      description: "ID of the entry or asset",
                     },
-                    type: { 
+                    type: {
                       type: "string",
                       enum: ["Entry", "Asset"],
-                      description: "Type of entity (Entry or Asset)"
-                    }
+                      description: "Type of entity (Entry or Asset)",
+                    },
                   },
-                  required: ["id", "type"]
-                }
+                  required: ["id", "type"],
+                },
               },
-              required: ["sys"]
-            }
-          }
+              required: ["sys"],
+            },
+          },
         },
-        required: ["entities"]
-      })
+        required: ["entities"],
+      }),
     },
     BULK_UNPUBLISH: {
       name: "bulk_unpublish",
@@ -550,25 +574,25 @@ export const getBulkActionTools = () => {
                 sys: {
                   type: "object",
                   properties: {
-                    id: { 
+                    id: {
                       type: "string",
-                      description: "ID of the entry or asset"
+                      description: "ID of the entry or asset",
                     },
-                    type: { 
+                    type: {
                       type: "string",
                       enum: ["Entry", "Asset"],
-                      description: "Type of entity (Entry or Asset)"
-                    }
+                      description: "Type of entity (Entry or Asset)",
+                    },
                   },
-                  required: ["id", "type"]
-                }
+                  required: ["id", "type"],
+                },
               },
-              required: ["sys"]
-            }
-          }
+              required: ["sys"],
+            },
+          },
         },
-        required: ["entities"]
-      })
+        required: ["entities"],
+      }),
     },
     BULK_VALIDATE: {
       name: "bulk_validate",
@@ -580,13 +604,13 @@ export const getBulkActionTools = () => {
             type: "array",
             description: "Array of entry IDs to validate",
             items: {
-              type: "string"
-            }
-          }
+              type: "string",
+            },
+          },
         },
-        required: ["entryIds"]
-      })
-    }
+        required: ["entryIds"],
+      }),
+    },
   }
 }
 
