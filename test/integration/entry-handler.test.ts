@@ -1,6 +1,67 @@
-import { expect } from "vitest";
+import { expect, vi } from "vitest";
 import { entryHandlers } from "../../src/handlers/entry-handlers.js";
 import { server } from "../msw-setup.js";
+
+// Mock the contentful client for testing bulk operations
+vi.mock("../../src/config/client.js", async (importOriginal) => {
+  const originalModule = await importOriginal();
+  
+  // Create a mock function that will be used for the content client
+  const getContentfulClient = vi.fn();
+  
+  // Store the original function so we can call it if needed
+  const originalGetClient = originalModule.getContentfulClient;
+  
+  // Set up the mock function to return either the original or our mocked version
+  getContentfulClient.mockImplementation(async () => {
+    // Create our mock client
+    const mockClient = {
+      entry: {
+        get: vi.fn().mockImplementation((params) => {
+          // Special handling for our bulk test entries
+          if (params.entryId === "entry-id-1" || params.entryId === "entry-id-2") {
+            return Promise.resolve({
+              sys: { id: params.entryId, version: 1 },
+              fields: { title: { "en-US": "Test Entry" } }
+            });
+          }
+          
+          // Otherwise, call the original implementation
+          return originalGetClient().then(client => client.entry.get(params));
+        }),
+        // Mock the other methods by passing through
+        getMany: (...args) => originalGetClient().then(client => client.entry.getMany(...args)),
+        create: (...args) => originalGetClient().then(client => client.entry.create(...args)),
+        update: (...args) => originalGetClient().then(client => client.entry.update(...args)),
+        delete: (...args) => originalGetClient().then(client => client.entry.delete(...args)),
+        publish: (...args) => originalGetClient().then(client => client.entry.publish(...args)),
+        unpublish: (...args) => originalGetClient().then(client => client.entry.unpublish(...args)),
+      },
+      bulkAction: {
+        publish: vi.fn().mockResolvedValue({
+          sys: { id: "bulk-action-id", status: "created" }
+        }),
+        unpublish: vi.fn().mockResolvedValue({
+          sys: { id: "bulk-action-id", status: "created" }
+        }),
+        get: vi.fn().mockResolvedValue({
+          sys: { id: "bulk-action-id", status: "succeeded" },
+          succeeded: [
+            { sys: { id: "entry-id-1", type: "Entry" } },
+            { sys: { id: "entry-id-2", type: "Entry" } },
+          ]
+        }),
+      }
+    };
+    
+    return mockClient;
+  });
+  
+  return {
+    ...originalModule,
+    getContentfulClient
+  };
+});
 
 describe("Entry Handlers Integration Tests", () => {
   // Start MSW Server before tests
@@ -132,6 +193,16 @@ describe("Entry Handlers Integration Tests", () => {
       const entry = JSON.parse(result.content[0].text);
       expect(entry.sys.publishedVersion).to.exist;
     });
+    
+    it("should handle publishing multiple entries", async () => {
+      const result = await entryHandlers.publishEntry({
+        spaceId: testSpaceId,
+        entryId: ["entry-id-1", "entry-id-2"]
+      });
+
+      expect(result).to.have.property("content");
+      expect(result.content[0].text).to.include("Bulk publish completed");
+    });
   });
 
   describe("unpublishEntry", () => {
@@ -144,6 +215,16 @@ describe("Entry Handlers Integration Tests", () => {
       expect(result).to.have.property("content");
       const entry = JSON.parse(result.content[0].text);
       expect(entry.sys.publishedVersion).to.not.exist;
+    });
+    
+    it("should handle unpublishing multiple entries", async () => {
+      const result = await entryHandlers.unpublishEntry({
+        spaceId: testSpaceId,
+        entryId: ["entry-id-1", "entry-id-2"]
+      });
+
+      expect(result).to.have.property("content");
+      expect(result.content[0].text).to.include("Bulk unpublish completed");
     });
   });
 });
