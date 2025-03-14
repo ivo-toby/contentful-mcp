@@ -40,65 +40,65 @@ export const bulkActionHandlers = {
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
 
     const contentfulClient = await getContentfulClient()
-    
+
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.publish(
       {
         spaceId,
         environmentId,
-      }, 
+      },
       {
         entities: {
           sys: {
             type: "Array",
           },
-          items: args.entities.map(entity => ({
+          items: args.entities.map((entity) => ({
             sys: {
               type: "Link",
               linkType: entity.sys.type,
-              id: entity.sys.id
-            }
+              id: entity.sys.id,
+            },
           })),
         },
-      }
+      },
     )
-    
+
     // Wait for the bulk action to complete
-    let action = await contentfulClient.bulkAction.get({
+    let action = (await contentfulClient.bulkAction.get({
       spaceId,
       environmentId,
-      bulkActionId: bulkAction.sys.id
-    }) as unknown as BulkActionResponse
-    
+      bulkActionId: bulkAction.sys.id,
+    })) as unknown as BulkActionResponse
+
     while (action.sys.status === "inProgress" || action.sys.status === "created") {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      action = await contentfulClient.bulkAction.get({
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      action = (await contentfulClient.bulkAction.get({
         spaceId,
         environmentId,
-        bulkActionId: bulkAction.sys.id
-      }) as unknown as BulkActionResponse
+        bulkActionId: bulkAction.sys.id,
+      })) as unknown as BulkActionResponse
     }
-    
+
     return {
       content: [
-        { 
-          type: "text", 
+        {
+          type: "text",
           text: `Bulk publish completed with status: ${action.sys.status}. ${
-            action.sys.status === "failed" 
-              ? `Error: ${JSON.stringify(action.error)}` 
+            action.sys.status === "failed"
+              ? `Error: ${JSON.stringify(action.error)}`
               : `Successfully processed ${action.succeeded?.length || 0} items.`
-          }`
-        }
+          }`,
+        },
       ],
     }
   },
-  
+
   bulkUnpublish: async (args: BulkUnpublishParams) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
 
     const contentfulClient = await getContentfulClient()
-    
+
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.unpublish(
       {
@@ -110,53 +110,53 @@ export const bulkActionHandlers = {
           sys: {
             type: "Array",
           },
-          items: args.entities.map(entity => ({
+          items: args.entities.map((entity) => ({
             sys: {
               type: "Link",
               linkType: entity.sys.type,
-              id: entity.sys.id
-            }
+              id: entity.sys.id,
+            },
           })),
         },
-      }
+      },
     )
-    
+
     // Wait for the bulk action to complete
-    let action = await contentfulClient.bulkAction.get({
+    let action = (await contentfulClient.bulkAction.get({
       spaceId,
       environmentId,
-      bulkActionId: bulkAction.sys.id
-    }) as unknown as BulkActionResponse
-    
+      bulkActionId: bulkAction.sys.id,
+    })) as unknown as BulkActionResponse
+
     while (action.sys.status === "inProgress" || action.sys.status === "created") {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      action = await contentfulClient.bulkAction.get({
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      action = (await contentfulClient.bulkAction.get({
         spaceId,
         environmentId,
-        bulkActionId: bulkAction.sys.id
-      }) as unknown as BulkActionResponse
+        bulkActionId: bulkAction.sys.id,
+      })) as unknown as BulkActionResponse
     }
-    
+
     return {
       content: [
-        { 
-          type: "text", 
+        {
+          type: "text",
           text: `Bulk unpublish completed with status: ${action.sys.status}. ${
-            action.sys.status === "failed" 
-              ? `Error: ${JSON.stringify(action.error)}` 
+            action.sys.status === "failed"
+              ? `Error: ${JSON.stringify(action.error)}`
               : `Successfully processed ${action.succeeded?.length || 0} items.`
-          }`
-        }
+          }`,
+        },
       ],
     }
   },
-  
+
   bulkValidate: async (args: BulkValidateParams) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
 
     const contentfulClient = await getContentfulClient()
-    
+
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.validate(
       {
@@ -168,44 +168,44 @@ export const bulkActionHandlers = {
           sys: {
             type: "Array",
           },
-          items: args.entryIds.map(id => ({
+          items: args.entryIds.map((id) => ({
             sys: {
               type: "Link",
               linkType: "Entry",
-              id
-            }
+              id,
+            },
           })),
         },
-      }
+      },
     )
-    
+
     // Wait for the bulk action to complete
-    let action = await contentfulClient.bulkAction.get({
+    let action = (await contentfulClient.bulkAction.get({
       spaceId,
       environmentId,
-      bulkActionId: bulkAction.sys.id
-    }) as unknown as BulkActionResponse
-    
+      bulkActionId: bulkAction.sys.id,
+    })) as unknown as BulkActionResponse
+
     while (action.sys.status === "inProgress" || action.sys.status === "created") {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      action = await contentfulClient.bulkAction.get({
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      action = (await contentfulClient.bulkAction.get({
         spaceId,
         environmentId,
-        bulkActionId: bulkAction.sys.id
-      }) as unknown as BulkActionResponse
+        bulkActionId: bulkAction.sys.id,
+      })) as unknown as BulkActionResponse
     }
-    
+
     return {
       content: [
-        { 
-          type: "text", 
+        {
+          type: "text",
           text: `Bulk validation completed with status: ${action.sys.status}. ${
-            action.sys.status === "failed" 
-              ? `Error: ${JSON.stringify(action.error)}` 
+            action.sys.status === "failed"
+              ? `Error: ${JSON.stringify(action.error)}`
               : `Successfully validated ${action.succeeded?.length || 0} entries.`
-          }`
-        }
+          }`,
+        },
       ],
     }
-  }
+  },
 }
