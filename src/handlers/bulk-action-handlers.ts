@@ -11,6 +11,21 @@ type BulkPublishParams = {
   }>
 }
 
+// Define the correct types for bulk action responses
+interface BulkActionResponse {
+  sys: {
+    id: string
+    status: string
+  }
+  succeeded?: Array<{
+    sys: {
+      id: string
+      type: string
+    }
+  }>
+  error?: any
+}
+
 type BulkUnpublishParams = BulkPublishParams
 
 type BulkValidateParams = {
@@ -37,7 +52,13 @@ export const bulkActionHandlers = {
           sys: {
             type: "Array",
           },
-          items: args.entities,
+          items: args.entities.map(entity => ({
+            sys: {
+              type: "Link",
+              linkType: entity.sys.type,
+              id: entity.sys.id
+            }
+          })),
         },
       }
     )
@@ -47,7 +68,7 @@ export const bulkActionHandlers = {
       spaceId,
       environmentId,
       bulkActionId: bulkAction.sys.id
-    })
+    }) as unknown as BulkActionResponse
     
     while (action.sys.status === "inProgress" || action.sys.status === "created") {
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -55,7 +76,7 @@ export const bulkActionHandlers = {
         spaceId,
         environmentId,
         bulkActionId: bulkAction.sys.id
-      })
+      }) as unknown as BulkActionResponse
     }
     
     return {
@@ -89,7 +110,13 @@ export const bulkActionHandlers = {
           sys: {
             type: "Array",
           },
-          items: args.entities,
+          items: args.entities.map(entity => ({
+            sys: {
+              type: "Link",
+              linkType: entity.sys.type,
+              id: entity.sys.id
+            }
+          })),
         },
       }
     )
@@ -99,7 +126,7 @@ export const bulkActionHandlers = {
       spaceId,
       environmentId,
       bulkActionId: bulkAction.sys.id
-    })
+    }) as unknown as BulkActionResponse
     
     while (action.sys.status === "inProgress" || action.sys.status === "created") {
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -107,7 +134,7 @@ export const bulkActionHandlers = {
         spaceId,
         environmentId,
         bulkActionId: bulkAction.sys.id
-      })
+      }) as unknown as BulkActionResponse
     }
     
     return {
@@ -157,7 +184,7 @@ export const bulkActionHandlers = {
       spaceId,
       environmentId,
       bulkActionId: bulkAction.sys.id
-    })
+    }) as unknown as BulkActionResponse
     
     while (action.sys.status === "inProgress" || action.sys.status === "created") {
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -165,7 +192,7 @@ export const bulkActionHandlers = {
         spaceId,
         environmentId,
         bulkActionId: bulkAction.sys.id
-      })
+      }) as unknown as BulkActionResponse
     }
     
     return {
