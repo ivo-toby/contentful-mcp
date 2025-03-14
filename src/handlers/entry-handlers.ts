@@ -1,7 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getContentfulClient } from "../config/client.js"
 import { summarizeData } from "../utils/summarizer.js"
-import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management"
+import {
+  CreateEntryProps,
+  EntryProps,
+  QueryOptions,
+  BulkActionProps,
+  Link,
+  Collection,
+} from "contentful-management"
+
+// Define the interface for bulk action responses with succeeded property
+interface BulkActionResponse extends BulkActionProps<any> {
+  succeeded?: Array<{
+    sys: {
+      id: string
+      type: string
+    }
+  }>
+}
+
+// Define the interface for versioned links
+interface VersionedLink {
+  sys: {
+    type: "Link"
+    linkType: "Entry" | "Asset"
+    id: string
+    version: number
+  }
+}
 
 export const entryHandlers = {
   searchEntries: async (args: { spaceId: string; environmentId: string; query: QueryOptions }) => {
@@ -19,13 +46,13 @@ export const entryHandlers = {
       query: {
         ...args.query,
         limit: Math.min(args.query.limit || 3, 3),
-        skip: args.query.skip || 0
+        skip: args.query.skip || 0,
       },
     })
 
     const summarized = summarizeData(entries, {
       maxItems: 3,
-      remainingMessage: "To see more entries, please ask me to retrieve the next page."
+      remainingMessage: "To see more entries, please ask me to retrieve the next page.",
     })
 
     return {
@@ -121,35 +148,128 @@ export const entryHandlers = {
     }
   },
 
-  publishEntry: async (args: { 
-    spaceId: string; 
-    environmentId: string; 
-    entryId: string | string[] 
+  publishEntry: async (args: {
+    spaceId: string
+    environmentId: string
+    entryId: string | string[]
   }) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
 
-    // If entryId is an array, use bulkPublish instead
-    if (Array.isArray(args.entryId)) {
-      const bulkActionHandlers = await import("./bulk-action-handlers.js").then(module => module.bulkActionHandlers)
-      
-      // Map entry IDs to the expected format for bulkPublish
-      const entities = args.entryId.map(id => ({
-        sys: { id, type: "Entry" as const }
-      }))
-      
-      return bulkActionHandlers.bulkPublish({
-        spaceId,
-        environmentId,
-        entities
-      })
+    // Handle case where entryId is a JSON string representation of an array
+    let entryId = args.entryId
+    if (typeof entryId === "string" && entryId.startsWith("[") && entryId.endsWith("]")) {
+      try {
+        entryId = JSON.parse(entryId)
+      } catch (e) {
+        // If parsing fails, keep it as string
+        console.error("Failed to parse entryId as JSON array:", e)
+      }
     }
-    
+
+    // If entryId is an array, handle bulk publishing
+    if (Array.isArray(entryId)) {
+      try {
+        const contentfulClient = await getContentfulClient()
+
+        // Get the current version of each entity
+        const entryVersions = await Promise.all(
+          entryId.map(async (id) => {
+            try {
+              // Get the current version of the entry
+              const currentEntry = await contentfulClient.entry.get({
+                spaceId,
+                environmentId,
+                entryId: id,
+              })
+
+              // Create a versioned link according to the API docs
+              const versionedLink: VersionedLink = {
+                sys: {
+                  type: "Link",
+                  linkType: "Entry",
+                  id: id,
+                  version: currentEntry.sys.version,
+                },
+              }
+              return versionedLink
+            } catch (error) {
+              console.error(`Error fetching entry ${id}: ${error}`)
+              throw new Error(
+                `Failed to get version for entry ${id}. All entries must have a version.`,
+              )
+            }
+          }),
+        )
+
+        // Create the correct entities format according to Contentful API docs
+        const entities: {
+          sys: { type: "Array" }
+          items: VersionedLink[]
+        } = {
+          sys: {
+            type: "Array",
+          },
+          items: entryVersions,
+        }
+
+        // Create the bulk action
+        const bulkAction = await contentfulClient.bulkAction.publish(
+          {
+            spaceId,
+            environmentId,
+          },
+          {
+            entities,
+          },
+        )
+
+        // Wait for the bulk action to complete
+        let action = (await contentfulClient.bulkAction.get({
+          spaceId,
+          environmentId,
+          bulkActionId: bulkAction.sys.id,
+        })) as BulkActionResponse // Cast to our extended interface
+
+        while (action.sys.status === "inProgress" || action.sys.status === "created") {
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          action = (await contentfulClient.bulkAction.get({
+            spaceId,
+            environmentId,
+            bulkActionId: bulkAction.sys.id,
+          })) as BulkActionResponse // Cast to our extended interface
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Bulk publish completed with status: ${action.sys.status}. ${
+                action.sys.status === "failed"
+                  ? `Error: ${JSON.stringify(action.error)}`
+                  : `Successfully processed items.`
+              }`,
+            },
+          ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error during bulk publish: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        }
+      }
+    }
+
     // Handle single entry publishing
     const params = {
       spaceId,
       environmentId,
-      entryId: args.entryId,
+      entryId: entryId as string,
     }
 
     const contentfulClient = await getContentfulClient()
@@ -159,41 +279,134 @@ export const entryHandlers = {
       sys: currentEntry.sys,
       fields: currentEntry.fields,
     })
-    
+
     return {
       content: [{ type: "text", text: JSON.stringify(entry, null, 2) }],
     }
   },
 
-  unpublishEntry: async (args: { 
-    spaceId: string; 
-    environmentId: string; 
-    entryId: string | string[] 
+  unpublishEntry: async (args: {
+    spaceId: string
+    environmentId: string
+    entryId: string | string[]
   }) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
 
-    // If entryId is an array, use bulkUnpublish instead
-    if (Array.isArray(args.entryId)) {
-      const bulkActionHandlers = await import("./bulk-action-handlers.js").then(module => module.bulkActionHandlers)
-      
-      // Map entry IDs to the expected format for bulkUnpublish
-      const entities = args.entryId.map(id => ({
-        sys: { id, type: "Entry" as const }
-      }))
-      
-      return bulkActionHandlers.bulkUnpublish({
-        spaceId,
-        environmentId,
-        entities
-      })
+    // Handle case where entryId is a JSON string representation of an array
+    let entryId = args.entryId
+    if (typeof entryId === "string" && entryId.startsWith("[") && entryId.endsWith("]")) {
+      try {
+        entryId = JSON.parse(entryId)
+      } catch (e) {
+        // If parsing fails, keep it as string
+        console.error("Failed to parse entryId as JSON array:", e)
+      }
     }
-    
+
+    // If entryId is an array, handle bulk unpublishing
+    if (Array.isArray(entryId)) {
+      try {
+        const contentfulClient = await getContentfulClient()
+
+        // Get the current version of each entity
+        const entryVersions = await Promise.all(
+          entryId.map(async (id) => {
+            try {
+              // Get the current version of the entry
+              const currentEntry = await contentfulClient.entry.get({
+                spaceId,
+                environmentId,
+                entryId: id,
+              })
+
+              // Create a versioned link according to the API docs
+              const versionedLink: VersionedLink = {
+                sys: {
+                  type: "Link",
+                  linkType: "Entry",
+                  id: id,
+                  version: currentEntry.sys.version,
+                },
+              }
+              return versionedLink
+            } catch (error) {
+              console.error(`Error fetching entry ${id}: ${error}`)
+              throw new Error(
+                `Failed to get version for entry ${id}. All entries must have a version.`,
+              )
+            }
+          }),
+        )
+
+        // Create the correct entities format according to Contentful API docs
+        const entities: {
+          sys: { type: "Array" }
+          items: VersionedLink[]
+        } = {
+          sys: {
+            type: "Array",
+          },
+          items: entryVersions,
+        }
+
+        // Create the bulk action
+        const bulkAction = await contentfulClient.bulkAction.unpublish(
+          {
+            spaceId,
+            environmentId,
+          },
+          {
+            entities,
+          },
+        )
+
+        // Wait for the bulk action to complete
+        let action = (await contentfulClient.bulkAction.get({
+          spaceId,
+          environmentId,
+          bulkActionId: bulkAction.sys.id,
+        })) as BulkActionResponse // Cast to our extended interface
+
+        while (action.sys.status === "inProgress" || action.sys.status === "created") {
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          action = (await contentfulClient.bulkAction.get({
+            spaceId,
+            environmentId,
+            bulkActionId: bulkAction.sys.id,
+          })) as BulkActionResponse // Cast to our extended interface
+        }
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Bulk unpublish completed with status: ${action.sys.status}. ${
+                action.sys.status === "failed"
+                  ? `Error: ${JSON.stringify(action.error)}`
+                  : `Successfully processed ${action.succeeded?.length || 0} items.`
+              }`,
+            },
+          ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error during bulk unpublish: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        }
+      }
+    }
+
     // Handle single entry unpublishing
     const params = {
       spaceId,
       environmentId,
-      entryId: args.entryId,
+      entryId: entryId as string,
     }
 
     const contentfulClient = await getContentfulClient()

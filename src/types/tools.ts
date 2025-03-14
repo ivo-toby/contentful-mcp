@@ -129,17 +129,17 @@ export const getEntryTools = () => {
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
-          entryId: { 
+          entryId: {
             oneOf: [
               { type: "string" },
-              { 
-                type: "array", 
+              {
+                type: "array",
                 items: { type: "string" },
                 maxItems: 100,
-                description: "Array of entry IDs to publish (max: 100)"
-              }
+                description: "Array of entry IDs to publish (max: 100)",
+              },
             ],
-            description: "ID of the entry to publish, or an array of entry IDs (max: 100)"
+            description: "ID of the entry to publish, or an array of entry IDs (max: 100)",
           },
         },
         required: ["entryId"],
@@ -152,17 +152,17 @@ export const getEntryTools = () => {
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
-          entryId: { 
+          entryId: {
             oneOf: [
               { type: "string" },
-              { 
-                type: "array", 
+              {
+                type: "array",
                 items: { type: "string" },
                 maxItems: 100,
-                description: "Array of entry IDs to unpublish (max: 100)"
-              }
+                description: "Array of entry IDs to unpublish (max: 100)",
+              },
             ],
-            description: "ID of the entry to unpublish, or an array of entry IDs (max: 100)"
+            description: "ID of the entry to unpublish, or an array of entry IDs (max: 100)",
           },
         },
         required: ["entryId"],
@@ -524,76 +524,6 @@ export const getSpaceEnvTools = () => {
 // Tool definitions for Bulk Actions
 export const getBulkActionTools = () => {
   return {
-    BULK_PUBLISH: {
-      name: "bulk_publish",
-      description: "Publish multiple entries or assets at once",
-      inputSchema: getSpaceEnvProperties({
-        type: "object",
-        properties: {
-          entities: {
-            type: "array",
-            description: "Array of entries or assets to publish",
-            items: {
-              type: "object",
-              properties: {
-                sys: {
-                  type: "object",
-                  properties: {
-                    id: {
-                      type: "string",
-                      description: "ID of the entry or asset",
-                    },
-                    type: {
-                      type: "string",
-                      enum: ["Entry", "Asset"],
-                      description: "Type of entity (Entry or Asset)",
-                    },
-                  },
-                  required: ["id", "type"],
-                },
-              },
-              required: ["sys"],
-            },
-          },
-        },
-        required: ["entities"],
-      }),
-    },
-    BULK_UNPUBLISH: {
-      name: "bulk_unpublish",
-      description: "Unpublish multiple entries or assets at once",
-      inputSchema: getSpaceEnvProperties({
-        type: "object",
-        properties: {
-          entities: {
-            type: "array",
-            description: "Array of entries or assets to unpublish",
-            items: {
-              type: "object",
-              properties: {
-                sys: {
-                  type: "object",
-                  properties: {
-                    id: {
-                      type: "string",
-                      description: "ID of the entry or asset",
-                    },
-                    type: {
-                      type: "string",
-                      enum: ["Entry", "Asset"],
-                      description: "Type of entity (Entry or Asset)",
-                    },
-                  },
-                  required: ["id", "type"],
-                },
-              },
-              required: ["sys"],
-            },
-          },
-        },
-        required: ["entities"],
-      }),
-    },
     BULK_VALIDATE: {
       name: "bulk_validate",
       description: "Validate multiple entries at once",
