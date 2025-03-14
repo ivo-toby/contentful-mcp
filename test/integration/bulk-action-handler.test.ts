@@ -1,4 +1,4 @@
-import { expect, vi } from "vitest"
+import { expect } from "vitest"
 import { bulkActionHandlers } from "../../src/handlers/bulk-action-handlers.js"
 import { server } from "../msw-setup.js"
 
