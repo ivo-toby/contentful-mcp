@@ -142,64 +142,42 @@ export const entryHandlers = {
     
     // If entryId is an array, handle bulk publishing
     if (Array.isArray(entryId)) {
-      // Get the bulkActionHandlers if they exist
       try {
-        const { bulkActionHandlers } = await import("./bulk-action-handlers.js")
-        
-        // Map entry IDs to the expected format for bulkPublish
-        const entities = entryId.map(id => ({
-          sys: { id, type: "Entry" as const }
-        }))
-        
-        return bulkActionHandlers.bulkPublish({
-          spaceId,
-          environmentId,
-          entities
-        })
-      } catch (error) {
-        // Fall back to our own implementation if the import fails
-        console.warn("Failed to import bulk-action-handlers.js, using fallback implementation:", error)
-        
-        // Map entry IDs to the expected format for bulk publishing
-        const entities = entryId.map(id => ({
-          sys: { id, type: "Entry" as const }
-        }))
-        
         const contentfulClient = await getContentfulClient()
         
         // Get the current version of each entity
-        const entityVersions = await Promise.all(
-          entities.map(async (entity) => {
+        const entryVersions = await Promise.all(
+          entryId.map(async (id) => {
             try {
               // Get the current version of the entry
               const currentEntry = await contentfulClient.entry.get({
                 spaceId,
                 environmentId,
-                entryId: entity.sys.id
+                entryId: id
               })
               
-              // Create a versioned link
+              // Create a versioned link according to the API docs
               return {
                 sys: {
                   type: "Link",
                   linkType: "Entry",
-                  id: entity.sys.id,
+                  id: id,
                   version: currentEntry.sys.version
                 }
               }
             } catch (error) {
-              console.error(`Error fetching entry ${entity.sys.id}: ${error}`)
-              throw new Error(`Failed to get version for entry ${entity.sys.id}. All entries must have a version.`)
+              console.error(`Error fetching entry ${id}: ${error}`)
+              throw new Error(`Failed to get version for entry ${id}. All entries must have a version.`)
             }
           })
         )
         
-        // Create the collection object
-        const entitiesCollection = {
-          sys: {
-            type: "Array"
+        // Create the correct entities format according to Contentful API docs
+        const entities = {
+          sys: { 
+            type: "Array" 
           },
-          items: entityVersions
+          items: entryVersions
         }
         
         // Create the bulk action
@@ -209,7 +187,7 @@ export const entryHandlers = {
             environmentId,
           },
           {
-            entities: entitiesCollection,
+            entities
           }
         )
         
@@ -240,6 +218,16 @@ export const entryHandlers = {
               }`,
             },
           ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error during bulk publish: ${error instanceof Error ? error.message : String(error)}`
+            }
+          ],
+          isError: true
         }
       }
     }
@@ -285,64 +273,42 @@ export const entryHandlers = {
     
     // If entryId is an array, handle bulk unpublishing
     if (Array.isArray(entryId)) {
-      // Get the bulkActionHandlers if they exist
       try {
-        const { bulkActionHandlers } = await import("./bulk-action-handlers.js")
-        
-        // Map entry IDs to the expected format for bulkUnpublish
-        const entities = entryId.map(id => ({
-          sys: { id, type: "Entry" as const }
-        }))
-        
-        return bulkActionHandlers.bulkUnpublish({
-          spaceId,
-          environmentId,
-          entities
-        })
-      } catch (error) {
-        // Fall back to our own implementation if the import fails
-        console.warn("Failed to import bulk-action-handlers.js, using fallback implementation:", error)
-        
-        // Map entry IDs to the expected format for bulk unpublishing
-        const entities = entryId.map(id => ({
-          sys: { id, type: "Entry" as const }
-        }))
-        
         const contentfulClient = await getContentfulClient()
         
         // Get the current version of each entity
-        const entityVersions = await Promise.all(
-          entities.map(async (entity) => {
+        const entryVersions = await Promise.all(
+          entryId.map(async (id) => {
             try {
               // Get the current version of the entry
               const currentEntry = await contentfulClient.entry.get({
                 spaceId,
                 environmentId,
-                entryId: entity.sys.id
+                entryId: id
               })
               
-              // Create a versioned link
+              // Create a versioned link according to the API docs
               return {
                 sys: {
                   type: "Link",
                   linkType: "Entry",
-                  id: entity.sys.id,
+                  id: id,
                   version: currentEntry.sys.version
                 }
               }
             } catch (error) {
-              console.error(`Error fetching entry ${entity.sys.id}: ${error}`)
-              throw new Error(`Failed to get version for entry ${entity.sys.id}. All entries must have a version.`)
+              console.error(`Error fetching entry ${id}: ${error}`)
+              throw new Error(`Failed to get version for entry ${id}. All entries must have a version.`)
             }
           })
         )
         
-        // Create the collection object
-        const entitiesCollection = {
-          sys: {
-            type: "Array"
+        // Create the correct entities format according to Contentful API docs
+        const entities = {
+          sys: { 
+            type: "Array" 
           },
-          items: entityVersions
+          items: entryVersions
         }
         
         // Create the bulk action
@@ -352,7 +318,7 @@ export const entryHandlers = {
             environmentId,
           },
           {
-            entities: entitiesCollection,
+            entities
           }
         )
         
@@ -383,6 +349,16 @@ export const entryHandlers = {
               }`,
             },
           ],
+        }
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error during bulk unpublish: ${error instanceof Error ? error.message : String(error)}`
+            }
+          ],
+          isError: true
         }
       }
     }

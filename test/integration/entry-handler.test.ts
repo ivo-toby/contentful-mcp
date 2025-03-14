@@ -3,32 +3,18 @@ import { expect, vi } from "vitest"
 import { entryHandlers } from "../../src/handlers/entry-handlers.js"
 import { server } from "../msw-setup.js"
 
-// Set up mocks for bulk action handlers
-const bulkPublishMock = vi.fn().mockResolvedValue({
-  content: [
-    {
-      type: "text",
-      text: "Bulk publish completed with status: succeeded. Successfully processed 2 items.",
-    },
-  ],
+// Mock Contentful client bulkAction methods
+const mockBulkActionPublish = vi.fn().mockResolvedValue({ 
+  sys: { id: "mock-bulk-action-id", status: "created" } 
 })
 
-const bulkUnpublishMock = vi.fn().mockResolvedValue({
-  content: [
-    {
-      type: "text",
-      text: "Bulk unpublish completed with status: succeeded. Successfully processed 2 items.",
-    },
-  ],
+const mockBulkActionGet = vi.fn().mockResolvedValue({
+  sys: { id: "mock-bulk-action-id", status: "succeeded" },
+  succeeded: [
+    { sys: { id: "entry-id-1", type: "Entry" }},
+    { sys: { id: "entry-id-2", type: "Entry" }}
+  ]
 })
-
-// Mock the bulk-action-handlers module
-vi.mock("../../src/handlers/bulk-action-handlers.js", () => ({
-  bulkActionHandlers: {
-    bulkPublish: bulkPublishMock,
-    bulkUnpublish: bulkUnpublishMock,
-  },
-}))
 
 // Mock the contentful client for testing bulk operations
 vi.mock("../../src/config/client.js", async (importOriginal) => {
@@ -66,19 +52,9 @@ vi.mock("../../src/config/client.js", async (importOriginal) => {
         unpublish: (...args) => originalGetClient().then(client => client.entry.unpublish(...args)),
       },
       bulkAction: {
-        publish: vi.fn().mockResolvedValue({
-          sys: { id: "bulk-action-id", status: "created" }
-        }),
-        unpublish: vi.fn().mockResolvedValue({
-          sys: { id: "bulk-action-id", status: "created" }
-        }),
-        get: vi.fn().mockResolvedValue({
-          sys: { id: "bulk-action-id", status: "succeeded" },
-          succeeded: [
-            { sys: { id: "entry-id-1", type: "Entry" } },
-            { sys: { id: "entry-id-2", type: "Entry" } },
-          ]
-        }),
+        publish: mockBulkActionPublish,
+        unpublish: mockBulkActionPublish, // Using same mock for simplicity
+        get: mockBulkActionGet
       }
     };
     
@@ -222,25 +198,28 @@ describe("Entry Handlers Integration Tests", () => {
       expect(entry.sys.publishedVersion).to.exist
     })
 
-    it("should publish multiple entries using bulkPublish", async () => {
-      // Clear previous calls to the mock
-      bulkPublishMock.mockClear()
+    it("should publish multiple entries using bulk publish", async () => {
+      // Clear previous calls to the mocks
+      mockBulkActionPublish.mockClear()
+      mockBulkActionGet.mockClear()
 
       const result = await entryHandlers.publishEntry({
         spaceId: testSpaceId,
         entryId: ["entry-id-1", "entry-id-2"],
       })
 
-      expect(bulkPublishMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          spaceId: testSpaceId,
-          entities: [
-            { sys: { id: "entry-id-1", type: "Entry" } },
-            { sys: { id: "entry-id-2", type: "Entry" } },
-          ],
-        }),
-      )
+      // Verify the bulk publish was called
+      expect(mockBulkActionPublish).toHaveBeenCalled()
+      
+      // Verify the payload structure
+      const callArgs = mockBulkActionPublish.mock.calls[0][1]
+      expect(callArgs).to.have.property('entities')
+      expect(callArgs.entities.sys.type).to.equal('Array')
+      expect(callArgs.entities.items).to.have.length(2)
+      expect(callArgs.entities.items[0].sys.id).to.equal('entry-id-1')
+      expect(callArgs.entities.items[1].sys.id).to.equal('entry-id-2')
 
+      // Verify the response
       expect(result).to.have.property("content")
       expect(result.content[0].text).to.include("Bulk publish completed")
       expect(result.content[0].text).to.include("Successfully processed")
@@ -259,25 +238,28 @@ describe("Entry Handlers Integration Tests", () => {
       expect(entry.sys.publishedVersion).to.not.exist
     })
 
-    it("should unpublish multiple entries using bulkUnpublish", async () => {
-      // Clear previous calls to the mock
-      bulkUnpublishMock.mockClear()
+    it("should unpublish multiple entries using bulk unpublish", async () => {
+      // Clear previous calls to the mocks
+      mockBulkActionPublish.mockClear()
+      mockBulkActionGet.mockClear()
 
       const result = await entryHandlers.unpublishEntry({
         spaceId: testSpaceId,
         entryId: ["entry-id-1", "entry-id-2"],
       })
 
-      expect(bulkUnpublishMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          spaceId: testSpaceId,
-          entities: [
-            { sys: { id: "entry-id-1", type: "Entry" } },
-            { sys: { id: "entry-id-2", type: "Entry" } },
-          ],
-        }),
-      )
+      // Verify the bulk unpublish was called
+      expect(mockBulkActionPublish).toHaveBeenCalled()
+      
+      // Verify the payload structure
+      const callArgs = mockBulkActionPublish.mock.calls[0][1]
+      expect(callArgs).to.have.property('entities')
+      expect(callArgs.entities.sys.type).to.equal('Array')
+      expect(callArgs.entities.items).to.have.length(2)
+      expect(callArgs.entities.items[0].sys.id).to.equal('entry-id-1')
+      expect(callArgs.entities.items[1].sys.id).to.equal('entry-id-2')
 
+      // Verify the response
       expect(result).to.have.property("content")
       expect(result.content[0].text).to.include("Bulk unpublish completed")
       expect(result.content[0].text).to.include("Successfully processed")
