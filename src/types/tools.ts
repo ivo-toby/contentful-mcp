@@ -1,4 +1,12 @@
-export const getSpaceEnvProperties = (config) => {
+// Define interface for config parameter
+interface ConfigSchema {
+  type: string
+  properties: Record<string, any>
+  required?: string[]
+  [key: string]: any
+}
+
+export const getSpaceEnvProperties = (config: ConfigSchema): ConfigSchema => {
   const spaceEnvProperties = {
     spaceId: {
       type: "string",
