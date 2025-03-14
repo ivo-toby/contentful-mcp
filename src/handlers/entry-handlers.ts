@@ -1,7 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getContentfulClient } from "../config/client.js"
 import { summarizeData } from "../utils/summarizer.js"
-import { CreateEntryProps, EntryProps, QueryOptions } from "contentful-management"
+import { 
+  CreateEntryProps, 
+  EntryProps, 
+  QueryOptions, 
+  BulkActionProps, 
+  Link,
+  Collection 
+} from "contentful-management"
+
+// Define the interface for bulk action responses with succeeded property
+interface BulkActionResponse extends BulkActionProps<any> {
+  succeeded?: Array<{
+    sys: {
+      id: string;
+      type: string;
+    }
+  }>;
+}
+
+// Define the interface for versioned links
+interface VersionedLink {
+  sys: {
+    type: "Link";
+    linkType: "Entry" | "Asset";
+    id: string;
+    version: number;
+  }
+}
 
 export const entryHandlers = {
   searchEntries: async (args: { spaceId: string; environmentId: string; query: QueryOptions }) => {
@@ -157,7 +184,7 @@ export const entryHandlers = {
               })
               
               // Create a versioned link according to the API docs
-              return {
+              const versionedLink: VersionedLink = {
                 sys: {
                   type: "Link",
                   linkType: "Entry",
@@ -165,6 +192,7 @@ export const entryHandlers = {
                   version: currentEntry.sys.version
                 }
               }
+              return versionedLink
             } catch (error) {
               console.error(`Error fetching entry ${id}: ${error}`)
               throw new Error(`Failed to get version for entry ${id}. All entries must have a version.`)
@@ -173,7 +201,10 @@ export const entryHandlers = {
         )
         
         // Create the correct entities format according to Contentful API docs
-        const entities = {
+        const entities: { 
+          sys: { type: "Array" }, 
+          items: VersionedLink[] 
+        } = {
           sys: { 
             type: "Array" 
           },
@@ -196,7 +227,7 @@ export const entryHandlers = {
           spaceId,
           environmentId,
           bulkActionId: bulkAction.sys.id,
-        })
+        }) as BulkActionResponse // Cast to our extended interface
         
         while (action.sys.status === "inProgress" || action.sys.status === "created") {
           await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -204,7 +235,7 @@ export const entryHandlers = {
             spaceId,
             environmentId,
             bulkActionId: bulkAction.sys.id,
-          })
+          }) as BulkActionResponse // Cast to our extended interface
         }
         
         return {
@@ -288,7 +319,7 @@ export const entryHandlers = {
               })
               
               // Create a versioned link according to the API docs
-              return {
+              const versionedLink: VersionedLink = {
                 sys: {
                   type: "Link",
                   linkType: "Entry",
@@ -296,6 +327,7 @@ export const entryHandlers = {
                   version: currentEntry.sys.version
                 }
               }
+              return versionedLink
             } catch (error) {
               console.error(`Error fetching entry ${id}: ${error}`)
               throw new Error(`Failed to get version for entry ${id}. All entries must have a version.`)
@@ -304,7 +336,10 @@ export const entryHandlers = {
         )
         
         // Create the correct entities format according to Contentful API docs
-        const entities = {
+        const entities: { 
+          sys: { type: "Array" }, 
+          items: VersionedLink[] 
+        } = {
           sys: { 
             type: "Array" 
           },
@@ -327,7 +362,7 @@ export const entryHandlers = {
           spaceId,
           environmentId,
           bulkActionId: bulkAction.sys.id,
-        })
+        }) as BulkActionResponse // Cast to our extended interface
         
         while (action.sys.status === "inProgress" || action.sys.status === "created") {
           await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -335,7 +370,7 @@ export const entryHandlers = {
             spaceId,
             environmentId,
             bulkActionId: bulkAction.sys.id,
-          })
+          }) as BulkActionResponse // Cast to our extended interface
         }
         
         return {
