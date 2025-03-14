@@ -27,19 +27,20 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
     
     // Create the bulk action
-    const bulkAction = await contentfulClient.bulkAction.publish({
-      spaceId,
-      environmentId,
-      action: "publish",
-      payload: {
+    const bulkAction = await contentfulClient.bulkAction.publish(
+      {
+        spaceId,
+        environmentId,
+      }, 
+      {
         entities: {
           sys: {
             type: "Array",
           },
           items: args.entities,
         },
-      },
-    })
+      }
+    )
     
     // Wait for the bulk action to complete
     let action = await contentfulClient.bulkAction.get({
@@ -78,19 +79,20 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
     
     // Create the bulk action
-    const bulkAction = await contentfulClient.bulkAction.unpublish({
-      spaceId,
-      environmentId,
-      action: "unpublish",
-      payload: {
+    const bulkAction = await contentfulClient.bulkAction.unpublish(
+      {
+        spaceId,
+        environmentId,
+      },
+      {
         entities: {
           sys: {
             type: "Array",
           },
           items: args.entities,
         },
-      },
-    })
+      }
+    )
     
     // Wait for the bulk action to complete
     let action = await contentfulClient.bulkAction.get({
@@ -129,11 +131,12 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
     
     // Create the bulk action
-    const bulkAction = await contentfulClient.bulkAction.validate({
-      spaceId,
-      environmentId,
-      action: "validate",
-      payload: {
+    const bulkAction = await contentfulClient.bulkAction.validate(
+      {
+        spaceId,
+        environmentId,
+      },
+      {
         entities: {
           sys: {
             type: "Array",
@@ -146,8 +149,8 @@ export const bulkActionHandlers = {
             }
           })),
         },
-      },
-    })
+      }
+    )
     
     // Wait for the bulk action to complete
     let action = await contentfulClient.bulkAction.get({
