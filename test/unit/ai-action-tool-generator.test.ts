@@ -96,18 +96,19 @@ describe("AI Action Tool Generator", () => {
     const schema = generateAiActionToolSchema(mockTextAction)
     
     expect(schema.name).toBe("ai_action_text-action")
-    expect(schema.description).toBe("Text Action: An action with text variables")
+    expect(schema.description).toContain("Text Action: An action with text variables")
+    expect(schema.description).toContain("This AI Action works on content entries and fields in Contentful")
     
-    // Check variables in schema
+    // Check variables in schema - now using friendly names
     const inputSchema = schema.inputSchema
-    expect(inputSchema.properties).toHaveProperty("var1")
-    expect(inputSchema.properties).toHaveProperty("var2")
-    expect(inputSchema.properties.var1.type).toBe("string")
-    expect(inputSchema.properties.var1.description).toBe("First variable")
+    expect(inputSchema.properties).toHaveProperty("variable_1") // snake_case of "Variable 1"
+    expect(inputSchema.properties).toHaveProperty("variable_2") // snake_case of "Variable 2"
+    expect(inputSchema.properties.variable_1.type).toBe("string")
+    expect(inputSchema.properties.variable_1.description).toContain("First variable")
     
     // var1 should be required, var2 should be optional
-    expect(inputSchema.required).toContain("var1")
-    expect(inputSchema.required).not.toContain("var2")
+    expect(inputSchema.required).toContain("variable_1")
+    expect(inputSchema.required).not.toContain("variable_2")
   })
 
   it("should generate a tool schema for an options action", () => {
@@ -117,7 +118,7 @@ describe("AI Action Tool Generator", () => {
     
     // Check options in schema
     const inputSchema = schema.inputSchema
-    expect(inputSchema.properties).toHaveProperty("option")
+    expect(inputSchema.properties).toHaveProperty("option") // Keeps original name since it's clean
     expect(inputSchema.properties.option.type).toBe("string")
     expect(inputSchema.properties.option.enum).toEqual(["option1", "option2", "option3"])
     
@@ -130,17 +131,17 @@ describe("AI Action Tool Generator", () => {
     
     expect(schema.name).toBe("ai_action_reference-action")
     
-    // Check reference variables in schema
+    // Check reference variables in schema - now uses friendly names
     const inputSchema = schema.inputSchema
-    expect(inputSchema.properties).toHaveProperty("entry")
-    expect(inputSchema.properties).toHaveProperty("asset")
-    expect(inputSchema.properties.entry.type).toBe("string")
-    expect(inputSchema.properties.asset.type).toBe("string")
-    expect(inputSchema.properties.entry.description).toContain("ID of the referenced entity")
+    expect(inputSchema.properties).toHaveProperty("entry_reference") // friendly name
+    expect(inputSchema.properties).toHaveProperty("asset_reference") // friendly name
+    expect(inputSchema.properties.entry_reference.type).toBe("string")
+    expect(inputSchema.properties.asset_reference.type).toBe("string")
+    expect(inputSchema.properties.entry_reference.description).toContain("Entry Reference")
     
     // References should be required
-    expect(inputSchema.required).toContain("entry")
-    expect(inputSchema.required).toContain("asset")
+    expect(inputSchema.required).toContain("entry_reference")
+    expect(inputSchema.required).toContain("asset_reference")
   })
 
   it("should map variables to invocation format", () => {
@@ -235,5 +236,63 @@ describe("AI Action Tool Generator", () => {
       },
       waitForCompletion: false
     })
+  })
+  
+  it("should use friendly parameter names in tool schema and map them back for invocation", () => {
+    // Create a mock AI Action with cryptic variable IDs
+    const crypticAction: AiActionEntity = {
+      sys: {
+        id: "cryptic-action",
+        type: "AiAction",
+        createdAt: "2023-01-01T00:00:00Z",
+        updatedAt: "2023-01-02T00:00:00Z",
+        version: 1,
+        space: { sys: { id: "space1", linkType: "Space", type: "Link" } },
+        createdBy: { sys: { id: "user1", linkType: "User", type: "Link" } },
+        updatedBy: { sys: { id: "user1", linkType: "User", type: "Link" } }
+      },
+      name: "Cryptic Action",
+      description: "An action with cryptic IDs",
+      instruction: {
+        template: "Template with {{x7yz12b}} and {{87abcde}}",
+        variables: [
+          { id: "x7yz12b", type: "Text", name: "First Variable", description: "Named text input" },
+          { id: "87abcde", type: "StandardInput", description: "Unnamed standard input" }
+        ]
+      },
+      configuration: {
+        modelType: "gpt-4",
+        modelTemperature: 0.5
+      }
+    }
+    
+    // Generate tool schema
+    const schema = generateAiActionToolSchema(crypticAction)
+    
+    // Check that friendly names are used in the schema
+    const inputSchema = schema.inputSchema
+    expect(inputSchema.properties).toHaveProperty("first_variable") // snake_case conversion of name
+    expect(inputSchema.properties).toHaveProperty("input_text") // Standard naming for StandardInput
+    expect(inputSchema.properties).not.toHaveProperty("x7yz12b") // Original ID not used
+    expect(inputSchema.properties).not.toHaveProperty("87abcde") // Original ID not used
+    
+    // Test parameter translation
+    const context = new AiActionToolContext("space1", "master")
+    context.addAiAction(crypticAction)
+    
+    // Input using friendly names
+    const toolInput = {
+      first_variable: "value1",
+      input_text: "value2",
+      outputFormat: "Markdown"
+    }
+    
+    const params = context.getInvocationParams("cryptic-action", toolInput)
+    
+    // Verify the parameters were translated to original IDs
+    expect(params.invocationData.variables).toEqual([
+      { id: "x7yz12b", value: "value1" },
+      { id: "87abcde", value: "value2" }
+    ])
   })
 })

@@ -210,14 +210,11 @@ function getHandler(name: string) {
 // Handler for dynamic AI Action tools
 async function handleAiActionInvocation(actionId: string, args: any) {
   try {
-    // Get invocation parameters from the tool context
+    // The getInvocationParams method now handles parameter translation
     const params = aiActionToolContext.getInvocationParams(actionId, args)
     
     // Invoke the AI Action
-    return aiActionHandlers.invokeAiAction({
-      ...params,
-      variables: args
-    })
+    return aiActionHandlers.invokeAiAction(params)
   } catch (error) {
     return {
       isError: true,
@@ -258,6 +255,27 @@ async function loadAiActions() {
     // Add each AI Action to the context
     for (const action of response.items) {
       aiActionToolContext.addAiAction(action)
+      
+      // Log variable mappings for debugging
+      if (action.instruction.variables && action.instruction.variables.length > 0) {
+        // Log ID mappings
+        const idMappings = aiActionToolContext.getIdMappings(action.sys.id)
+        if (idMappings && idMappings.size > 0) {
+          const mappingLog = Array.from(idMappings.entries())
+            .map(([friendly, original]) => `${friendly} -> ${original}`)
+            .join(', ')
+          console.error(`AI Action ${action.name} - Parameter mappings: ${mappingLog}`)
+        }
+        
+        // Log path mappings
+        const pathMappings = aiActionToolContext.getPathMappings(action.sys.id)
+        if (pathMappings && pathMappings.size > 0) {
+          const pathMappingLog = Array.from(pathMappings.entries())
+            .map(([friendly, original]) => `${friendly} -> ${original}`)
+            .join(', ')
+          console.error(`AI Action ${action.name} - Path parameter mappings: ${pathMappingLog}`)
+        }
+      }
     }
     
     console.error(`Loaded ${response.items.length} AI Actions`)
