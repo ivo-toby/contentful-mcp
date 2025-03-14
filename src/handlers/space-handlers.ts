@@ -33,19 +33,15 @@ export const spaceHandlers = {
   },
 
   createEnvironment: async (args: { spaceId: string; environmentId: string; name: string }) => {
-    const params = {
-      spaceId: args.spaceId,
-    }
-
-    const environmentProps = {
-      name: args.name,
-    }
-
     const contentfulClient = await getContentfulClient()
     const environment = await contentfulClient.environment.create(
-      params,
-      args.environmentId,
-      environmentProps,
+      {
+        spaceId: args.spaceId,
+        environmentId: args.environmentId,
+      },
+      {
+        name: args.name,
+      },
     )
     return {
       content: [{ type: "text", text: JSON.stringify(environment, null, 2) }],

@@ -1,4 +1,12 @@
-export const getSpaceEnvProperties = (config) => {
+// Define interface for config parameter
+interface ConfigSchema {
+  type: string
+  properties: Record<string, any>
+  required?: string[]
+  [key: string]: any
+}
+
+export const getSpaceEnvProperties = (config: ConfigSchema): ConfigSchema => {
   const spaceEnvProperties = {
     spaceId: {
       type: "string",
@@ -513,6 +521,99 @@ export const getSpaceEnvTools = () => {
   }
 }
 
+// Tool definitions for Bulk Actions
+export const getBulkActionTools = () => {
+  return {
+    BULK_PUBLISH: {
+      name: "bulk_publish",
+      description: "Publish multiple entries or assets at once",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          entities: {
+            type: "array",
+            description: "Array of entries or assets to publish",
+            items: {
+              type: "object",
+              properties: {
+                sys: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "ID of the entry or asset",
+                    },
+                    type: {
+                      type: "string",
+                      enum: ["Entry", "Asset"],
+                      description: "Type of entity (Entry or Asset)",
+                    },
+                  },
+                  required: ["id", "type"],
+                },
+              },
+              required: ["sys"],
+            },
+          },
+        },
+        required: ["entities"],
+      }),
+    },
+    BULK_UNPUBLISH: {
+      name: "bulk_unpublish",
+      description: "Unpublish multiple entries or assets at once",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          entities: {
+            type: "array",
+            description: "Array of entries or assets to unpublish",
+            items: {
+              type: "object",
+              properties: {
+                sys: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "string",
+                      description: "ID of the entry or asset",
+                    },
+                    type: {
+                      type: "string",
+                      enum: ["Entry", "Asset"],
+                      description: "Type of entity (Entry or Asset)",
+                    },
+                  },
+                  required: ["id", "type"],
+                },
+              },
+              required: ["sys"],
+            },
+          },
+        },
+        required: ["entities"],
+      }),
+    },
+    BULK_VALIDATE: {
+      name: "bulk_validate",
+      description: "Validate multiple entries at once",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          entryIds: {
+            type: "array",
+            description: "Array of entry IDs to validate",
+            items: {
+              type: "string",
+            },
+          },
+        },
+        required: ["entryIds"],
+      }),
+    },
+  }
+}
+
 // Export combined tools
 export const getTools = () => {
   return {
@@ -520,5 +621,6 @@ export const getTools = () => {
     ...getAssetTools(),
     ...getContentTypeTools(),
     ...getSpaceEnvTools(),
+    ...getBulkActionTools(),
   }
 }
