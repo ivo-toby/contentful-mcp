@@ -32,8 +32,16 @@ interface VersionedLink {
     type: "Link"
     linkType: "Entry" | "Asset"
     id: string
-    version?: number
+    version: number
   }
+}
+
+// Define a Collection type to match SDK expectations
+interface Collection<T> {
+  sys: {
+    type: "Array"
+  }
+  items: T[]
 }
 
 type BulkUnpublishParams = BulkPublishParams
@@ -52,7 +60,7 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
 
     // Get the current version of each entity
-    const entityVersions: VersionedLink[] = await Promise.all(
+    const entityVersions = await Promise.all(
       args.entities.map(async (entity) => {
         try {
           // Get the current version of the entity
@@ -71,24 +79,25 @@ export const bulkActionHandlers = {
           return {
             sys: {
               type: "Link",
-              linkType: entity.sys.type,
+              linkType: entity.sys.type as "Entry" | "Asset",
               id: entity.sys.id,
               version: currentEntity.sys.version
             }
           };
         } catch (error) {
           console.error(`Error fetching entity ${entity.sys.id}: ${error}`);
-          // Return without version if we can't get it
-          return {
-            sys: {
-              type: "Link",
-              linkType: entity.sys.type,
-              id: entity.sys.id
-            }
-          };
+          throw new Error(`Failed to get version for entity ${entity.sys.id}. All entities must have a version.`);
         }
       })
     );
+
+    // Create the collection object with the correct structure
+    const entitiesCollection: Collection<VersionedLink> = {
+      sys: {
+        type: "Array"
+      },
+      items: entityVersions
+    };
 
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.publish(
@@ -97,12 +106,7 @@ export const bulkActionHandlers = {
         environmentId,
       },
       {
-        entities: {
-          sys: {
-            type: "Array",
-          },
-          items: entityVersions,
-        },
+        entities: entitiesCollection,
       },
     )
 
@@ -143,7 +147,7 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
 
     // Get the current version of each entity
-    const entityVersions: VersionedLink[] = await Promise.all(
+    const entityVersions = await Promise.all(
       args.entities.map(async (entity) => {
         try {
           // Get the current version of the entity
@@ -162,24 +166,25 @@ export const bulkActionHandlers = {
           return {
             sys: {
               type: "Link",
-              linkType: entity.sys.type,
+              linkType: entity.sys.type as "Entry" | "Asset",
               id: entity.sys.id,
               version: currentEntity.sys.version
             }
           };
         } catch (error) {
           console.error(`Error fetching entity ${entity.sys.id}: ${error}`);
-          // Return without version if we can't get it
-          return {
-            sys: {
-              type: "Link",
-              linkType: entity.sys.type,
-              id: entity.sys.id
-            }
-          };
+          throw new Error(`Failed to get version for entity ${entity.sys.id}. All entities must have a version.`);
         }
       })
     );
+
+    // Create the collection object with the correct structure
+    const entitiesCollection: Collection<VersionedLink> = {
+      sys: {
+        type: "Array"
+      },
+      items: entityVersions
+    };
 
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.unpublish(
@@ -188,12 +193,7 @@ export const bulkActionHandlers = {
         environmentId,
       },
       {
-        entities: {
-          sys: {
-            type: "Array",
-          },
-          items: entityVersions,
-        },
+        entities: entitiesCollection,
       },
     )
 
@@ -234,7 +234,7 @@ export const bulkActionHandlers = {
     const contentfulClient = await getContentfulClient()
 
     // Get the current version of each entry
-    const entityVersions: VersionedLink[] = await Promise.all(
+    const entityVersions = await Promise.all(
       args.entryIds.map(async (id) => {
         try {
           // Get the current version of the entry
@@ -254,17 +254,18 @@ export const bulkActionHandlers = {
           };
         } catch (error) {
           console.error(`Error fetching entry ${id}: ${error}`);
-          // Return without version if we can't get it
-          return {
-            sys: {
-              type: "Link",
-              linkType: "Entry",
-              id
-            }
-          };
+          throw new Error(`Failed to get version for entry ${id}. All entries must have a version.`);
         }
       })
     );
+
+    // Create the collection object with the correct structure
+    const entitiesCollection: Collection<VersionedLink> = {
+      sys: {
+        type: "Array"
+      },
+      items: entityVersions
+    };
 
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.validate(
@@ -273,12 +274,7 @@ export const bulkActionHandlers = {
         environmentId,
       },
       {
-        entities: {
-          sys: {
-            type: "Array",
-          },
-          items: entityVersions,
-        },
+        entities: entitiesCollection,
       },
     )
 
