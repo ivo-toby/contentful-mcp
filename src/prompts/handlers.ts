@@ -1,6 +1,12 @@
 import { GetPromptResult } from "@modelcontextprotocol/sdk/types"
 import { CONTENTFUL_PROMPTS } from "./contentful-prompts"
 
+/**
+ * Handle a prompt request and return the appropriate response
+ * @param name Prompt name
+ * @param args Optional arguments provided for the prompt
+ * @returns Prompt result with messages
+ */
 export async function handlePrompt(
   name: string,
   args?: Record<string, string>,
@@ -100,7 +106,7 @@ export async function handlePrompt(
             role: "user",
             content: {
               type: "text",
-              text: `I need assistance with ${args?.task || "managing"} entries in my Contentful space. ${args?.details || "Please guide me through the process and provide code examples if applicable."}`,
+              text: `I need assistance with ${args?.task || "managing"} entries in my Contentful space. ${args?.details || "Please guide me through the process, available tools, and provide code examples if applicable."}`,
             },
           },
         ],
@@ -120,7 +126,7 @@ export async function handlePrompt(
             role: "user",
             content: {
               type: "text",
-              text: `I need help with ${args?.task || "managing"} assets in Contentful. ${args?.details || "Please explain the process and potential challenges."}`,
+              text: `I need help with ${args?.task || "managing"} assets in Contentful. ${args?.details || "Please explain the process, available tools, and potential challenges."}`,
             },
           },
         ],
@@ -140,27 +146,67 @@ export async function handlePrompt(
             role: "user",
             content: {
               type: "text",
-              text: `I need assistance with ${args?.task || "defining"} content types in Contentful. ${args?.details || "Please guide me on best practices and implementation details."}`,
+              text: `I need assistance with ${args?.task || "defining"} content types in Contentful. ${args?.details || "Please guide me on best practices, available tools, and implementation details."}`,
             },
           },
         ],
       }
 
-    case "ai-actions-help":
+    case "ai-actions-create":
       return {
         messages: [
           {
             role: "assistant",
             content: {
               type: "text",
-              text: "I'm your Contentful AI Actions expert. I can help you create, configure, and invoke AI-powered content operations. I understand the AI Actions API, variable templates, model configurations, and how to integrate AI into your content workflows.",
+              text: "I'm your Contentful AI Actions specialist. I can help you design, create, and configure AI Actions that integrate AI capabilities into your content workflows. I understand templates, variables, conditions, and model settings.",
             },
           },
           {
             role: "user",
             content: {
               type: "text",
-              text: `I need help with ${args?.task || "implementing"} AI Actions in Contentful. ${args?.details || "Please guide me through the available options and implementation steps."}`,
+              text: `I want to create an AI Action for this use case: ${args?.useCase || "my Contentful project"}. ${args?.modelType ? `I'm planning to use the ${args?.modelType} model.` : "Please recommend appropriate model types."} Guide me through the creation process, including template design, variable configuration, and testing.`,
+            },
+          },
+        ],
+      }
+
+    case "ai-actions-variables":
+      return {
+        messages: [
+          {
+            role: "assistant",
+            content: {
+              type: "text",
+              text: "I'm your Contentful AI Actions variables expert. I can explain how to configure variables for AI Actions, including different types, configurations, and best practices for different scenarios.",
+            },
+          },
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `${args?.variableType ? `Explain how to use and configure the ${args?.variableType} variable type in AI Actions.` : "Explain the different variable types available in AI Actions, their use cases, and how to configure them effectively."} Include examples and best practices for template integration.`,
+            },
+          },
+        ],
+      }
+
+    case "ai-actions-invoke":
+      return {
+        messages: [
+          {
+            role: "assistant",
+            content: {
+              type: "text",
+              text: "I'm your Contentful AI Actions execution expert. I can help you invoke AI Actions, provide the right parameters, and understand the results. I know how to work with both simple and complex variable types, including references and entity paths.",
+            },
+          },
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `I need help with invoking an AI Action ${args?.actionId ? `with ID ${args?.actionId}` : "in my Contentful space"}. ${args?.details || "Please guide me through providing variables correctly, handling references, and interpreting the results."}`,
             },
           },
         ],
@@ -180,7 +226,7 @@ export async function handlePrompt(
             role: "user",
             content: {
               type: "text",
-              text: `I need to ${args?.operation || "perform a bulk operation"} on multiple ${args?.entityType || "entities"} in Contentful. ${args?.details || "Please explain the process and any limitations I should be aware of."}`,
+              text: `I need to ${args?.operation || "perform a bulk operation"} on multiple ${args?.entityType || "entities"} in Contentful. ${args?.details || "Please explain the process, available tools, and any limitations I should be aware of."}`,
             },
           },
         ],
@@ -200,7 +246,27 @@ export async function handlePrompt(
             role: "user",
             content: {
               type: "text",
-              text: `I need assistance with ${args?.task || "managing"} ${args?.entity || "spaces and environments"} in Contentful. ${args?.details || "Please guide me through the process and best practices."}`,
+              text: `I need assistance with ${args?.task || "managing"} ${args?.entity || "spaces and environments"} in Contentful. ${args?.details || "Please guide me through the process, available tools, and best practices."}`,
+            },
+          },
+        ],
+      }
+
+    case "mcp-tool-usage":
+      return {
+        messages: [
+          {
+            role: "assistant",
+            content: {
+              type: "text",
+              text: "I'm your Contentful MCP tool specialist. I can explain how to use the Model Context Protocol tools available in this integration to efficiently work with Contentful from your AI assistant.",
+            },
+          },
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `${args?.toolName ? `Explain how to use the ${args?.toolName} tool in the Contentful MCP integration.` : "Please provide an overview of the available tools in the Contentful MCP integration and how to use them effectively."} Include parameter explanations, example use cases, and common patterns.`,
             },
           },
         ],

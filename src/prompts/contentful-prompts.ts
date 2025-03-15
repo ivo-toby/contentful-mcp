@@ -1,3 +1,7 @@
+/**
+ * Prompt definitions for the Contentful MCP server
+ * These prompts help guide users through common operations and concepts
+ */
 export const CONTENTFUL_PROMPTS = {
   "explain-api-concepts": {
     name: "explain-api-concepts",
@@ -96,18 +100,45 @@ export const CONTENTFUL_PROMPTS = {
       }
     ]
   },
-  "ai-actions-help": {
-    name: "ai-actions-help",
-    description: "Assistance with creating and using AI-powered content operations",
+  "ai-actions-create": {
+    name: "ai-actions-create",
+    description: "Guide for creating and configuring AI Actions in Contentful",
     arguments: [
       {
-        name: "task",
-        description: "Specific task (create/update/invoke/configure models)",
+        name: "useCase",
+        description: "Purpose of the AI Action you want to create",
+        required: true
+      },
+      {
+        name: "modelType",
+        description: "AI model type (e.g., gpt-4, claude-3-opus)",
+        required: false
+      }
+    ]
+  },
+  "ai-actions-variables": {
+    name: "ai-actions-variables",
+    description: "Explanation of variable types and configuration for AI Actions",
+    arguments: [
+      {
+        name: "variableType",
+        description: "Type of variable (Text, Reference, StandardInput, etc)",
+        required: false
+      }
+    ]
+  },
+  "ai-actions-invoke": {
+    name: "ai-actions-invoke",
+    description: "Help with invoking AI Actions and processing results",
+    arguments: [
+      {
+        name: "actionId",
+        description: "ID of the AI Action (if known)",
         required: false
       },
       {
         name: "details",
-        description: "Additional context about AI requirements or variables",
+        description: "Additional context about your invocation requirements",
         required: false
       }
     ]
@@ -150,6 +181,17 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "details",
         description: "Additional context about workflow requirements",
+        required: false
+      }
+    ]
+  },
+  "mcp-tool-usage": {
+    name: "mcp-tool-usage",
+    description: "Instructions for using Contentful MCP tools effectively",
+    arguments: [
+      {
+        name: "toolName",
+        description: "Specific tool name (e.g., invoke_ai_action, create_entry)",
         required: false
       }
     ]
