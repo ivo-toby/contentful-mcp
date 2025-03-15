@@ -1,0 +1,107 @@
+{
+  "name": "Contentful MCP",
+  "version": "1.0.0",
+  "system_prompt": "Contentful MCP is a tool for interacting with the Contentful API, providing functionality for working with entries, assets, content types, and AI Actions within the Contentful headless CMS platform. This project is organized into handlers for different entity types, with support for standard CRUD operations as well as specialized bulk actions.",
+  "groups": [
+    {
+      "name": "Core",
+      "system_prompt": "I've grouped core files together into a group called \"${group_name}\". These files represent the main entry points and configuration for the Contentful MCP project.\n\nBelow are the relevant files which we will be discussing:\n\n${group_files}",
+      "data": ["index", "ai-actions-client", "client"]
+    },
+    {
+      "name": "Handlers",
+      "system_prompt": "I've grouped handler files together into a group called \"${group_name}\". These files contain the implementation of various API handlers for different entity types in Contentful.\n\nBelow are the relevant files which we will be discussing:\n\n${group_files}",
+      "data": [
+        "entry-handlers",
+        "asset-handlers",
+        "content-type-handlers",
+        "ai-action-handlers",
+        "bulk-action-handlers",
+        "space-handlers"
+      ]
+    },
+    {
+      "name": "Types",
+      "system_prompt": "I've grouped type definition files together into a group called \"${group_name}\". These files define the TypeScript interfaces and types used throughout the project.\n\nBelow are the relevant files which we will be discussing:\n\n${group_files}",
+      "data": ["ai-actions-types", "tools-types"]
+    },
+    {
+      "name": "Utils",
+      "system_prompt": "I've grouped utility files together into a group called \"${group_name}\". These files provide helper functions and utilities used across the project.\n\nBelow are the relevant files which we will be discussing:\n\n${group_files}",
+      "data": ["ai-action-tool-generator", "summarizer", "validation"]
+    }
+  ],
+  "data": {
+    "index": {
+      "type": "file",
+      "path": "src/index.ts",
+      "description": "The main entry point for the Contentful MCP project."
+    },
+    "ai-actions-client": {
+      "type": "file",
+      "path": "src/config/ai-actions-client.ts",
+      "description": "Configuration for the AI Actions client used to interact with Contentful's AI Actions API."
+    },
+    "client": {
+      "type": "file",
+      "path": "src/config/client.ts",
+      "description": "Configuration for the main Contentful client used to interact with the Contentful API."
+    },
+    "entry-handlers": {
+      "type": "file",
+      "path": "src/handlers/entry-handlers.ts",
+      "description": "Handlers for CRUD operations and other actions on Contentful entries."
+    },
+    "asset-handlers": {
+      "type": "file",
+      "path": "src/handlers/asset-handlers.ts",
+      "description": "Handlers for CRUD operations and other actions on Contentful assets."
+    },
+    "content-type-handlers": {
+      "type": "file",
+      "path": "src/handlers/content-type-handlers.ts",
+      "description": "Handlers for CRUD operations and other actions on Contentful content types."
+    },
+    "ai-action-handlers": {
+      "type": "file",
+      "path": "src/handlers/ai-action-handlers.ts",
+      "description": "Handlers for CRUD operations and other actions on Contentful AI Actions."
+    },
+    "bulk-action-handlers": {
+      "type": "file",
+      "path": "src/handlers/bulk-action-handlers.ts",
+      "description": "Handlers for bulk operations on Contentful entities."
+    },
+    "space-handlers": {
+      "type": "file",
+      "path": "src/handlers/space-handlers.ts",
+      "description": "Handlers for operations on Contentful spaces."
+    },
+    "ai-actions-types": {
+      "type": "file",
+      "path": "src/types/ai-actions.ts",
+      "description": "Type definitions for AI Actions entities and operations."
+    },
+    "tools-types": {
+      "type": "file",
+      "path": "src/types/tools.ts",
+      "description": "Type definitions for the tools used in the project."
+    },
+    "ai-action-tool-generator": {
+      "type": "file",
+      "path": "src/utils/ai-action-tool-generator.ts",
+      "description": "Utility for generating tool configurations for AI Actions."
+    },
+    "summarizer": {
+      "type": "file",
+      "path": "src/utils/summarizer.ts",
+      "description": "Utility for summarizing content and responses."
+    },
+    "validation": {
+      "type": "file",
+      "path": "src/utils/validation.ts",
+      "description": "Utility for validating input data and responses."
+    }
+  }
+}
+
