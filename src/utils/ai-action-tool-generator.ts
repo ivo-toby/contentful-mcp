@@ -464,9 +464,13 @@ export class AiActionToolContext {
 
     const waitForCompletion = toolInput.waitForCompletion !== false
 
+    // Use provided spaceId and environmentId if available, otherwise use defaults
+    const spaceId = toolInput.spaceId || this.spaceId
+    const environmentId = toolInput.environmentId || this.environmentId
+
     return {
-      spaceId: this.spaceId,
-      environmentId: this.environmentId,
+      spaceId,
+      environmentId,
       aiActionId: actionId,
       variables,
       outputFormat,

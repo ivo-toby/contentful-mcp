@@ -129,7 +129,14 @@ export const aiActionHandlers = {
     params: ListAiActionsParams,
   ): Promise<AiActionEntityCollection | { isError: true; message: string }> {
     try {
-      const { spaceId, environmentId, limit, skip, status } = params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { limit, skip, status } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
 
       const result = await aiActionsClient.listAiActions({
         spaceId,
@@ -152,7 +159,18 @@ export const aiActionHandlers = {
     params: GetAiActionParams,
   ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const { spaceId, environmentId, aiActionId } = params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { aiActionId } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
+
+      if (!aiActionId) {
+        return { isError: true, message: "AI Action ID is required" }
+      }
 
       const result = await aiActionsClient.getAiAction({
         spaceId,
@@ -173,8 +191,14 @@ export const aiActionHandlers = {
     params: CreateAiActionParams,
   ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const { spaceId, environmentId, name, description, instruction, configuration, testCases } =
-        params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { name, description, instruction, configuration, testCases } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
 
       const actionData: AiActionSchemaParsed = {
         name,
@@ -203,16 +227,18 @@ export const aiActionHandlers = {
     params: UpdateAiActionParams,
   ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const {
-        spaceId,
-        environmentId,
-        aiActionId,
-        name,
-        description,
-        instruction,
-        configuration,
-        testCases,
-      } = params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { aiActionId, name, description, instruction, configuration, testCases } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
+
+      if (!aiActionId) {
+        return { isError: true, message: "AI Action ID is required" }
+      }
 
       // First, get the current action to get the version
       const currentAction = await aiActionsClient.getAiAction({
@@ -250,7 +276,18 @@ export const aiActionHandlers = {
     params: DeleteAiActionParams,
   ): Promise<{ success: true } | { isError: true; message: string }> {
     try {
-      const { spaceId, environmentId, aiActionId } = params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { aiActionId } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
+
+      if (!aiActionId) {
+        return { isError: true, message: "AI Action ID is required" }
+      }
 
       // First, get the current action to get the version
       const currentAction = await aiActionsClient.getAiAction({
@@ -279,7 +316,18 @@ export const aiActionHandlers = {
     params: PublishAiActionParams,
   ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const { spaceId, environmentId, aiActionId } = params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { aiActionId } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
+
+      if (!aiActionId) {
+        return { isError: true, message: "AI Action ID is required" }
+      }
 
       // First, get the current action to get the version
       const currentAction = await aiActionsClient.getAiAction({
@@ -308,7 +356,18 @@ export const aiActionHandlers = {
     params: UnpublishAiActionParams,
   ): Promise<AiActionEntity | { isError: true; message: string }> {
     try {
-      const { spaceId, environmentId, aiActionId } = params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { aiActionId } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
+
+      if (!aiActionId) {
+        return { isError: true, message: "AI Action ID is required" }
+      }
 
       const result = await aiActionsClient.unpublishAiAction({
         spaceId,
@@ -329,13 +388,18 @@ export const aiActionHandlers = {
     params: InvokeAiActionParams,
   ): Promise<AiActionInvocation | { isError: true; message: string }> {
     try {
-      const {
-        spaceId,
-        environmentId,
-        aiActionId,
-        outputFormat = "Markdown",
-        waitForCompletion = true,
-      } = params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { aiActionId, outputFormat = "Markdown", waitForCompletion = true } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
+
+      if (!aiActionId) {
+        return { isError: true, message: "AI Action ID is required" }
+      }
 
       // Prepare variables based on the input format
       let variables = []
@@ -401,7 +465,22 @@ export const aiActionHandlers = {
     params: GetAiActionInvocationParams,
   ): Promise<AiActionInvocation | { isError: true; message: string }> {
     try {
-      const { spaceId, environmentId, aiActionId, invocationId } = params
+      // Use provided parameters or fall back to environment variables
+      const spaceId = params.spaceId || process.env.SPACE_ID
+      const environmentId = params.environmentId || process.env.ENVIRONMENT_ID || "master"
+      const { aiActionId, invocationId } = params
+
+      if (!spaceId) {
+        return { isError: true, message: "Space ID is required" }
+      }
+
+      if (!aiActionId) {
+        return { isError: true, message: "AI Action ID is required" }
+      }
+
+      if (!invocationId) {
+        return { isError: true, message: "Invocation ID is required" }
+      }
 
       const result = await aiActionsClient.getAiActionInvocation({
         spaceId,

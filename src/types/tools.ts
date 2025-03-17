@@ -101,7 +101,7 @@ export const getEntryTools = () => {
     UPDATE_ENTRY: {
       name: "update_entry",
       description:
-        "Update an existing entry, always send all field values, also the fields values that have not been updated",
+        "Update an existing entry, very important: always send all field values and all values related to locales, also the fields values that have not been updated",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -785,7 +785,8 @@ export const getAiActionTools = () => {
           },
           rawVariables: {
             type: "array",
-            description: "Array of raw variable objects (for complex variable types like references)",
+            description:
+              "Array of raw variable objects (for complex variable types like references)",
             items: {
               type: "object",
             },
