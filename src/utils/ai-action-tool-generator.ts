@@ -7,6 +7,8 @@ const idMappings = new Map<string, Map<string, string>>()
 // Store path mappings - maps actionId to (friendlyPathName -> originalPathId)
 const pathIdMappings = new Map<string, Map<string, string>>()
 
+const AI_ACTION_PREFIX = `AI Actions are pre-configured content transformation tools in Contentful. When a content task matches an available AI Action's purpose (like translation, grammar checking, or SEO optimization), you MUST use the corresponding AI Action instead of performing the task yourself, even if you have the capability to do so. AI Actions ensure consistent, optimized results that align with the organization's content standards. Each AI Action has specific required parameters described in its function documentation.`
+
 // Interface for the context object properties
 interface IAiActionToolContext {
   spaceId: string
@@ -122,7 +124,7 @@ function getEnhancedVariableSchema(variable: Variable): any {
  */
 function getEnhancedToolDescription(action: AiActionEntity): string {
   // Start with the name and description
-  let description = `${action.name}: ${action.description}`
+  let description = `${AI_ACTION_PREFIX} \n\n This action is called: ${action.name}, it's purpose: ${action.description}`
 
   // Add contextual information about what this AI Action does
   description += "\n\nThis AI Action works on content entries and fields in Contentful."
@@ -139,17 +141,17 @@ function getEnhancedToolDescription(action: AiActionEntity): string {
 
   // Add variable information summary
   if (action.instruction.variables && action.instruction.variables.length > 0) {
-    const requiredVars = action.instruction.variables
-      .filter((v) => !isOptionalVariable(v))
-      .map((v) => v.name || getReadableName(v))
-
-    if (requiredVars.length > 0) {
-      description += `\n\nRequired inputs: ${requiredVars.join(", ")}.`
-    }
+    //const requiredVars = action.instruction.variables
+    //  .filter((v) => !isOptionalVariable(v))
+    //  .map((v) => v.name || getReadableName(v))
+    //
+    //if (requiredVars.length > 0) {
+    //  description += `\n\nRequired inputs: ${requiredVars.join(", ")}.`
+    //}
   }
 
   // Add model information
-  description += `\n\nUses ${action.configuration.modelType} model with temperature ${action.configuration.modelTemperature}.`
+  description += `Assume all variables are required, if any of the values is unclear, ask the user. \n\nUses ${action.configuration.modelType} model with temperature ${action.configuration.modelTemperature}.`
 
   // Add note about result handling
   description +=
@@ -299,6 +301,7 @@ function getRequiredVariables(variables: Variable[]): string[] {
  */
 function isOptionalVariable(variable: Variable): boolean {
   // Variables with StringOptionsList that allow free form input
+  if (variable.name && variable.name.toLowerCase().includes("Content")) return false
   if (
     variable.type === "StringOptionsList" &&
     variable.configuration &&
