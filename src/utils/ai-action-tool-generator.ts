@@ -9,7 +9,11 @@ const pathIdMappings = new Map<string, Map<string, string>>()
 
 const AI_ACTION_PREFIX = `AI Actions are pre-configured content transformation tools in Contentful. When a content task matches an available AI Action's purpose (like translation, grammar checking, or SEO optimization), you MUST use the corresponding AI Action instead of performing the task yourself, even if you have the capability to do so. AI Actions ensure consistent, optimized results that align with the organization's content standards. Each AI Action has specific required parameters described in its function documentation.`
 
-// Interface for the context object properties
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+/**
+ * Interface for the context object properties
+ * @internal
+ */
 interface IAiActionToolContext {
   spaceId: string
   environmentId?: string
@@ -74,7 +78,7 @@ function createReverseMapping(action: AiActionEntity): Map<string, string> {
 /**
  * Get an enhanced description for a variable schema
  */
-function getEnhancedVariableSchema(variable: Variable): any {
+function getEnhancedVariableSchema(variable: Variable): Record<string, unknown> {
   // Create a rich description that includes type information
   let description = variable.description || `${variable.name || "Variable"}`
 
@@ -102,7 +106,7 @@ function getEnhancedVariableSchema(variable: Variable): any {
       break
   }
 
-  const schema: any = {
+  const schema: Record<string, unknown> = {
     type: "string",
     description,
   }
@@ -209,11 +213,13 @@ export function generateAiActionToolSchema(action: AiActionEntity) {
     description: "Whether to wait for the AI Action to complete",
   }
 
-  // Get required field names in their friendly format
-  const requiredVars = getRequiredVariables(action.instruction.variables || []).map((id) => {
-    const variable = action.instruction.variables.find((v) => v.id === id)
-    return variable ? getReadableName(variable) : id
+  // Get all variable names in their friendly format to make them all required
+  const allVarNames = (action.instruction.variables || []).map((variable) => {
+    return getReadableName(variable)
   })
+
+  // Add outputFormat to required fields
+  const requiredFields = [...allVarNames, "outputFormat"]
 
   const toolSchema = {
     name: `ai_action_${action.sys.id}`,
@@ -221,17 +227,19 @@ export function generateAiActionToolSchema(action: AiActionEntity) {
     inputSchema: getSpaceEnvProperties({
       type: "object",
       properties,
-      required: requiredVars,
+      required: requiredFields,
     }),
   }
 
   return toolSchema
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 /**
  * Get the JSON schema for a variable based on its type
+ * @internal
  */
-function getVariableSchema(variable: Variable): any {
+function getVariableSchema(variable: Variable): Record<string, unknown> {
   const baseSchema = {
     description: variable.description || `Variable: ${variable.name || variable.id}`,
   }
@@ -289,8 +297,10 @@ function getVariableSchema(variable: Variable): any {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 /**
  * Get the list of required variables based on the variable definitions
+ * @internal
  */
 function getRequiredVariables(variables: Variable[]): string[] {
   return variables.filter((v) => !isOptionalVariable(v)).map((v) => v.id)
@@ -299,7 +309,13 @@ function getRequiredVariables(variables: Variable[]): string[] {
 /**
  * Check if a variable is optional
  */
-function isOptionalVariable(variable: Variable): boolean {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function isOptionalVariable(_variable: Variable): boolean {
+  // Always return false to make all variables required
+  return false
+
+  // Original implementation commented out
+  /*
   // Variables with StringOptionsList that allow free form input
   if (variable.name && variable.name.toLowerCase().includes("Content")) return false
   if (
@@ -322,6 +338,7 @@ function isOptionalVariable(variable: Variable): boolean {
   }
 
   return false
+  */
 }
 
 /**
@@ -351,7 +368,7 @@ export function mapVariablesToInvocationFormat(
     // Format the value based on the variable type
     if (["Reference", "MediaReference", "ResourceLink"].includes(variable.type)) {
       // For reference types, create a complex value
-      const complexValue: any = {
+      const complexValue: Record<string, string | Record<string, string>> = {
         entityType:
           variable.type === "Reference"
             ? "Entry"
@@ -364,7 +381,7 @@ export function mapVariablesToInvocationFormat(
       // Check if there's an entity path specified
       const pathKey = `${variable.id}_path`
       if (toolInput[pathKey]) {
-        complexValue.entityPath = toolInput[pathKey]
+        complexValue.entityPath = toolInput[pathKey] as string
       }
 
       variables.push({

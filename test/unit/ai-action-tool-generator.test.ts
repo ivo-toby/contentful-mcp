@@ -115,9 +115,10 @@ describe("AI Action Tool Generator", () => {
     expect(inputSchema.properties.variable_1.type).toBe("string")
     expect(inputSchema.properties.variable_1.description).toContain("First variable")
 
-    // var1 should be required, var2 should be optional
+    // All variables should be required now
     expect(inputSchema.required).toContain("variable_1")
-    expect(inputSchema.required).not.toContain("variable_2")
+    expect(inputSchema.required).toContain("variable_2") // Now required
+    expect(inputSchema.required).toContain("outputFormat") // outputFormat is also required
   })
 
   it("should generate a tool schema for an options action", () => {
