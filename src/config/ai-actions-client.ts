@@ -5,13 +5,13 @@ import type {
   AiActionInvocation,
   AiActionInvocationType,
   AiActionSchemaParsed,
-  StatusFilter
+  StatusFilter,
 } from "../types/ai-actions"
 
 // Alpha header required for AI Actions (temporary - will be removed in 2-3 weeks)
 // TODO: Remove alpha header after 2-3 weeks (around May 2025) when it's no longer required
-const ALPHA_HEADER_NAME = 'X-Contentful-Enable-Alpha-Feature'
-const ALPHA_HEADER_VALUE = 'ai-service'
+const ALPHA_HEADER_NAME = "X-Contentful-Enable-Alpha-Feature"
+const ALPHA_HEADER_VALUE = "ai-service"
 
 /**
  * Add alpha header to request options
@@ -24,8 +24,8 @@ function withAlphaHeader(options: any = {}): any {
     ...options,
     headers: {
       ...headers,
-      [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE
-    }
+      [ALPHA_HEADER_NAME]: ALPHA_HEADER_VALUE,
+    },
   }
 }
 
@@ -36,18 +36,18 @@ function withAlphaHeader(options: any = {}): any {
  */
 function extractResponseData<T>(response: any): T {
   // If we have a response but no data property, check if the response itself is the data
-  if (response && !response.data && typeof response === 'object') {
+  if (response && !response.data && typeof response === "object") {
     // For collections (AI Action listing)
-    if ('items' in response && 'sys' in response && response.sys.type === 'Array') {
+    if ("items" in response && "sys" in response && response.sys.type === "Array") {
       return response as T
     }
-    
+
     // For single entities (AI Action retrieval)
-    if ('sys' in response) {
+    if ("sys" in response) {
       return response as T
     }
   }
-  
+
   // Default to the data property
   return (response as any).data as T
 }
@@ -134,37 +134,37 @@ export const aiActionsClient = {
   /**
    * List AI Actions in a space
    */
-  async listAiActions({ 
-    spaceId, 
-    environmentId = "master", 
-    limit = 100, 
+  async listAiActions({
+    spaceId,
+    environmentId = "master",
+    limit = 100,
     skip = 0,
-    status
+    status,
   }: ListAiActionsParams): Promise<AiActionEntityCollection> {
     const client = await getContentfulClient()
-    
+
     // Build the URL for listing AI actions
     let url = `/spaces/${spaceId}`
-    
+
     // Add environment if specified (API uses space-level endpoint for AI Actions)
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
-    
-    url += '/ai/actions'
+
+    url += "/ai/actions"
     const queryParams = new URLSearchParams()
-    
+
     queryParams.append("limit", limit.toString())
     queryParams.append("skip", skip.toString())
     if (status) {
       queryParams.append("status", status)
     }
-    
+
     const queryString = queryParams.toString()
     if (queryString) {
       url += `?${queryString}`
     }
-    
+
     try {
       const response = await client.raw.get(url, withAlphaHeader())
       return extractResponseData<AiActionEntityCollection>(response)
@@ -179,19 +179,19 @@ export const aiActionsClient = {
   async getAiAction({
     spaceId,
     environmentId = "master",
-    aiActionId
+    aiActionId,
   }: GetAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
-    
+
     let url = `/spaces/${spaceId}`
-    
+
     // Add environment if specified
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
-    
+
     url += `/ai/actions/${aiActionId}`
-    
+
     try {
       const response = await client.raw.get(url, withAlphaHeader())
       return extractResponseData<AiActionEntity>(response)
@@ -206,19 +206,19 @@ export const aiActionsClient = {
   async createAiAction({
     spaceId,
     environmentId = "master",
-    actionData
+    actionData,
   }: CreateAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
-    
+
     let url = `/spaces/${spaceId}`
-    
+
     // Add environment if specified
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
-    
+
     url += `/ai/actions`
-    
+
     try {
       const response = await client.raw.post(url, actionData, withAlphaHeader())
       return extractResponseData<AiActionEntity>(response)
@@ -235,22 +235,22 @@ export const aiActionsClient = {
     environmentId = "master",
     aiActionId,
     version,
-    actionData
+    actionData,
   }: UpdateAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
-    
+
     let url = `/spaces/${spaceId}`
-    
+
     // Add environment if specified
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
-    
+
     url += `/ai/actions/${aiActionId}`
     const headers = {
-      "X-Contentful-Version": version.toString()
+      "X-Contentful-Version": version.toString(),
     }
-    
+
     const response = await client.raw.put(url, actionData, withAlphaHeader({ headers }))
     return extractResponseData<AiActionEntity>(response)
   },
@@ -262,22 +262,22 @@ export const aiActionsClient = {
     spaceId,
     environmentId = "master",
     aiActionId,
-    version
+    version,
   }: DeleteAiActionParams): Promise<void> {
     const client = await getContentfulClient()
-    
+
     let url = `/spaces/${spaceId}`
-    
+
     // Add environment if specified
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
-    
+
     url += `/ai/actions/${aiActionId}`
     const headers = {
-      "X-Contentful-Version": version.toString()
+      "X-Contentful-Version": version.toString(),
     }
-    
+
     await client.raw.delete(url, withAlphaHeader({ headers }))
   },
 
@@ -288,22 +288,22 @@ export const aiActionsClient = {
     spaceId,
     environmentId = "master",
     aiActionId,
-    version
+    version,
   }: PublishAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
-    
+
     let url = `/spaces/${spaceId}`
-    
+
     // Add environment if specified
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
-    
+
     url += `/ai/actions/${aiActionId}/published`
     const headers = {
-      "X-Contentful-Version": version.toString()
+      "X-Contentful-Version": version.toString(),
     }
-    
+
     const response = await client.raw.put(url, {}, withAlphaHeader({ headers }))
     return extractResponseData<AiActionEntity>(response)
   },
@@ -314,17 +314,17 @@ export const aiActionsClient = {
   async unpublishAiAction({
     spaceId,
     environmentId = "master",
-    aiActionId
+    aiActionId,
   }: UnpublishAiActionParams): Promise<AiActionEntity> {
     const client = await getContentfulClient()
-    
+
     let url = `/spaces/${spaceId}`
-    
+
     // Add environment if specified
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
-    
+
     url += `/ai/actions/${aiActionId}/published`
     const response = await client.raw.delete(url, withAlphaHeader())
     return extractResponseData<AiActionEntity>(response)
@@ -337,22 +337,36 @@ export const aiActionsClient = {
     spaceId,
     environmentId = "master",
     aiActionId,
-    invocationData
+    invocationData,
   }: InvokeAiActionParams): Promise<AiActionInvocation> {
     const client = await getContentfulClient()
-    
+
     let url = `/spaces/${spaceId}`
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
     url += `/ai/actions/${aiActionId}/invoke`
-    
+
     const headers = {
-      "X-Contentful-Include-Invocation-Metadata": "true"
+      "X-Contentful-Include-Invocation-Metadata": "true",
     }
-    
-    const response = await client.raw.post(url, invocationData, withAlphaHeader({ headers }))
-    return extractResponseData<AiActionInvocation>(response)
+
+    // Debug log the invocation data before sending
+    console.error(`AI Action invocation request to ${url}:`, JSON.stringify(invocationData))
+
+    try {
+      const response = await client.raw.post(url, invocationData, withAlphaHeader({ headers }))
+      return extractResponseData<AiActionInvocation>(response)
+    } catch (error) {
+      console.error(
+        `Error invoking AI Action: ${error instanceof Error ? error.message : String(error)}`,
+      )
+      if (error.request && error.details) {
+        console.error(`Request details:`, JSON.stringify(error.request))
+        console.error(`Error details:`, JSON.stringify(error.details))
+      }
+      throw error
+    }
   },
 
   /**
@@ -362,20 +376,20 @@ export const aiActionsClient = {
     spaceId,
     environmentId = "master",
     aiActionId,
-    invocationId
+    invocationId,
   }: GetAiActionInvocationParams): Promise<AiActionInvocation> {
     const client = await getContentfulClient()
-    
+
     let url = `/spaces/${spaceId}`
     if (environmentId) {
       url += `/environments/${environmentId}`
     }
     url += `/ai/actions/${aiActionId}/invocations/${invocationId}`
-    
+
     const headers = {
-      "X-Contentful-Include-Invocation-Metadata": "true"
+      "X-Contentful-Include-Invocation-Metadata": "true",
     }
-    
+
     const response = await client.raw.get(url, withAlphaHeader({ headers }))
     return extractResponseData<AiActionInvocation>(response)
   },
@@ -391,26 +405,28 @@ export const aiActionsClient = {
     params: GetAiActionInvocationParams,
     maxAttempts = 10,
     initialDelay = 1000,
-    maxDelay = 5000
+    maxDelay = 5000,
   ): Promise<AiActionInvocation> {
     let attempts = 0
     let delay = initialDelay
-    
+
     while (attempts < maxAttempts) {
       const invocation = await this.getAiActionInvocation(params)
-      
-      if (invocation.sys.status === "COMPLETED" || 
-          invocation.sys.status === "FAILED" || 
-          invocation.sys.status === "CANCELLED") {
+
+      if (
+        invocation.sys.status === "COMPLETED" ||
+        invocation.sys.status === "FAILED" ||
+        invocation.sys.status === "CANCELLED"
+      ) {
         return invocation
       }
-      
+
       // Wait with exponential backoff
-      await new Promise(resolve => setTimeout(resolve, delay))
+      await new Promise((resolve) => setTimeout(resolve, delay))
       delay = Math.min(delay * 1.5, maxDelay)
       attempts++
     }
-    
+
     throw new Error(`AI Action invocation polling exceeded maximum attempts (${maxAttempts})`)
-  }
+  },
 }

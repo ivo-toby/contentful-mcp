@@ -351,10 +351,19 @@ export const aiActionHandlers = {
         variables = params.rawVariables
       }
 
+      // Log the variables being sent
+      console.error(`Variables for invocation of ${aiActionId}:`, JSON.stringify(variables))
+
       const invocationData: AiActionInvocationType = {
         outputFormat,
         variables,
       }
+
+      // Log the complete invocation payload
+      console.error(
+        `Complete invocation payload for ${aiActionId}:`,
+        JSON.stringify(invocationData),
+      )
 
       const invocationResult = await aiActionsClient.invokeAiAction({
         spaceId,
@@ -407,4 +416,3 @@ export const aiActionHandlers = {
     }
   },
 }
-

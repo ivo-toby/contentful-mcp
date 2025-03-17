@@ -26,22 +26,22 @@ validateEnvironment()
 // Create AI Action tool context
 const aiActionToolContext = new AiActionToolContext(
   process.env.SPACE_ID || "",
-  process.env.ENVIRONMENT_ID || "master"
+  process.env.ENVIRONMENT_ID || "master",
 )
 
 // Function to get all tools including dynamic AI Action tools
 function getAllTools() {
   const staticTools = getTools()
-  
+
   // Add dynamically generated tools for AI Actions
   const dynamicTools = aiActionToolContext.generateAllToolSchemas()
-  
+
   return {
     ...staticTools,
     ...dynamicTools.reduce((acc, tool) => {
       acc[tool.name] = tool
       return acc
-    }, {})
+    }, {}),
   }
 }
 
@@ -88,48 +88,50 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra): Promise<
     }
 
     const result = await handler(args)
-    
+
     // For AI Action responses, format them appropriately
-    if (result && typeof result === 'object') {
+    if (result && typeof result === "object") {
       // Check if this is an AI Action invocation result
-      if ('sys' in result && 
-          typeof result.sys === 'object' && 
-          result.sys && 
-          'type' in result.sys && 
-          result.sys.type === 'AiActionInvocation') {
-        
+      if (
+        "sys" in result &&
+        typeof result.sys === "object" &&
+        result.sys &&
+        "type" in result.sys &&
+        result.sys.type === "AiActionInvocation"
+      ) {
         const invocationResult = result as any
-        
+
         // Format AI Action result as text content if available
         if (invocationResult.result && invocationResult.result.content) {
           return {
             content: [
               {
                 type: "text",
-                text: typeof invocationResult.result.content === 'string' 
-                  ? invocationResult.result.content
-                  : JSON.stringify(invocationResult.result.content)
-              }
-            ]
+                text:
+                  typeof invocationResult.result.content === "string"
+                    ? invocationResult.result.content
+                    : JSON.stringify(invocationResult.result.content),
+              },
+            ],
           }
         }
-      } 
-      
+      }
+
       // Check for error response
-      if ('isError' in result && result.isError === true) {
+      if ("isError" in result && result.isError === true) {
         // Format error response
         return {
           content: [
             {
               type: "text",
-              text: (result as any).message || "Unknown error"
-            }
+              text: (result as any).message || "Unknown error",
+            },
           ],
-          isError: true
+          isError: true,
         }
       }
     }
-    
+
     // Return the result as is for regular handlers
     return result
   } catch (error) {
@@ -152,7 +154,7 @@ function getHandler(name: string) {
     const actionId = name.replace("ai_action_", "")
     return (args: any) => handleAiActionInvocation(actionId, args)
   }
-  
+
   const handlers = {
     // Entry operations
     create_entry: entryHandlers.createEntry,
@@ -162,7 +164,7 @@ function getHandler(name: string) {
     publish_entry: entryHandlers.publishEntry,
     unpublish_entry: entryHandlers.unpublishEntry,
     search_entries: entryHandlers.searchEntries,
-    
+
     // Bulk operations
     bulk_publish: bulkActionHandlers.bulkPublish,
     bulk_unpublish: bulkActionHandlers.bulkUnpublish,
@@ -191,7 +193,7 @@ function getHandler(name: string) {
     update_content_type: contentTypeHandlers.updateContentType,
     delete_content_type: contentTypeHandlers.deleteContentType,
     publish_content_type: contentTypeHandlers.publishContentType,
-    
+
     // AI Action operations
     list_ai_actions: aiActionHandlers.listAiActions,
     get_ai_action: aiActionHandlers.getAiAction,
@@ -211,10 +213,10 @@ function getHandler(name: string) {
 async function handleAiActionInvocation(actionId: string, args: any) {
   try {
     console.error(`Handling AI Action invocation for ${actionId} with args:`, JSON.stringify(args))
-    
+
     // Get the parameters using the updated getInvocationParams
     const params = aiActionToolContext.getInvocationParams(actionId, args)
-    
+
     // Directly use the variables property from getInvocationParams
     const invocationParams = {
       spaceId: params.spaceId,
@@ -222,19 +224,19 @@ async function handleAiActionInvocation(actionId: string, args: any) {
       aiActionId: params.aiActionId,
       outputFormat: params.outputFormat,
       waitForCompletion: params.waitForCompletion,
-      // Use variables directly - this is what we modified in getInvocationParams
-      rawVariables: params.variables
+      // Use the correctly formatted variables array directly
+      rawVariables: params.variables,
     }
-    
+
     console.error(`Invoking AI Action with params:`, JSON.stringify(invocationParams))
-    
+
     // Invoke the AI Action
     return aiActionHandlers.invokeAiAction(invocationParams)
   } catch (error) {
     console.error(`Error invoking AI Action:`, error)
     return {
       isError: true,
-      message: error instanceof Error ? error.message : String(error)
+      message: error instanceof Error ? error.message : String(error),
     }
   }
 }
@@ -244,34 +246,34 @@ async function loadAiActions() {
   try {
     // First, clear the cache to avoid duplicates
     aiActionToolContext.clearCache()
-    
+
     // Only load AI Actions if we have required space and environment
     if (!process.env.SPACE_ID) {
       return
     }
-    
+
     // Fetch published AI Actions
     const response = await aiActionHandlers.listAiActions({
       spaceId: process.env.SPACE_ID,
       environmentId: process.env.ENVIRONMENT_ID || "master",
-      status: "published"
+      status: "published",
     })
-    
+
     // Check for errors or undefined response
     if (!response) {
       console.error("Error loading AI Actions: No response received")
       return
     }
-    
-    if (typeof response === 'object' && 'isError' in response) {
+
+    if (typeof response === "object" && "isError" in response) {
       console.error(`Error loading AI Actions: ${response.message}`)
       return
     }
-    
+
     // Add each AI Action to the context
     for (const action of response.items) {
       aiActionToolContext.addAiAction(action)
-      
+
       // Log variable mappings for debugging
       if (action.instruction.variables && action.instruction.variables.length > 0) {
         // Log ID mappings
@@ -279,21 +281,21 @@ async function loadAiActions() {
         if (idMappings && idMappings.size > 0) {
           const mappingLog = Array.from(idMappings.entries())
             .map(([friendly, original]) => `${friendly} -> ${original}`)
-            .join(', ')
+            .join(", ")
           console.error(`AI Action ${action.name} - Parameter mappings: ${mappingLog}`)
         }
-        
+
         // Log path mappings
         const pathMappings = aiActionToolContext.getPathMappings(action.sys.id)
         if (pathMappings && pathMappings.size > 0) {
           const pathMappingLog = Array.from(pathMappings.entries())
             .map(([friendly, original]) => `${friendly} -> ${original}`)
-            .join(', ')
+            .join(", ")
           console.error(`AI Action ${action.name} - Path parameter mappings: ${pathMappingLog}`)
         }
       }
     }
-    
+
     console.error(`Loaded ${response.items.length} AI Actions`)
   } catch (error) {
     console.error("Error loading AI Actions:", error)
@@ -303,17 +305,17 @@ async function loadAiActions() {
 // Start the server
 async function runServer() {
   const transport = new StdioServerTransport()
-  
+
   // Load AI Actions before connecting
   await loadAiActions()
-  
+
   // Connect to the server
   await server.connect(transport)
-  
+
   console.error(
     `Contentful MCP Server running on stdio using contentful host ${process.env.CONTENTFUL_HOST}`,
   )
-  
+
   // Set up periodic refresh of AI Actions (every 5 minutes)
   setInterval(loadAiActions, 5 * 60 * 1000)
 }
