@@ -337,6 +337,11 @@ export function mapVariablesToInvocationFormat(
       continue
     }
     
+    // If value is undefined but variable is required, throw an error
+    if (value === undefined && !isOptionalVariable(variable)) {
+      throw new Error(`Required parameter ${variable.id} is missing from invocation call`)
+    }
+    
     // Format the value based on the variable type
     if (["Reference", "MediaReference", "ResourceLink"].includes(variable.type)) {
       // For reference types, create a complex value
@@ -426,7 +431,8 @@ export class AiActionToolContext {
     spaceId: string,
     environmentId: string,
     aiActionId: string,
-    invocationData: any,
+    variables: any[],
+    outputFormat: OutputFormat,
     waitForCompletion: boolean
   } {
     const action = this.getAiAction(actionId)
@@ -437,6 +443,10 @@ export class AiActionToolContext {
     // Translate user-friendly parameter names to original variable IDs
     const translatedInput = this.translateParametersToVariableIds(actionId, toolInput)
     
+    // Debug the translated input
+    console.error(`Translated input for action ${actionId}:`, JSON.stringify(translatedInput))
+    
+    // Extract variables and outputFormat
     const { variables, outputFormat } = mapVariablesToInvocationFormat(action, translatedInput)
     const waitForCompletion = toolInput.waitForCompletion !== false
     
@@ -444,10 +454,8 @@ export class AiActionToolContext {
       spaceId: this.spaceId,
       environmentId: this.environmentId,
       aiActionId: actionId,
-      invocationData: {
-        outputFormat,
-        variables
-      },
+      variables,
+      outputFormat,
       waitForCompletion
     }
   }
@@ -460,10 +468,17 @@ export class AiActionToolContext {
     const pathMapping = pathIdMappings.get(actionId)
     
     if (!idMapping && !pathMapping) {
+      console.error(`No mappings found for action ${actionId}`)
       return params // No mappings found, return as is
     }
     
     const result: Record<string, any> = {}
+    
+    // Debug information - log all mappings
+    if (idMapping) {
+      console.error(`ID mappings for action ${actionId}:`, 
+        Array.from(idMapping.entries()).map(([k, v]) => `${k} -> ${v}`).join(', '))
+    }
     
     // Copy non-variable parameters directly
     for (const [key, value] of Object.entries(params)) {

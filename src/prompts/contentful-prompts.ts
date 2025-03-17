@@ -100,6 +100,11 @@ export const CONTENTFUL_PROMPTS = {
       }
     ]
   },
+  "ai-actions-overview": {
+    name: "ai-actions-overview",
+    description: "Comprehensive overview of AI Actions in Contentful",
+    arguments: []
+  },
   "ai-actions-create": {
     name: "ai-actions-create",
     description: "Guide for creating and configuring AI Actions in Contentful",

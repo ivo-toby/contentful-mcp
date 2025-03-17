@@ -210,12 +210,28 @@ function getHandler(name: string) {
 // Handler for dynamic AI Action tools
 async function handleAiActionInvocation(actionId: string, args: any) {
   try {
-    // The getInvocationParams method now handles parameter translation
+    console.error(`Handling AI Action invocation for ${actionId} with args:`, JSON.stringify(args))
+    
+    // Get the parameters using the updated getInvocationParams
     const params = aiActionToolContext.getInvocationParams(actionId, args)
     
+    // Directly use the variables property from getInvocationParams
+    const invocationParams = {
+      spaceId: params.spaceId,
+      environmentId: params.environmentId,
+      aiActionId: params.aiActionId,
+      outputFormat: params.outputFormat,
+      waitForCompletion: params.waitForCompletion,
+      // Use variables directly - this is what we modified in getInvocationParams
+      rawVariables: params.variables
+    }
+    
+    console.error(`Invoking AI Action with params:`, JSON.stringify(invocationParams))
+    
     // Invoke the AI Action
-    return aiActionHandlers.invokeAiAction(params)
+    return aiActionHandlers.invokeAiAction(invocationParams)
   } catch (error) {
+    console.error(`Error invoking AI Action:`, error)
     return {
       isError: true,
       message: error instanceof Error ? error.message : String(error)
