@@ -19,6 +19,7 @@ import { aiActionHandlers } from "./handlers/ai-action-handlers.js"
 import { getTools } from "./types/tools.js"
 import { validateEnvironment } from "./utils/validation.js"
 import { AiActionToolContext } from "./utils/ai-action-tool-generator.js"
+import type { AiActionInvocation } from "./types/ai-actions.js"
 
 // Validate environment variables
 validateEnvironment()
@@ -38,10 +39,13 @@ function getAllTools() {
 
   return {
     ...staticTools,
-    ...dynamicTools.reduce((acc, tool) => {
-      acc[tool.name] = tool
-      return acc
-    }, {}),
+    ...dynamicTools.reduce(
+      (acc, tool) => {
+        acc[tool.name] = tool
+        return acc
+      },
+      {} as Record<string, unknown>,
+    ),
   }
 }
 
@@ -78,7 +82,8 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
 })
 
 // Type-safe handler
-server.setRequestHandler(CallToolRequestSchema, async (request, extra): Promise<any> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+server.setRequestHandler(CallToolRequestSchema, async (request, _extra): Promise<any> => {
   try {
     const { name, arguments: args } = request.params
     const handler = getHandler(name)
@@ -87,7 +92,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra): Promise<
       throw new Error(`Unknown tool: ${name}`)
     }
 
-    const result = await handler(args)
+    const result = await handler(args || {})
 
     // For AI Action responses, format them appropriately
     if (result && typeof result === "object") {
@@ -99,7 +104,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra): Promise<
         "type" in result.sys &&
         result.sys.type === "AiActionInvocation"
       ) {
-        const invocationResult = result as any
+        const invocationResult = result as AiActionInvocation
 
         // Format AI Action result as text content if available
         if (invocationResult.result && invocationResult.result.content) {
@@ -124,7 +129,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra): Promise<
           content: [
             {
               type: "text",
-              text: (result as any).message || "Unknown error",
+              text: "message" in result ? String(result.message) : "Unknown error",
             },
           ],
           isError: true,
@@ -148,11 +153,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra): Promise<
 })
 
 // Helper function to map tool names to handlers
-function getHandler(name: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
   // Check if this is a dynamic AI Action tool
   if (name.startsWith("ai_action_")) {
     const actionId = name.replace("ai_action_", "")
-    return (args: any) => handleAiActionInvocation(actionId, args)
+    return (args: Record<string, unknown>) => handleAiActionInvocation(actionId, args)
   }
 
   const handlers = {
@@ -210,7 +216,7 @@ function getHandler(name: string) {
 }
 
 // Handler for dynamic AI Action tools
-async function handleAiActionInvocation(actionId: string, args: any) {
+async function handleAiActionInvocation(actionId: string, args: Record<string, unknown>) {
   try {
     console.error(`Handling AI Action invocation for ${actionId} with args:`, JSON.stringify(args))
 

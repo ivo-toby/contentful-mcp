@@ -1,14 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getContentfulClient } from "../config/client.js"
 import { summarizeData } from "../utils/summarizer.js"
-import {
-  CreateEntryProps,
-  EntryProps,
-  QueryOptions,
-  BulkActionProps,
-  Link,
-  Collection,
-} from "contentful-management"
+import { CreateEntryProps, EntryProps, QueryOptions, BulkActionProps } from "contentful-management"
 
 // Define the interface for bulk action responses with succeeded property
 interface BulkActionResponse extends BulkActionProps<any> {

@@ -18,6 +18,7 @@ const ALPHA_HEADER_VALUE = "ai-service"
  * @param options Request options
  * @returns Options with alpha header added
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function withAlphaHeader(options: any = {}): any {
   const headers = options.headers || {}
   return {
@@ -34,6 +35,7 @@ function withAlphaHeader(options: any = {}): any {
  * @param response API response from contentful-management client
  * @returns Extracted data
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractResponseData<T>(response: any): T {
   // If we have a response but no data property, check if the response itself is the data
   if (response && !response.data && typeof response === "object") {
@@ -49,6 +51,7 @@ function extractResponseData<T>(response: any): T {
   }
 
   // Default to the data property
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (response as any).data as T
 }
 
@@ -165,12 +168,8 @@ export const aiActionsClient = {
       url += `?${queryString}`
     }
 
-    try {
-      const response = await client.raw.get(url, withAlphaHeader())
-      return extractResponseData<AiActionEntityCollection>(response)
-    } catch (error) {
-      throw error
-    }
+    const response = await client.raw.get(url, withAlphaHeader())
+    return extractResponseData<AiActionEntityCollection>(response)
   },
 
   /**
@@ -192,12 +191,8 @@ export const aiActionsClient = {
 
     url += `/ai/actions/${aiActionId}`
 
-    try {
-      const response = await client.raw.get(url, withAlphaHeader())
-      return extractResponseData<AiActionEntity>(response)
-    } catch (error) {
-      throw error
-    }
+    const response = await client.raw.get(url, withAlphaHeader())
+    return extractResponseData<AiActionEntity>(response)
   },
 
   /**
@@ -219,12 +214,8 @@ export const aiActionsClient = {
 
     url += `/ai/actions`
 
-    try {
-      const response = await client.raw.post(url, actionData, withAlphaHeader())
-      return extractResponseData<AiActionEntity>(response)
-    } catch (error) {
-      throw error
-    }
+    const response = await client.raw.post(url, actionData, withAlphaHeader())
+    return extractResponseData<AiActionEntity>(response)
   },
 
   /**
@@ -354,19 +345,8 @@ export const aiActionsClient = {
     // Debug log the invocation data before sending
     console.error(`AI Action invocation request to ${url}:`, JSON.stringify(invocationData))
 
-    try {
-      const response = await client.raw.post(url, invocationData, withAlphaHeader({ headers }))
-      return extractResponseData<AiActionInvocation>(response)
-    } catch (error) {
-      console.error(
-        `Error invoking AI Action: ${error instanceof Error ? error.message : String(error)}`,
-      )
-      if (error.request && error.details) {
-        console.error(`Request details:`, JSON.stringify(error.request))
-        console.error(`Error details:`, JSON.stringify(error.details))
-      }
-      throw error
-    }
+    const response = await client.raw.post(url, invocationData, withAlphaHeader({ headers }))
+    return extractResponseData<AiActionInvocation>(response)
   },
 
   /**

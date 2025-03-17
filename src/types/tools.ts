@@ -1,8 +1,10 @@
 // Define interface for config parameter
 interface ConfigSchema {
   type: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   properties: Record<string, any>
   required?: string[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 

@@ -23,6 +23,7 @@ interface BulkActionResponse {
       type: string
     }
   }>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error?: any
 }
 
@@ -64,43 +65,46 @@ export const bulkActionHandlers = {
       args.entities.map(async (entity) => {
         try {
           // Get the current version of the entity
-          const currentEntity = entity.sys.type === "Entry" 
-            ? await contentfulClient.entry.get({
-                spaceId,
-                environmentId,
-                entryId: entity.sys.id
-              })
-            : await contentfulClient.asset.get({
-                spaceId,
-                environmentId,
-                assetId: entity.sys.id
-              });
-          
+          const currentEntity =
+            entity.sys.type === "Entry"
+              ? await contentfulClient.entry.get({
+                  spaceId,
+                  environmentId,
+                  entryId: entity.sys.id,
+                })
+              : await contentfulClient.asset.get({
+                  spaceId,
+                  environmentId,
+                  assetId: entity.sys.id,
+                })
+
           // Explicitly create a VersionedLink with the correct type
           const versionedLink: VersionedLink = {
             sys: {
               type: "Link" as const,
               linkType: entity.sys.type as "Entry" | "Asset",
               id: entity.sys.id,
-              version: currentEntity.sys.version
-            }
-          };
-          
-          return versionedLink;
+              version: currentEntity.sys.version,
+            },
+          }
+
+          return versionedLink
         } catch (error) {
-          console.error(`Error fetching entity ${entity.sys.id}: ${error}`);
-          throw new Error(`Failed to get version for entity ${entity.sys.id}. All entities must have a version.`);
+          console.error(`Error fetching entity ${entity.sys.id}: ${error}`)
+          throw new Error(
+            `Failed to get version for entity ${entity.sys.id}. All entities must have a version.`,
+          )
         }
-      })
-    );
+      }),
+    )
 
     // Create the collection object with the correct structure
     const entitiesCollection: Collection<VersionedLink> = {
       sys: {
-        type: "Array"
+        type: "Array",
       },
-      items: entityVersions
-    };
+      items: entityVersions,
+    }
 
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.publish(
@@ -154,43 +158,46 @@ export const bulkActionHandlers = {
       args.entities.map(async (entity) => {
         try {
           // Get the current version of the entity
-          const currentEntity = entity.sys.type === "Entry" 
-            ? await contentfulClient.entry.get({
-                spaceId,
-                environmentId,
-                entryId: entity.sys.id
-              })
-            : await contentfulClient.asset.get({
-                spaceId,
-                environmentId,
-                assetId: entity.sys.id
-              });
-          
+          const currentEntity =
+            entity.sys.type === "Entry"
+              ? await contentfulClient.entry.get({
+                  spaceId,
+                  environmentId,
+                  entryId: entity.sys.id,
+                })
+              : await contentfulClient.asset.get({
+                  spaceId,
+                  environmentId,
+                  assetId: entity.sys.id,
+                })
+
           // Explicitly create a VersionedLink with the correct type
           const versionedLink: VersionedLink = {
             sys: {
               type: "Link" as const,
               linkType: entity.sys.type as "Entry" | "Asset",
               id: entity.sys.id,
-              version: currentEntity.sys.version
-            }
-          };
-          
-          return versionedLink;
+              version: currentEntity.sys.version,
+            },
+          }
+
+          return versionedLink
         } catch (error) {
-          console.error(`Error fetching entity ${entity.sys.id}: ${error}`);
-          throw new Error(`Failed to get version for entity ${entity.sys.id}. All entities must have a version.`);
+          console.error(`Error fetching entity ${entity.sys.id}: ${error}`)
+          throw new Error(
+            `Failed to get version for entity ${entity.sys.id}. All entities must have a version.`,
+          )
         }
-      })
-    );
+      }),
+    )
 
     // Create the collection object with the correct structure
     const entitiesCollection: Collection<VersionedLink> = {
       sys: {
-        type: "Array"
+        type: "Array",
       },
-      items: entityVersions
-    };
+      items: entityVersions,
+    }
 
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.unpublish(
@@ -247,34 +254,34 @@ export const bulkActionHandlers = {
           const currentEntry = await contentfulClient.entry.get({
             spaceId,
             environmentId,
-            entryId: id
-          });
-          
+            entryId: id,
+          })
+
           // Explicitly create a VersionedLink with the correct type
           const versionedLink: VersionedLink = {
             sys: {
               type: "Link" as const,
               linkType: "Entry",
               id,
-              version: currentEntry.sys.version
-            }
-          };
-          
-          return versionedLink;
+              version: currentEntry.sys.version,
+            },
+          }
+
+          return versionedLink
         } catch (error) {
-          console.error(`Error fetching entry ${id}: ${error}`);
-          throw new Error(`Failed to get version for entry ${id}. All entries must have a version.`);
+          console.error(`Error fetching entry ${id}: ${error}`)
+          throw new Error(`Failed to get version for entry ${id}. All entries must have a version.`)
         }
-      })
-    );
+      }),
+    )
 
     // Create the collection object with the correct structure
     const entitiesCollection: Collection<VersionedLink> = {
       sys: {
-        type: "Array"
+        type: "Array",
       },
-      items: entityVersions
-    };
+      items: entityVersions,
+    }
 
     // Create the bulk action
     const bulkAction = await contentfulClient.bulkAction.validate(

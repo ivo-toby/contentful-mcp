@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { aiActionsClient } from "../config/ai-actions-client"
 import type {
   AiActionEntity,
@@ -51,13 +52,16 @@ export interface UpdateAiActionParams {
   description: string
   instruction: {
     template: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     variables: any[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     conditions?: any[]
   }
   configuration: {
     modelType: string
     modelTemperature: number
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   testCases?: any[]
 }
 
@@ -95,6 +99,7 @@ export interface InvokeAiActionWithVariablesParams extends InvokeAiActionBasePar
 
 // For raw variable array with complex types
 export interface InvokeAiActionWithRawVariablesParams extends InvokeAiActionBaseParams {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rawVariables?: any[]
 }
 
@@ -113,6 +118,7 @@ export interface GetAiActionInvocationParams {
 /**
  * Error handling utility
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatError(error: any): { isError: true; message: string } {
   const message = error?.response?.data?.message || error?.message || "Unknown error"
   return { isError: true, message }

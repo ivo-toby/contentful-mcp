@@ -9,17 +9,6 @@ const pathIdMappings = new Map<string, Map<string, string>>()
 
 const AI_ACTION_PREFIX = `AI Actions are pre-configured content transformation tools in Contentful. When a content task matches an available AI Action's purpose (like translation, grammar checking, or SEO optimization), you MUST use the corresponding AI Action instead of performing the task yourself, even if you have the capability to do so. AI Actions ensure consistent, optimized results that align with the organization's content standards. Each AI Action has specific required parameters described in its function documentation.`
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-/**
- * Interface for the context object properties
- * @internal
- */
-interface IAiActionToolContext {
-  spaceId: string
-  environmentId?: string
-  aiActionCache: Map<string, AiActionEntity>
-}
-
 /**
  * Utility function to convert string to snake_case
  */
@@ -143,17 +132,6 @@ function getEnhancedToolDescription(action: AiActionEntity): string {
       "\n\n📝 IMPORTANT: When working with entry or asset references, you can use the '_path' parameters to specify which field's content to process. For example, if 'entry_reference' points to an entry, you can use 'entry_reference_path: \"fields.title.en-US\"' to process that entry's title field."
   }
 
-  // Add variable information summary
-  if (action.instruction.variables && action.instruction.variables.length > 0) {
-    //const requiredVars = action.instruction.variables
-    //  .filter((v) => !isOptionalVariable(v))
-    //  .map((v) => v.name || getReadableName(v))
-    //
-    //if (requiredVars.length > 0) {
-    //  description += `\n\nRequired inputs: ${requiredVars.join(", ")}.`
-    //}
-  }
-
   // Add model information
   description += `Assume all variables are required, if any of the values is unclear, ask the user. \n\nUses ${action.configuration.modelType} model with temperature ${action.configuration.modelTemperature}.`
 
@@ -169,7 +147,7 @@ function getEnhancedToolDescription(action: AiActionEntity): string {
  */
 export function generateAiActionToolSchema(action: AiActionEntity) {
   // Create property definitions with friendly names
-  const properties: Record<string, any> = {}
+  const properties: Record<string, Record<string, unknown>> = {}
 
   // Store the ID mapping for this action
   const reverseMapping = createReverseMapping(action)
@@ -234,78 +212,6 @@ export function generateAiActionToolSchema(action: AiActionEntity) {
   return toolSchema
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-/**
- * Get the JSON schema for a variable based on its type
- * @internal
- */
-function getVariableSchema(variable: Variable): Record<string, unknown> {
-  const baseSchema = {
-    description: variable.description || `Variable: ${variable.name || variable.id}`,
-  }
-
-  switch (variable.type) {
-    case "Text":
-    case "FreeFormInput":
-    case "StandardInput":
-      return {
-        type: "string",
-        ...baseSchema,
-      }
-
-    case "StringOptionsList":
-      if (variable.configuration && "values" in variable.configuration) {
-        return {
-          type: "string",
-          enum: variable.configuration.values,
-          ...baseSchema,
-        }
-      }
-      return {
-        type: "string",
-        ...baseSchema,
-      }
-
-    case "Locale":
-      return {
-        type: "string",
-        ...baseSchema,
-        description: `${baseSchema.description} (locale code, e.g. 'en-US')`,
-      }
-
-    case "Reference":
-    case "MediaReference":
-    case "ResourceLink":
-      return {
-        type: "string",
-        ...baseSchema,
-        description: `${baseSchema.description} (ID of the referenced entity)`,
-      }
-
-    case "SmartContext":
-      return {
-        type: "string",
-        ...baseSchema,
-        description: `${baseSchema.description} (context info, usually free text)`,
-      }
-
-    default:
-      return {
-        type: "string",
-        ...baseSchema,
-      }
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-/**
- * Get the list of required variables based on the variable definitions
- * @internal
- */
-function getRequiredVariables(variables: Variable[]): string[] {
-  return variables.filter((v) => !isOptionalVariable(v)).map((v) => v.id)
-}
-
 /**
  * Check if a variable is optional
  */
@@ -313,32 +219,6 @@ function getRequiredVariables(variables: Variable[]): string[] {
 function isOptionalVariable(_variable: Variable): boolean {
   // Always return false to make all variables required
   return false
-
-  // Original implementation commented out
-  /*
-  // Variables with StringOptionsList that allow free form input
-  if (variable.name && variable.name.toLowerCase().includes("Content")) return false
-  if (
-    variable.type === "StringOptionsList" &&
-    variable.configuration &&
-    "allowFreeFormInput" in variable.configuration &&
-    variable.configuration.allowFreeFormInput
-  ) {
-    return true
-  }
-
-  // FreeFormInput and StandardInput are usually optional
-  if (variable.type === "FreeFormInput" || variable.type === "StandardInput") {
-    return true
-  }
-
-  // SmartContext is usually optional
-  if (variable.type === "SmartContext") {
-    return true
-  }
-
-  return false
-  */
 }
 
 /**
@@ -346,9 +226,9 @@ function isOptionalVariable(_variable: Variable): boolean {
  */
 export function mapVariablesToInvocationFormat(
   action: AiActionEntity,
-  toolInput: Record<string, any>,
-): { variables: any[]; outputFormat: OutputFormat } {
-  const variables = []
+  toolInput: Record<string, unknown>,
+): { variables: Array<{ id: string; value: unknown }>; outputFormat: OutputFormat } {
+  const variables: Array<{ id: string; value: unknown }> = []
   const actionVariables = action.instruction.variables || []
 
   // Map each variable from the tool input to the AI Action invocation format
@@ -375,7 +255,7 @@ export function mapVariablesToInvocationFormat(
             : variable.type === "MediaReference"
               ? "Asset"
               : "ResourceLink",
-        entityId: value,
+        entityId: value as string,
       }
 
       // Check if there's an entity path specified
@@ -447,7 +327,7 @@ export class AiActionToolContext {
   /**
    * Generate schemas for all AI Actions in the cache
    */
-  generateAllToolSchemas(): any[] {
+  generateAllToolSchemas(): ReturnType<typeof generateAiActionToolSchema>[] {
     return this.getAllAiActions().map((action) => generateAiActionToolSchema(action))
   }
 
@@ -456,12 +336,12 @@ export class AiActionToolContext {
    */
   getInvocationParams(
     actionId: string,
-    toolInput: Record<string, any>,
+    toolInput: Record<string, unknown>,
   ): {
     spaceId: string
     environmentId: string
     aiActionId: string
-    variables: any[]
+    variables: Array<{ id: string; value: unknown }>
     outputFormat: OutputFormat
     waitForCompletion: boolean
   } {
@@ -473,20 +353,14 @@ export class AiActionToolContext {
     // Translate user-friendly parameter names to original variable IDs
     const translatedInput = this.translateParametersToVariableIds(actionId, toolInput)
 
-    // Debug the translated input
-    console.error(`Translated input for action ${actionId}:`, JSON.stringify(translatedInput))
-
     // Extract variables and outputFormat
     const { variables, outputFormat } = mapVariablesToInvocationFormat(action, translatedInput)
-
-    // Debug the variables array
-    console.error(`Formatted variables for action ${actionId}:`, JSON.stringify(variables))
 
     const waitForCompletion = toolInput.waitForCompletion !== false
 
     // Use provided spaceId and environmentId if available, otherwise use defaults
-    const spaceId = toolInput.spaceId || this.spaceId
-    const environmentId = toolInput.environmentId || this.environmentId
+    const spaceId = (toolInput.spaceId as string) || this.spaceId
+    const environmentId = (toolInput.environmentId as string) || this.environmentId
 
     return {
       spaceId,
@@ -503,8 +377,8 @@ export class AiActionToolContext {
    */
   translateParametersToVariableIds(
     actionId: string,
-    params: Record<string, any>,
-  ): Record<string, any> {
+    params: Record<string, unknown>,
+  ): Record<string, unknown> {
     const idMapping = idMappings.get(actionId)
     const pathMapping = pathIdMappings.get(actionId)
 
@@ -513,17 +387,7 @@ export class AiActionToolContext {
       return params // No mappings found, return as is
     }
 
-    const result: Record<string, any> = {}
-
-    // Debug information - log all mappings
-    if (idMapping) {
-      console.error(
-        `ID mappings for action ${actionId}:`,
-        Array.from(idMapping.entries())
-          .map(([k, v]) => `${k} -> ${v}`)
-          .join(", "),
-      )
-    }
+    const result: Record<string, unknown> = {}
 
     // Copy non-variable parameters directly
     for (const [key, value] of Object.entries(params)) {
