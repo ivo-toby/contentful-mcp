@@ -1,8 +1,10 @@
 // Define interface for config parameter
 interface ConfigSchema {
   type: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   properties: Record<string, any>
   required?: string[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 
@@ -101,7 +103,7 @@ export const getEntryTools = () => {
     UPDATE_ENTRY: {
       name: "update_entry",
       description:
-        "Update an existing entry, always send all field values, also the fields values that have not been updated",
+        "Update an existing entry, very important: always send all field values and all values related to locales, also the fields values that have not been updated",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -544,6 +546,289 @@ export const getBulkActionTools = () => {
   }
 }
 
+// Tool definitions for AI Actions
+export const getAiActionTools = () => {
+  return {
+    LIST_AI_ACTIONS: {
+      name: "list_ai_actions",
+      description: "List all AI Actions in a space",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            default: 100,
+            description: "Maximum number of AI Actions to return",
+          },
+          skip: {
+            type: "number",
+            default: 0,
+            description: "Number of AI Actions to skip for pagination",
+          },
+          status: {
+            type: "string",
+            enum: ["all", "published"],
+            description: "Filter AI Actions by status",
+          },
+        },
+        required: [],
+      }),
+    },
+    GET_AI_ACTION: {
+      name: "get_ai_action",
+      description: "Get a specific AI Action by ID",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          aiActionId: {
+            type: "string",
+            description: "The ID of the AI Action to retrieve",
+          },
+        },
+        required: ["aiActionId"],
+      }),
+    },
+    CREATE_AI_ACTION: {
+      name: "create_ai_action",
+      description: "Create a new AI Action",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            description: "The name of the AI Action",
+          },
+          description: {
+            type: "string",
+            description: "The description of the AI Action",
+          },
+          instruction: {
+            type: "object",
+            description: "The instruction object containing the template and variables",
+            properties: {
+              template: {
+                type: "string",
+                description: "The prompt template with variable placeholders",
+              },
+              variables: {
+                type: "array",
+                description: "Array of variable definitions",
+                items: {
+                  type: "object",
+                },
+              },
+              conditions: {
+                type: "array",
+                description: "Optional array of conditions for the template",
+                items: {
+                  type: "object",
+                },
+              },
+            },
+            required: ["template", "variables"],
+          },
+          configuration: {
+            type: "object",
+            description: "The model configuration",
+            properties: {
+              modelType: {
+                type: "string",
+                description: "The type of model to use (e.g., gpt-4)",
+              },
+              modelTemperature: {
+                type: "number",
+                description: "The temperature setting for the model (0.0 to 1.0)",
+                minimum: 0,
+                maximum: 1,
+              },
+            },
+            required: ["modelType", "modelTemperature"],
+          },
+          testCases: {
+            type: "array",
+            description: "Optional array of test cases for the AI Action",
+            items: {
+              type: "object",
+            },
+          },
+        },
+        required: ["name", "description", "instruction", "configuration"],
+      }),
+    },
+    UPDATE_AI_ACTION: {
+      name: "update_ai_action",
+      description: "Update an existing AI Action",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          aiActionId: {
+            type: "string",
+            description: "The ID of the AI Action to update",
+          },
+          name: {
+            type: "string",
+            description: "The name of the AI Action",
+          },
+          description: {
+            type: "string",
+            description: "The description of the AI Action",
+          },
+          instruction: {
+            type: "object",
+            description: "The instruction object containing the template and variables",
+            properties: {
+              template: {
+                type: "string",
+                description: "The prompt template with variable placeholders",
+              },
+              variables: {
+                type: "array",
+                description: "Array of variable definitions",
+                items: {
+                  type: "object",
+                },
+              },
+              conditions: {
+                type: "array",
+                description: "Optional array of conditions for the template",
+                items: {
+                  type: "object",
+                },
+              },
+            },
+            required: ["template", "variables"],
+          },
+          configuration: {
+            type: "object",
+            description: "The model configuration",
+            properties: {
+              modelType: {
+                type: "string",
+                description: "The type of model to use (e.g., gpt-4)",
+              },
+              modelTemperature: {
+                type: "number",
+                description: "The temperature setting for the model (0.0 to 1.0)",
+                minimum: 0,
+                maximum: 1,
+              },
+            },
+            required: ["modelType", "modelTemperature"],
+          },
+          testCases: {
+            type: "array",
+            description: "Optional array of test cases for the AI Action",
+            items: {
+              type: "object",
+            },
+          },
+        },
+        required: ["aiActionId", "name", "description", "instruction", "configuration"],
+      }),
+    },
+    DELETE_AI_ACTION: {
+      name: "delete_ai_action",
+      description: "Delete an AI Action",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          aiActionId: {
+            type: "string",
+            description: "The ID of the AI Action to delete",
+          },
+        },
+        required: ["aiActionId"],
+      }),
+    },
+    PUBLISH_AI_ACTION: {
+      name: "publish_ai_action",
+      description: "Publish an AI Action",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          aiActionId: {
+            type: "string",
+            description: "The ID of the AI Action to publish",
+          },
+        },
+        required: ["aiActionId"],
+      }),
+    },
+    UNPUBLISH_AI_ACTION: {
+      name: "unpublish_ai_action",
+      description: "Unpublish an AI Action",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          aiActionId: {
+            type: "string",
+            description: "The ID of the AI Action to unpublish",
+          },
+        },
+        required: ["aiActionId"],
+      }),
+    },
+    INVOKE_AI_ACTION: {
+      name: "invoke_ai_action",
+      description: "Invoke an AI Action with variables",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          aiActionId: {
+            type: "string",
+            description: "The ID of the AI Action to invoke",
+          },
+          variables: {
+            type: "object",
+            description: "Key-value pairs of variable IDs and their values",
+            additionalProperties: {
+              type: "string",
+            },
+          },
+          rawVariables: {
+            type: "array",
+            description:
+              "Array of raw variable objects (for complex variable types like references)",
+            items: {
+              type: "object",
+            },
+          },
+          outputFormat: {
+            type: "string",
+            enum: ["Markdown", "RichText", "PlainText"],
+            default: "Markdown",
+            description: "The format of the output content",
+          },
+          waitForCompletion: {
+            type: "boolean",
+            default: true,
+            description: "Whether to wait for the AI Action to complete before returning",
+          },
+        },
+        required: ["aiActionId"],
+      }),
+    },
+    GET_AI_ACTION_INVOCATION: {
+      name: "get_ai_action_invocation",
+      description: "Get the result of a previous AI Action invocation",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          aiActionId: {
+            type: "string",
+            description: "The ID of the AI Action",
+          },
+          invocationId: {
+            type: "string",
+            description: "The ID of the specific invocation to retrieve",
+          },
+        },
+        required: ["aiActionId", "invocationId"],
+      }),
+    },
+  }
+}
+
 // Export combined tools
 export const getTools = () => {
   return {
@@ -552,5 +837,6 @@ export const getTools = () => {
     ...getContentTypeTools(),
     ...getSpaceEnvTools(),
     ...getBulkActionTools(),
+    ...getAiActionTools(),
   }
 }
