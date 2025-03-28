@@ -50,7 +50,18 @@ export const contentTypeHandlers = {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
 
+    const toCamelCase = (str: string): string =>
+      str
+        .split(/\s+/)
+        .map((word: string, index: number) =>
+          index === 0
+            ? word.toLowerCase()
+            : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join("")
+
     const params = {
+      contentTypeId: toCamelCase(args.name),
       spaceId,
       environmentId,
     }
@@ -63,7 +74,8 @@ export const contentTypeHandlers = {
     }
 
     const contentfulClient = await getContentfulClient()
-    const contentType = await contentfulClient.contentType.create(params, contentTypeProps)
+    const contentType = await contentfulClient.contentType.createWithId(params, contentTypeProps)
+
     return {
       content: [{ type: "text", text: JSON.stringify(contentType, null, 2) }],
     }
