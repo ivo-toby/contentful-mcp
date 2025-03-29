@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@contentful/node-apps-toolkit": "^3.10.2",
-    "@modelcontextprotocol/sdk": "1.0.1",
+    "@modelcontextprotocol/sdk": "1.7.0",
     "contentful-management": "^10.46.4",
     "dotenv": "^16.4.7",
     "zod": "^3.22.4",
