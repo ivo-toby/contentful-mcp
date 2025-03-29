@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getContentfulClient } from "../config/client.js"
 import { ContentTypeProps, CreateContentTypeProps } from "contentful-management"
+import { toCamelCase } from "../utils/to-camel-case.js"
 
 export const contentTypeHandlers = {
   listContentTypes: async (args: { spaceId: string; environmentId: string }) => {
@@ -49,16 +50,6 @@ export const contentTypeHandlers = {
   }) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
-
-    const toCamelCase = (str: string): string =>
-      str
-        .split(/\s+/)
-        .map((word: string, index: number) =>
-          index === 0
-            ? word.toLowerCase()
-            : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-        )
-        .join("")
 
     const params = {
       contentTypeId: toCamelCase(args.name),
