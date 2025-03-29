@@ -1,18 +1,18 @@
-import { setupServer } from "msw/node";
-import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node"
+import { http, HttpResponse } from "msw"
 
 // Mock data for bulk actions
 const mockBulkAction = {
   sys: {
     id: "test-bulk-action-id",
     status: "succeeded",
-    version: 1
+    version: 1,
   },
   succeeded: [
     { sys: { id: "test-entry-id", type: "Entry" } },
-    { sys: { id: "test-asset-id", type: "Asset" } }
-  ]
-};
+    { sys: { id: "test-asset-id", type: "Asset" } },
+  ],
+}
 
 // Define handlers
 export const handlers = [
@@ -25,82 +25,76 @@ export const handlers = [
           name: "Test Space",
         },
       ],
-    });
+    })
   }),
 
   // Get specific space
   http.get("https://api.contentful.com/spaces/:spaceId", ({ params }) => {
-    const { spaceId } = params;
+    const { spaceId } = params
     if (spaceId === "test-space-id") {
       return HttpResponse.json({
         sys: { id: "test-space-id" },
         name: "Test Space",
-      });
+      })
     }
-    return new HttpResponse(null, { status: 404 });
+    return new HttpResponse(null, { status: 404 })
   }),
 
   // List environments
-  http.get(
-    "https://api.contentful.com/spaces/:spaceId/environments",
-    ({ params }) => {
-      const { spaceId } = params;
-      if (spaceId === "test-space-id") {
-        return HttpResponse.json({
-          items: [
-            {
-              sys: { id: "master" },
-              name: "master",
-            },
-          ],
-        });
-      }
-      return new HttpResponse(null, { status: 404 });
-    },
-  ),
+  http.get("https://api.contentful.com/spaces/:spaceId/environments", ({ params }) => {
+    const { spaceId } = params
+    if (spaceId === "test-space-id") {
+      return HttpResponse.json({
+        items: [
+          {
+            sys: { id: "master" },
+            name: "master",
+          },
+        ],
+      })
+    }
+    return new HttpResponse(null, { status: 404 })
+  }),
 
   // Create environment
   http.post(
     "https://api.contentful.com/spaces/:spaceId/environments",
     async ({ params, request }) => {
-      const { spaceId } = params;
+      const { spaceId } = params
       if (spaceId === "test-space-id") {
         try {
           // Get data from request body
-          const body = await request.json();
-          console.log("Request body:", JSON.stringify(body));
-          
-          // In the real API implementation, the environmentId is taken 
+          const body = await request.json()
+          console.log("Request body:", JSON.stringify(body))
+
+          // In the real API implementation, the environmentId is taken
           // from the second argument to client.environment.create
           // We need to extract it from the name in our mock
-          const environmentId = body.name;
-          
+          const environmentId = body?.name
+
           // Return correctly structured response with environment ID
           return HttpResponse.json({
             sys: { id: environmentId },
-            name: environmentId
-          });
+            name: environmentId,
+          })
         } catch (error) {
-          console.error("Error processing environment creation:", error);
-          return new HttpResponse(null, { status: 500 });
+          console.error("Error processing environment creation:", error)
+          return new HttpResponse(null, { status: 500 })
         }
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
   // Delete environment
-  http.delete(
-    "https://api.contentful.com/spaces/:spaceId/environments/:envId",
-    ({ params }) => {
-      const { spaceId, envId } = params;
-      if (spaceId === "test-space-id" && envId !== "non-existent-env") {
-        return new HttpResponse(null, { status: 204 });
-      }
-      return new HttpResponse(null, { status: 404 });
-    },
-  ),
-];
+  http.delete("https://api.contentful.com/spaces/:spaceId/environments/:envId", ({ params }) => {
+    const { spaceId, envId } = params
+    if (spaceId === "test-space-id" && envId !== "non-existent-env") {
+      return new HttpResponse(null, { status: 204 })
+    }
+    return new HttpResponse(null, { status: 404 })
+  }),
+]
 
 // Bulk action handlers
 const bulkActionHandlers = [
@@ -108,93 +102,102 @@ const bulkActionHandlers = [
   http.post(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/bulk_actions/publish",
     async ({ params }) => {
-      const { spaceId, environmentId } = params;
+      const { spaceId, environmentId } = params
       if (spaceId === "test-space-id") {
-        return HttpResponse.json({
-          ...mockBulkAction,
-          sys: {
-            ...mockBulkAction.sys,
-            id: "test-bulk-action-id",
-            status: "created"
-          }
-        }, { status: 201 });
+        return HttpResponse.json(
+          {
+            ...mockBulkAction,
+            sys: {
+              ...mockBulkAction.sys,
+              id: "test-bulk-action-id",
+              status: "created",
+            },
+          },
+          { status: 201 },
+        )
       }
-      return new HttpResponse(null, { status: 404 });
-    }
+      return new HttpResponse(null, { status: 404 })
+    },
   ),
 
   // Create bulk unpublish action
   http.post(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/bulk_actions/unpublish",
     async ({ params }) => {
-      const { spaceId, environmentId } = params;
+      const { spaceId, environmentId } = params
       if (spaceId === "test-space-id") {
-        return HttpResponse.json({
-          ...mockBulkAction,
-          sys: {
-            ...mockBulkAction.sys,
-            id: "test-bulk-action-id",
-            status: "created"
-          }
-        }, { status: 201 });
+        return HttpResponse.json(
+          {
+            ...mockBulkAction,
+            sys: {
+              ...mockBulkAction.sys,
+              id: "test-bulk-action-id",
+              status: "created",
+            },
+          },
+          { status: 201 },
+        )
       }
-      return new HttpResponse(null, { status: 404 });
-    }
+      return new HttpResponse(null, { status: 404 })
+    },
   ),
 
   // Create bulk validate action
   http.post(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/bulk_actions/validate",
     async ({ params }) => {
-      const { spaceId, environmentId } = params;
+      const { spaceId, environmentId } = params
       if (spaceId === "test-space-id") {
-        return HttpResponse.json({
-          ...mockBulkAction,
-          sys: {
-            ...mockBulkAction.sys,
-            id: "test-bulk-action-id",
-            status: "created"
-          }
-        }, { status: 201 });
+        return HttpResponse.json(
+          {
+            ...mockBulkAction,
+            sys: {
+              ...mockBulkAction.sys,
+              id: "test-bulk-action-id",
+              status: "created",
+            },
+          },
+          { status: 201 },
+        )
       }
-      return new HttpResponse(null, { status: 404 });
-    }
+      return new HttpResponse(null, { status: 404 })
+    },
   ),
 
   // Get bulk action status
   http.get(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/bulk_actions/:bulkActionId",
     ({ params }) => {
-      const { spaceId, bulkActionId } = params;
+      const { spaceId, bulkActionId } = params
       if (spaceId === "test-space-id" && bulkActionId === "test-bulk-action-id") {
-        return HttpResponse.json(mockBulkAction);
+        return HttpResponse.json(mockBulkAction)
       }
-      return new HttpResponse(null, { status: 404 });
-    }
+      return new HttpResponse(null, { status: 404 })
+    },
   ),
-];
+]
 
 const assetHandlers = [
   // Upload asset
   http.post(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets",
     async ({ request, params }) => {
-      console.log("MSW: Handling asset creation request");
-      const { spaceId } = params;
+      console.log("MSW: Handling asset creation request")
+      const { spaceId } = params
       if (spaceId === "test-space-id") {
         const body = (await request.json()) as {
           fields: {
-            title: { "en-US": string };
-            description?: { "en-US": string };
+            title: { "en-US": string }
+            description?: { "en-US": string }
             file: {
               "en-US": {
-                fileName: string;
-                contentType: string;
-                upload: string;
-              };
-            };
-          };
-        };
+                fileName: string
+                contentType: string
+                upload: string
+              }
+            }
+          }
+        }
 
         return HttpResponse.json({
           sys: {
@@ -203,17 +206,17 @@ const assetHandlers = [
             type: "Asset",
           },
           fields: body.fields,
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
   // Process asset
   http.put(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId/files/en-US/process",
     ({ params }) => {
-      console.log("MSW: Handling asset processing request");
-      const { spaceId, assetId } = params;
+      console.log("MSW: Handling asset processing request")
+      const { spaceId, assetId } = params
       if (spaceId === "test-space-id" && assetId === "test-asset-id") {
         return HttpResponse.json({
           sys: {
@@ -232,9 +235,9 @@ const assetHandlers = [
               },
             },
           },
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -242,8 +245,8 @@ const assetHandlers = [
   http.get(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId",
     ({ params }) => {
-      console.log("MSW: Handling get processed asset request");
-      const { spaceId, assetId } = params;
+      console.log("MSW: Handling get processed asset request")
+      const { spaceId, assetId } = params
       if (spaceId === "test-space-id" && assetId === "test-asset-id") {
         return HttpResponse.json({
           sys: {
@@ -263,9 +266,9 @@ const assetHandlers = [
               },
             },
           },
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -273,7 +276,7 @@ const assetHandlers = [
   http.put(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId",
     ({ params }) => {
-      const { spaceId, assetId } = params;
+      const { spaceId, assetId } = params
       if (spaceId === "test-space-id" && assetId === "test-asset-id") {
         return HttpResponse.json({
           sys: { id: "test-asset-id" },
@@ -281,9 +284,9 @@ const assetHandlers = [
             title: { "en-US": "Updated Asset" },
             description: { "en-US": "Updated Description" },
           },
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -291,11 +294,11 @@ const assetHandlers = [
   http.delete(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId",
     ({ params }) => {
-      const { spaceId, assetId } = params;
+      const { spaceId, assetId } = params
       if (spaceId === "test-space-id" && assetId === "test-asset-id") {
-        return new HttpResponse(null, { status: 204 });
+        return new HttpResponse(null, { status: 204 })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -303,16 +306,16 @@ const assetHandlers = [
   http.put(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId/published",
     ({ params }) => {
-      const { spaceId, assetId } = params;
+      const { spaceId, assetId } = params
       if (spaceId === "test-space-id" && assetId === "test-asset-id") {
         return HttpResponse.json({
           sys: {
             id: "test-asset-id",
             publishedVersion: 1,
           },
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -320,25 +323,25 @@ const assetHandlers = [
   http.delete(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/assets/:assetId/published",
     ({ params }) => {
-      const { spaceId, assetId } = params;
+      const { spaceId, assetId } = params
       if (spaceId === "test-space-id" && assetId === "test-asset-id") {
         return HttpResponse.json({
           sys: {
             id: "test-asset-id",
           },
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
-];
+]
 
 const entryHandlers = [
   // Search entries
   http.get(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries",
     ({ params, request }) => {
-      const { spaceId } = params;
+      const { spaceId } = params
       if (spaceId === "test-space-id") {
         return HttpResponse.json({
           items: [
@@ -353,9 +356,9 @@ const entryHandlers = [
               },
             },
           ],
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -363,7 +366,7 @@ const entryHandlers = [
   http.get(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId",
     ({ params }) => {
-      const { spaceId, entryId } = params;
+      const { spaceId, entryId } = params
       if (spaceId === "test-space-id" && entryId === "test-entry-id") {
         return HttpResponse.json({
           sys: {
@@ -374,9 +377,9 @@ const entryHandlers = [
             title: { "en-US": "Test Entry" },
             description: { "en-US": "Test Description" },
           },
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -384,12 +387,12 @@ const entryHandlers = [
   http.post(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries",
     async ({ params, request }) => {
-      const { spaceId } = params;
+      const { spaceId } = params
       if (spaceId === "test-space-id") {
-        const contentType = request.headers.get("X-Contentful-Content-Type");
+        const contentType = request.headers.get("X-Contentful-Content-Type")
         const body = (await request.json()) as {
-          fields: Record<string, any>;
-        };
+          fields: Record<string, any>
+        }
 
         return HttpResponse.json({
           sys: {
@@ -404,9 +407,9 @@ const entryHandlers = [
             },
           },
           fields: body.fields,
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -414,20 +417,20 @@ const entryHandlers = [
   http.put(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId",
     async ({ params, request }) => {
-      const { spaceId, entryId } = params;
+      const { spaceId, entryId } = params
       if (spaceId === "test-space-id" && entryId === "test-entry-id") {
         const body = (await request.json()) as {
-          fields: Record<string, any>;
-        };
+          fields: Record<string, any>
+        }
         return HttpResponse.json({
           sys: {
             id: entryId,
             contentType: { sys: { id: "test-content-type-id" } },
           },
           fields: body.fields,
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -435,11 +438,11 @@ const entryHandlers = [
   http.delete(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId",
     ({ params }) => {
-      const { spaceId, entryId } = params;
+      const { spaceId, entryId } = params
       if (spaceId === "test-space-id" && entryId === "test-entry-id") {
-        return new HttpResponse(null, { status: 204 });
+        return new HttpResponse(null, { status: 204 })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -447,16 +450,16 @@ const entryHandlers = [
   http.put(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId/published",
     ({ params }) => {
-      const { spaceId, entryId } = params;
+      const { spaceId, entryId } = params
       if (spaceId === "test-space-id" && entryId === "test-entry-id") {
         return HttpResponse.json({
           sys: {
             id: entryId,
             publishedVersion: 1,
           },
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -464,23 +467,23 @@ const entryHandlers = [
   http.delete(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/entries/:entryId/published",
     ({ params }) => {
-      const { spaceId, entryId } = params;
+      const { spaceId, entryId } = params
       if (spaceId === "test-space-id" && entryId === "test-entry-id") {
         return HttpResponse.json({
           sys: { id: entryId },
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
-];
+]
 
 const contentTypeHandlers = [
   // List content types
   http.get(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types",
     ({ params }) => {
-      const { spaceId } = params;
+      const { spaceId } = params
       if (spaceId === "test-space-id") {
         return HttpResponse.json({
           items: [
@@ -497,9 +500,9 @@ const contentTypeHandlers = [
               ],
             },
           ],
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -507,11 +510,8 @@ const contentTypeHandlers = [
   http.get(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId",
     ({ params }) => {
-      const { spaceId, contentTypeId } = params;
-      if (
-        spaceId === "test-space-id" &&
-        contentTypeId === "test-content-type-id"
-      ) {
+      const { spaceId, contentTypeId } = params
+      if (spaceId === "test-space-id" && contentTypeId === "test-content-type-id") {
         return HttpResponse.json({
           sys: { id: "test-content-type-id" },
           name: "Test Content Type",
@@ -523,9 +523,9 @@ const contentTypeHandlers = [
               required: true,
             },
           ],
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -533,19 +533,19 @@ const contentTypeHandlers = [
   http.post(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types",
     async ({ params, request }) => {
-      const { spaceId } = params;
+      const { spaceId } = params
       if (spaceId === "test-space-id") {
         const body = (await request.json()) as {
-          name: string;
+          name: string
           fields: Array<{
-            id: string;
-            name: string;
-            type: string;
-            required?: boolean;
-          }>;
-          description?: string;
-          displayField?: string;
-        };
+            id: string
+            name: string
+            type: string
+            required?: boolean
+          }>
+          description?: string
+          displayField?: string
+        }
 
         return HttpResponse.json({
           sys: { id: "new-content-type-id" },
@@ -553,9 +553,39 @@ const contentTypeHandlers = [
           fields: body.fields,
           description: body.description,
           displayField: body.displayField,
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
+    },
+  ),
+
+  // create content type with ID
+  http.put(
+    "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId",
+    async ({ params, request }) => {
+      const { spaceId, contentTypeId } = params
+      if (spaceId === "test-space-id") {
+        const body = (await request.json()) as {
+          name: string
+          fields: Array<{
+            id: string
+            name: string
+            type: string
+            required?: boolean
+          }>
+          description?: string
+          displayField?: string
+        }
+
+        return HttpResponse.json({
+          sys: { id: contentTypeId },
+          name: body.name,
+          fields: body.fields,
+          description: body.description,
+          displayField: body.displayField,
+        })
+      }
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -563,11 +593,8 @@ const contentTypeHandlers = [
   http.put(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId/published",
     ({ params }) => {
-      const { spaceId, contentTypeId } = params;
-      if (
-        spaceId === "test-space-id" &&
-        contentTypeId === "test-content-type-id"
-      ) {
+      const { spaceId, contentTypeId } = params
+      if (spaceId === "test-space-id" && contentTypeId === "test-content-type-id") {
         return HttpResponse.json({
           sys: {
             id: contentTypeId,
@@ -583,9 +610,9 @@ const contentTypeHandlers = [
               required: true,
             },
           ],
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -593,22 +620,19 @@ const contentTypeHandlers = [
   http.put(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId",
     async ({ params, request }) => {
-      const { spaceId, contentTypeId } = params;
-      if (
-        spaceId === "test-space-id" &&
-        contentTypeId === "test-content-type-id"
-      ) {
+      const { spaceId, contentTypeId } = params
+      if (spaceId === "test-space-id" && contentTypeId === "test-content-type-id") {
         const body = (await request.json()) as {
-          name: string;
+          name: string
           fields: Array<{
-            id: string;
-            name: string;
-            type: string;
-            required?: boolean;
-          }>;
-          description?: string;
-          displayField?: string;
-        };
+            id: string
+            name: string
+            type: string
+            required?: boolean
+          }>
+          description?: string
+          displayField?: string
+        }
 
         return HttpResponse.json({
           sys: { id: contentTypeId },
@@ -616,9 +640,9 @@ const contentTypeHandlers = [
           fields: body.fields,
           description: body.description,
           displayField: body.displayField,
-        });
+        })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
 
@@ -626,17 +650,14 @@ const contentTypeHandlers = [
   http.delete(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types/:contentTypeId",
     ({ params }) => {
-      const { spaceId, contentTypeId } = params;
-      if (
-        spaceId === "test-space-id" &&
-        contentTypeId === "test-content-type-id"
-      ) {
-        return new HttpResponse(null, { status: 204 });
+      const { spaceId, contentTypeId } = params
+      if (spaceId === "test-space-id" && contentTypeId === "test-content-type-id") {
+        return new HttpResponse(null, { status: 204 })
       }
-      return new HttpResponse(null, { status: 404 });
+      return new HttpResponse(null, { status: 404 })
     },
   ),
-];
+]
 
 // Setup MSW Server
 export const server = setupServer(
@@ -645,4 +666,4 @@ export const server = setupServer(
   ...contentTypeHandlers,
   ...entryHandlers,
   ...bulkActionHandlers,
-);
+)
