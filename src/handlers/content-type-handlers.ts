@@ -2,21 +2,30 @@
 import { getContentfulClient } from "../config/client.js"
 import { ContentTypeProps, CreateContentTypeProps } from "contentful-management"
 import { toCamelCase } from "../utils/to-camel-case.js"
+import {summarizeData} from "../utils/summarizer.js";
 
 export const contentTypeHandlers = {
-  listContentTypes: async (args: { spaceId: string; environmentId: string }) => {
+  listContentTypes: async (args: { spaceId: string; environmentId: string, limit?: number, skip?: number }) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
+    const { limit = 3, skip = 0 } = args
 
     const params = {
       spaceId,
       environmentId,
+      limit,
+      skip,
     }
 
     const contentfulClient = await getContentfulClient()
     const contentTypes = await contentfulClient.contentType.getMany(params)
+    const summarized = summarizeData(contentTypes, {
+      maxItems: limit,
+      remainingMessage: "To see more content types, please ask me to retrieve the next page.",
+    })
+
     return {
-      content: [{ type: "text", text: JSON.stringify(contentTypes, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(summarized, null, 2) }],
     }
   },
   getContentType: async (args: {

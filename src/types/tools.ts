@@ -293,8 +293,7 @@ export const getContentTypeTools = () => {
   return {
     LIST_CONTENT_TYPES: {
       name: "list_content_types",
-      description:
-        "List content types in a space. Returns a maximum of 10 items per request. Use skip parameter to paginate through results.",
+      description: "List content types by space and environment, with paginated results. Returns a maximum of 20 items per request. Use the skip and limit parameters to paginate through results. Information about the total and remaining items is also provided.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -302,7 +301,7 @@ export const getContentTypeTools = () => {
             type: "number",
             default: 10,
             maximum: 20,
-            description: "Maximum number of items to return (max: 3)",
+            description: "Maximum number of items to return (max: 20)",
           },
           skip: {
             type: "number",
