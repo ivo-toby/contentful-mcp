@@ -5,14 +5,11 @@ FROM node:22-alpine AS builder
 # Set the working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
+# Copy package files and source code
+COPY . .
 
 # Install dependencies
 RUN --mount=type=cache,target=/root/.npm npm install
-
-# Copy the rest of the application's source code
-COPY . .
 
 # Build the application
 RUN npm run build
