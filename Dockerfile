@@ -21,8 +21,10 @@ FROM node:22-alpine AS runtime
 WORKDIR /app
 
 # Copy built files from the builder stage
+COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/bin /app/bin
 COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/package.json /app/package.json
 
 # Environment variable for Contentful Management API token
 ENV CONTENTFUL_MANAGEMENT_ACCESS_TOKEN=your_contentful_management_api_token
