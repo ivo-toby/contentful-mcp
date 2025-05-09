@@ -20,6 +20,7 @@ import { getTools } from "./types/tools.js"
 import { validateEnvironment } from "./utils/validation.js"
 import { AiActionToolContext } from "./utils/ai-action-tool-generator.js"
 import type { AiActionInvocation } from "./types/ai-actions.js"
+import { HttpServer } from "./transports/http-server.js"
 
 // Validate environment variables
 validateEnvironment()
@@ -310,17 +311,42 @@ async function loadAiActions() {
 
 // Start the server
 async function runServer() {
-  const transport = new StdioServerTransport()
+  // Determine if HTTP server mode is enabled
+  const enableHttp = process.env.ENABLE_HTTP_SERVER === "true"
+  const httpPort = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 3000
 
   // Load AI Actions before connecting
   await loadAiActions()
 
-  // Connect to the server
-  await server.connect(transport)
+  if (enableHttp) {
+    // Start HTTP server for SSE connections
+    const httpServer = new HttpServer({
+      port: httpPort,
+      host: process.env.HTTP_HOST || "localhost"
+    })
 
-  console.error(
-    `Contentful MCP Server running on stdio using contentful host ${process.env.CONTENTFUL_HOST}`,
-  )
+    await httpServer.start()
+    console.error(
+      `Contentful MCP Server running in HTTP mode on port ${httpPort} using contentful host ${process.env.CONTENTFUL_HOST}`,
+    )
+
+    // Keep the process running
+    process.on("SIGINT", async () => {
+      console.error("Shutting down HTTP server...")
+      await httpServer.stop()
+      process.exit(0)
+    })
+  } else {
+    // Traditional stdio mode
+    const transport = new StdioServerTransport()
+
+    // Connect to the server
+    await server.connect(transport)
+
+    console.error(
+      `Contentful MCP Server running on stdio using contentful host ${process.env.CONTENTFUL_HOST}`,
+    )
+  }
 
   // Set up periodic refresh of AI Actions (every 5 minutes)
   setInterval(loadAiActions, 5 * 60 * 1000)
