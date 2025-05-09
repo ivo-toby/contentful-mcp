@@ -117,6 +117,9 @@ These variables can also be set as arguments
 
 - `CONTENTFUL_HOST` / `--host`: Contentful Management API Endpoint (defaults to https://api.contentful.com)
 - `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` / `--management-token`: Your Content Management API token
+- `ENABLE_HTTP_SERVER` / `--http`: Set to "true" to enable HTTP/SSE mode
+- `HTTP_PORT` / `--port`: Port for HTTP server (default: 3000)
+- `HTTP_HOST` / `--http-host`: Host for HTTP server (default: localhost)
 
 ### Space and Environment Scoping (EXPERIMENTAL)
 
@@ -204,6 +207,42 @@ If you want to contribute and test what Claude does with your contributions;
 ```
 
 This will allow you to test any modification in the MCP server with Claude directly, however; if you add new tools/resources you will need to restart Claude Desktop
+
+## Transport Modes
+
+The MCP server supports two transport modes:
+
+### stdio Transport
+
+The default transport mode uses standard input/output streams for communication. This is ideal for integration with MCP clients that support stdio transport, like Claude Desktop.
+
+To use stdio mode, simply run the server without the `--http` flag:
+
+```bash
+npx -y @ivotoby/contentful-management-mcp-server --management-token YOUR_TOKEN
+```
+
+### HTTP/SSE Transport
+
+The server also supports an HTTP mode with Server-Sent Events (SSE) for asynchronous communication. This mode is useful for web-based integrations or when running the server as a standalone service.
+
+To use HTTP/SSE mode, run with the `--http` flag:
+
+```bash
+npx -y @ivotoby/contentful-management-mcp-server --management-token YOUR_TOKEN --http --port 3000
+```
+
+#### HTTP/SSE Endpoints
+
+- `GET /mcp` - Establishes an SSE connection
+- `POST /mcp` - Sends a JSON-RPC message to the server
+- `DELETE /mcp` - Terminates an SSE connection
+- `GET /health` - Health check endpoint
+
+#### Headers
+
+- `MCP-Session-ID` - Session ID for message routing (required for POST and DELETE requests)
+- `Last-Event-ID` - Last received event ID (for SSE reconnection)
 
 ## Error Handling
 
