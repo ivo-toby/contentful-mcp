@@ -61,6 +61,11 @@ export class StreamableHttpServer {
       process.env.ENVIRONMENT_ID || "master",
     )
 
+    // Load AI Actions
+    this.loadAiActions().catch(error => {
+      console.error("Error loading AI Actions for StreamableHTTP server:", error)
+    })
+
     // Configure CORS
     this.app.use(
       cors(
@@ -400,11 +405,85 @@ export class StreamableHttpServer {
   }
 
   /**
+   * Load available AI Actions
+   * This mimics the loadAiActions function in index.ts
+   */
+  private async loadAiActions(): Promise<void> {
+    try {
+      // First, clear the cache to avoid duplicates
+      this.aiActionToolContext.clearCache()
+
+      // Only load AI Actions if we have required space and environment
+      if (!process.env.SPACE_ID) {
+        return
+      }
+
+      // Fetch published AI Actions
+      const response = await aiActionHandlers.listAiActions({
+        spaceId: process.env.SPACE_ID,
+        environmentId: process.env.ENVIRONMENT_ID || "master",
+        status: "published",
+      })
+
+      // Check for errors or undefined response
+      if (!response) {
+        console.error("Error loading AI Actions for StreamableHTTP: No response received")
+        return
+      }
+
+      if (typeof response === "object" && "isError" in response) {
+        console.error(`Error loading AI Actions for StreamableHTTP: ${response.message}`)
+        return
+      }
+
+      // Add each AI Action to the context
+      for (const action of response.items) {
+        this.aiActionToolContext.addAiAction(action)
+
+        // Log variable mappings for debugging
+        if (action.instruction.variables && action.instruction.variables.length > 0) {
+          // Log ID mappings
+          const idMappings = this.aiActionToolContext.getIdMappings(action.sys.id)
+          if (idMappings && idMappings.size > 0) {
+            const mappingLog = Array.from(idMappings.entries())
+              .map(([friendly, original]) => `${friendly} -> ${original}`)
+              .join(", ")
+            console.error(`AI Action ${action.name} - Parameter mappings: ${mappingLog}`)
+          }
+
+          // Log path mappings
+          const pathMappings = this.aiActionToolContext.getPathMappings(action.sys.id)
+          if (pathMappings && pathMappings.size > 0) {
+            const pathMappingLog = Array.from(pathMappings.entries())
+              .map(([friendly, original]) => `${friendly} -> ${original}`)
+              .join(", ")
+            console.error(`AI Action ${action.name} - Path parameter mappings: ${pathMappingLog}`)
+          }
+        }
+      }
+
+      console.error(`Loaded ${response.items.length} AI Actions for StreamableHTTP`)
+    } catch (error) {
+      console.error("Error loading AI Actions for StreamableHTTP:", error)
+    }
+  }
+
+  // Interval for refreshing AI Actions
+  private aiActionsRefreshInterval?: NodeJS.Timeout
+
+  /**
    * Start the HTTP server
    *
    * @returns Promise that resolves when the server is started
    */
   public async start(): Promise<void> {
+    // Set up periodic refresh of AI Actions (every 5 minutes)
+    this.aiActionsRefreshInterval = setInterval(() => {
+      this.loadAiActions().catch(error => {
+        console.error("Error refreshing AI Actions for StreamableHTTP:", error)
+      })
+    }, 5 * 60 * 1000)
+
     return new Promise((resolve) => {
       this.server = this.app.listen(this.port, () => {
         console.error(`MCP StreamableHTTP server running on http://${this.host}:${this.port}/mcp`)
@@ -419,6 +498,12 @@ export class StreamableHttpServer {
    * @returns Promise that resolves when the server is stopped
    */
   public async stop(): Promise<void> {
+    // Clear AI Actions refresh interval
+    if (this.aiActionsRefreshInterval) {
+      clearInterval(this.aiActionsRefreshInterval)
+      this.aiActionsRefreshInterval = undefined
+    }
+
     // Close all transports
     for (const sessionId in this.transports) {
       try {
