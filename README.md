@@ -26,6 +26,7 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 ## Pagination
 
 To prevent context window overflow in LLMs, list operations (like search_entries and list_assets) are limited to 3 items per request. Each response includes:
+
 - Total number of available items
 - Current page of items (max 3)
 - Number of remaining items
@@ -121,7 +122,7 @@ These variables can also be set as arguments
 - `HTTP_PORT` / `--port`: Port for HTTP server (default: 3000)
 - `HTTP_HOST` / `--http-host`: Host for HTTP server (default: localhost)
 
-### Space and Environment Scoping (EXPERIMENTAL)
+### Space and Environment Scoping
 
 You can scope the spaceId and EnvironmentId to ensure the LLM will only do operations on the defined space/env ID's.
 This is mainly to support agents that are to operate within specific spaces. If both `SPACE_ID` and `ENVIRONMENT_ID` env-vars are set
@@ -165,16 +166,22 @@ and add the following lines:
 
 If your MCPClient does not support setting environment variables you can also set the management token using an argument like this:
 
-```
+```json
 {
   "mcpServers": {
     "contentful": {
       "command": "npx",
-      "args": ["-y", "@ivotoby/contentful-management-mcp-server",'--management-token', "<your token>", '--host', 'http://api.contentful.com'],
+      "args": [
+        "-y",
+        "@ivotoby/contentful-management-mcp-server",
+        "--management-token",
+        "<your token>",
+        "--host",
+        "http://api.contentful.com"
+      ]
     }
   }
 }
-
 ```
 
 ### Installing via Smithery
@@ -219,7 +226,9 @@ The default transport mode uses standard input/output streams for communication.
 To use stdio mode, simply run the server without the `--http` flag:
 
 ```bash
-npx -y @ivotoby/contentful-management-mcp-server --management-token YOUR_TOKEN
+npx -y contentful-mcp --management-token YOUR_TOKEN
+# or alternatively
+npx -y @ivotoby/contentful-management-mcp-server/bin/mcp-server.js --management-token YOUR_TOKEN
 ```
 
 ### HTTP/SSE Transport
@@ -230,6 +239,8 @@ To use HTTP/SSE mode, run with the `--http` flag:
 
 ```bash
 npx -y @ivotoby/contentful-management-mcp-server --management-token YOUR_TOKEN --http --port 3000
+# or alternatively
+npx -y @ivotoby/contentful-management-mcp-server/bin/mcp-server.js --management-token YOUR_TOKEN --http --port 3000
 ```
 
 #### HTTP/SSE Endpoints

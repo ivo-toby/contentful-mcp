@@ -54,7 +54,7 @@ function getAllTools() {
 const server = new Server(
   {
     name: "contentful-mcp-server",
-    version: "1.14.0",
+    version: "1.14.1",
   },
   {
     capabilities: {

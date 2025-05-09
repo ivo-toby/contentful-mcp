@@ -1,6 +1,6 @@
 {
   "name": "@ivotoby/contentful-management-mcp-server",
-  "version": "1.14.0",
+  "version": "1.14.1",
   "description": "MCP server for Contentful Content Management API integration",
   "license": "MIT",
   "type": "module",
@@ -10,7 +10,8 @@
     "url": "git+https://github.com/ivo-toby/contentful-mcp.git"
   },
   "bin": {
-    "mcp-server-contentful": "./bin/mcp-server.js"
+    "mcp-server-contentful": "./bin/mcp-server.js",
+    "contentful-mcp": "./bin/mcp-server.js"
   },
   "files": [
     "dist"
