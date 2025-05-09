@@ -5,14 +5,11 @@ FROM node:22-alpine AS builder
 # Set the working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
+# Copy package files and source code
+COPY . .
 
 # Install dependencies
 RUN --mount=type=cache,target=/root/.npm npm install
-
-# Copy the rest of the application's source code
-COPY . .
 
 # Build the application
 RUN npm run build
@@ -24,8 +21,10 @@ FROM node:22-alpine AS runtime
 WORKDIR /app
 
 # Copy built files from the builder stage
+COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/bin /app/bin
 COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/package.json /app/package.json
 
 # Environment variable for Contentful Management API token
 ENV CONTENTFUL_MANAGEMENT_ACCESS_TOKEN=your_contentful_management_api_token
