@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ivo-toby-contentful-mcp-badge.png)](https://mseep.ai/app/ivo-toby-contentful-mcp)
+
 # Contentful MCP Server
 
 [![smithery badge](https://smithery.ai/badge/@ivotoby/contentful-management-mcp-server)](https://smithery.ai/server/@ivotoby/contentful-management-mcp-server)
