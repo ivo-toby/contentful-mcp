@@ -54,7 +54,7 @@ function getAllTools() {
 const server = new Server(
   {
     name: "contentful-mcp-server",
-    version: "1.0.0",
+    version: "1.14.0",
   },
   {
     capabilities: {
@@ -322,7 +322,7 @@ async function runServer() {
     // Start HTTP server for SSE connections
     const httpServer = new HttpServer({
       port: httpPort,
-      host: process.env.HTTP_HOST || "localhost"
+      host: process.env.HTTP_HOST || "localhost",
     })
 
     await httpServer.start()
