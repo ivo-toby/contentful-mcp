@@ -229,29 +229,28 @@ npx -y contentful-mcp --management-token YOUR_TOKEN
 npx -y @ivotoby/contentful-management-mcp-server/bin/mcp-server.js --management-token YOUR_TOKEN
 ```
 
-### HTTP/SSE Transport
+### StreamableHTTP Transport
 
-The server also supports an HTTP mode with Server-Sent Events (SSE) for asynchronous communication. This mode is useful for web-based integrations or when running the server as a standalone service.
+The server also supports the StreamableHTTP transport as defined in the MCP protocol. This mode is useful for web-based integrations or when running the server as a standalone service.
 
-To use HTTP/SSE mode, run with the `--http` flag:
+To use StreamableHTTP mode, run with the `--http` flag:
 
 ```bash
-npx -y @ivotoby/contentful-management-mcp-server --management-token YOUR_TOKEN --http --port 3000
+npx -y contentful-mcp --management-token YOUR_TOKEN --http --port 3000
 # or alternatively
 npx -y @ivotoby/contentful-management-mcp-server/bin/mcp-server.js --management-token YOUR_TOKEN --http --port 3000
 ```
 
-#### HTTP/SSE Endpoints
+#### StreamableHTTP Details
 
-- `GET /mcp` - Establishes an SSE connection
-- `POST /mcp` - Sends a JSON-RPC message to the server
-- `DELETE /mcp` - Terminates an SSE connection
-- `GET /health` - Health check endpoint
+- Uses the official MCP StreamableHTTP transport
+- Supports standard MCP protocol operations
+- Includes session management for maintaining state
+- Properly handles initialize/notify patterns
+- Compatible with standard MCP clients
+- Replaces the deprecated SSE transport with the modern approach
 
-#### Headers
-
-- `MCP-Session-ID` - Session ID for message routing (required for POST and DELETE requests)
-- `Last-Event-ID` - Last received event ID (for SSE reconnection)
+The implementation follows the standard MCP protocol specification, allowing any MCP client to connect to the server without special handling.
 
 ## Error Handling
 

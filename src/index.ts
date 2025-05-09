@@ -9,6 +9,7 @@ import {
   GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js"
 import { CONTENTFUL_PROMPTS } from "./prompts/contentful-prompts.js"
+export { CONTENTFUL_PROMPTS }
 import { handlePrompt } from "./prompts/handlers.js"
 import { entryHandlers } from "./handlers/entry-handlers.js"
 import { assetHandlers } from "./handlers/asset-handlers.js"
@@ -20,7 +21,7 @@ import { getTools } from "./types/tools.js"
 import { validateEnvironment } from "./utils/validation.js"
 import { AiActionToolContext } from "./utils/ai-action-tool-generator.js"
 import type { AiActionInvocation } from "./types/ai-actions.js"
-import { HttpServer } from "./transports/http-server.js"
+import { StreamableHttpServer } from "./transports/streamable-http.js"
 
 // Validate environment variables
 validateEnvironment()
@@ -32,7 +33,7 @@ const aiActionToolContext = new AiActionToolContext(
 )
 
 // Function to get all tools including dynamic AI Action tools
-function getAllTools() {
+export function getAllTools() {
   const staticTools = getTools()
 
   // Add dynamically generated tools for AI Actions
@@ -319,15 +320,15 @@ async function runServer() {
   await loadAiActions()
 
   if (enableHttp) {
-    // Start HTTP server for SSE connections
-    const httpServer = new HttpServer({
+    // Start StreamableHTTP server for MCP over HTTP
+    const httpServer = new StreamableHttpServer({
       port: httpPort,
       host: process.env.HTTP_HOST || "localhost",
     })
 
     await httpServer.start()
     console.error(
-      `Contentful MCP Server running in HTTP mode on port ${httpPort} using contentful host ${process.env.CONTENTFUL_HOST}`,
+      `Contentful MCP Server running with StreamableHTTP on port ${httpPort} using contentful host ${process.env.CONTENTFUL_HOST}`,
     )
 
     // Keep the process running

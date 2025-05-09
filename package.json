@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@contentful/node-apps-toolkit": "^3.10.2",
-    "@modelcontextprotocol/sdk": "1.0.1",
+    "@modelcontextprotocol/sdk": "1.11.1",
     "contentful-management": "^10.46.4",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
