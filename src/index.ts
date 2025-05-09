@@ -9,6 +9,7 @@ import {
   GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js"
 import { CONTENTFUL_PROMPTS } from "./prompts/contentful-prompts.js"
+export { CONTENTFUL_PROMPTS }
 import { handlePrompt } from "./prompts/handlers.js"
 import { entryHandlers } from "./handlers/entry-handlers.js"
 import { assetHandlers } from "./handlers/asset-handlers.js"
@@ -20,6 +21,7 @@ import { getTools } from "./types/tools.js"
 import { validateEnvironment } from "./utils/validation.js"
 import { AiActionToolContext } from "./utils/ai-action-tool-generator.js"
 import type { AiActionInvocation } from "./types/ai-actions.js"
+import { StreamableHttpServer } from "./transports/streamable-http.js"
 
 // Validate environment variables
 validateEnvironment()
@@ -31,7 +33,7 @@ const aiActionToolContext = new AiActionToolContext(
 )
 
 // Function to get all tools including dynamic AI Action tools
-function getAllTools() {
+export function getAllTools() {
   const staticTools = getTools()
 
   // Add dynamically generated tools for AI Actions
@@ -53,7 +55,7 @@ function getAllTools() {
 const server = new Server(
   {
     name: "contentful-mcp-server",
-    version: "1.0.0",
+    version: "1.14.1",
   },
   {
     capabilities: {
@@ -310,17 +312,42 @@ async function loadAiActions() {
 
 // Start the server
 async function runServer() {
-  const transport = new StdioServerTransport()
+  // Determine if HTTP server mode is enabled
+  const enableHttp = process.env.ENABLE_HTTP_SERVER === "true"
+  const httpPort = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 3000
 
   // Load AI Actions before connecting
   await loadAiActions()
 
-  // Connect to the server
-  await server.connect(transport)
+  if (enableHttp) {
+    // Start StreamableHTTP server for MCP over HTTP
+    const httpServer = new StreamableHttpServer({
+      port: httpPort,
+      host: process.env.HTTP_HOST || "localhost",
+    })
 
-  console.error(
-    `Contentful MCP Server running on stdio using contentful host ${process.env.CONTENTFUL_HOST}`,
-  )
+    await httpServer.start()
+    console.error(
+      `Contentful MCP Server running with StreamableHTTP on port ${httpPort} using contentful host ${process.env.CONTENTFUL_HOST}`,
+    )
+
+    // Keep the process running
+    process.on("SIGINT", async () => {
+      console.error("Shutting down HTTP server...")
+      await httpServer.stop()
+      process.exit(0)
+    })
+  } else {
+    // Traditional stdio mode
+    const transport = new StdioServerTransport()
+
+    // Connect to the server
+    await server.connect(transport)
+
+    console.error(
+      `Contentful MCP Server running on stdio using contentful host ${process.env.CONTENTFUL_HOST}`,
+    )
+  }
 
   // Set up periodic refresh of AI Actions (every 5 minutes)
   setInterval(loadAiActions, 5 * 60 * 1000)
