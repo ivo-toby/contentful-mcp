@@ -1,6 +1,7 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js"
-import { getTools } from "../types/tools.js"
+import { getAllTools } from "../index.js"
+import { AiActionToolContext } from "../utils/ai-action-tool-generator.js"
 import { CONTENTFUL_PROMPTS } from "../prompts/contentful-prompts.js"
 import { handlePrompt } from "../prompts/handlers.js"
 import { randomUUID } from "crypto"
@@ -11,7 +12,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   ListPromptsRequestSchema,
-  GetPromptRequestSchema
+  GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js"
 import { entryHandlers } from "../handlers/entry-handlers.js"
 import { assetHandlers } from "../handlers/asset-handlers.js"
@@ -38,37 +39,47 @@ export class StreamableHttpServer {
   private server: any
   private port: number
   private host: string
-  
+
   // Map to store transports by session ID
   private transports: Record<string, StreamableHTTPServerTransport> = {}
-  
+
   /**
    * Create a new HTTP server for MCP over HTTP
-   * 
+   *
    * @param options Configuration options
    */
   constructor(options: StreamableHttpServerOptions = {}) {
     this.port = options.port || 3000
     this.host = options.host || "localhost"
-    
+
     // Create Express app
     this.app = express()
-    
+
+    // Initialize AI Action tool context
+    this.aiActionToolContext = new AiActionToolContext(
+      process.env.SPACE_ID || "",
+      process.env.ENVIRONMENT_ID || "master",
+    )
+
     // Configure CORS
-    this.app.use(cors(options.corsOptions || {
-      origin: "*",
-      methods: ["GET", "POST", "DELETE"],
-      allowedHeaders: ["Content-Type", "MCP-Session-ID"],
-      exposedHeaders: ["MCP-Session-ID"],
-    }))
-    
+    this.app.use(
+      cors(
+        options.corsOptions || {
+          origin: "*",
+          methods: ["GET", "POST", "DELETE"],
+          allowedHeaders: ["Content-Type", "MCP-Session-ID"],
+          exposedHeaders: ["MCP-Session-ID"],
+        },
+      ),
+    )
+
     // Configure JSON body parsing
     this.app.use(express.json())
-    
+
     // Set up routes
     this.setupRoutes()
   }
-  
+
   /**
    * Set up the routes for MCP over HTTP
    */
@@ -80,7 +91,7 @@ export class StreamableHttpServer {
           // Check for existing session ID
           const sessionId = req.headers["mcp-session-id"] as string | undefined
           let transport: StreamableHTTPServerTransport
-          
+
           if (sessionId && this.transports[sessionId]) {
             // Reuse existing transport
             transport = this.transports[sessionId]
@@ -93,21 +104,21 @@ export class StreamableHttpServer {
               },
               {
                 capabilities: {
-                  tools: getTools(),
+                  tools: getAllTools(),
                   prompts: CONTENTFUL_PROMPTS,
                 },
-              }
+              },
             )
-            
+
             // New initialization request
             transport = new StreamableHTTPServerTransport({
               sessionIdGenerator: () => randomUUID(),
               onsessioninitialized: (sid) => {
                 // Store the transport by session ID
                 this.transports[sid] = transport
-              }
+              },
             })
-            
+
             // Clean up transport when closed
             transport.onclose = () => {
               if (transport.sessionId) {
@@ -115,7 +126,7 @@ export class StreamableHttpServer {
                 console.log(`Session ${transport.sessionId} closed`)
               }
             }
-            
+
             // Set up request handlers
             this.setupServerHandlers(server)
 
@@ -133,29 +144,29 @@ export class StreamableHttpServer {
             })
             return
           }
-          
+
           // Handle the request
           await transport.handleRequest(req, res, req.body)
         } else if (req.method === "GET") {
           // Server-sent events endpoint for notifications
           const sessionId = req.headers["mcp-session-id"] as string | undefined
-          
+
           if (!sessionId || !this.transports[sessionId]) {
             res.status(400).send("Invalid or missing session ID")
             return
           }
-          
+
           const transport = this.transports[sessionId]
           await transport.handleRequest(req, res)
         } else if (req.method === "DELETE") {
           // Session termination
           const sessionId = req.headers["mcp-session-id"] as string | undefined
-          
+
           if (!sessionId || !this.transports[sessionId]) {
             res.status(400).send("Invalid or missing session ID")
             return
           }
-          
+
           const transport = this.transports[sessionId]
           await transport.handleRequest(req, res)
         } else {
@@ -176,7 +187,7 @@ export class StreamableHttpServer {
         }
       }
     })
-    
+
     // Add a health check endpoint
     this.app.get("/health", (_req: Request, res: Response) => {
       res.status(200).json({
@@ -185,33 +196,33 @@ export class StreamableHttpServer {
       })
     })
   }
-  
+
   /**
    * Set up the request handlers for a server instance
-   * 
+   *
    * @param server Server instance
    */
   private setupServerHandlers(server: Server): void {
     // List tools handler
     server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
-        tools: Object.values(getTools()),
+        tools: Object.values(getAllTools()),
       }
     })
-    
+
     // List prompts handler
     server.setRequestHandler(ListPromptsRequestSchema, async () => {
       return {
         prompts: Object.values(CONTENTFUL_PROMPTS),
       }
     })
-    
+
     // Get prompt handler
     server.setRequestHandler(GetPromptRequestSchema, async (request) => {
       const { name, arguments: args } = request.params
       return handlePrompt(name, args)
     })
-    
+
     // Call tool handler
     server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
@@ -223,7 +234,7 @@ export class StreamableHttpServer {
         }
 
         const result = await handler(args || {})
-        
+
         // For AI Action responses, format them appropriately
         if (result && typeof result === "object") {
           // Check if this is an AI Action invocation result
@@ -266,7 +277,7 @@ export class StreamableHttpServer {
             }
           }
         }
-        
+
         // Return the result as is for regular handlers
         return result
       } catch (error) {
@@ -282,12 +293,21 @@ export class StreamableHttpServer {
       }
     })
   }
-  
+
+  // AI Action Tool Context for handling dynamic tools
+  private aiActionToolContext: AiActionToolContext
+
   /**
    * Helper function to map tool names to handlers
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getHandler(name: string): ((args: any) => Promise<any>) | undefined {
+    // Check if this is a dynamic AI Action tool
+    if (name.startsWith("ai_action_")) {
+      const actionId = name.replace("ai_action_", "")
+      return (args: Record<string, unknown>) => this.handleAiActionInvocation(actionId, args)
+    }
+
     const handlers = {
       // Entry operations
       create_entry: entryHandlers.createEntry,
@@ -341,10 +361,47 @@ export class StreamableHttpServer {
 
     return handlers[name as keyof typeof handlers]
   }
-  
+
+  /**
+   * Handler for dynamic AI Action tools
+   */
+  private async handleAiActionInvocation(actionId: string, args: Record<string, unknown>) {
+    try {
+      console.error(
+        `Handling AI Action invocation for ${actionId} with args:`,
+        JSON.stringify(args),
+      )
+
+      // Get the parameters using the getInvocationParams
+      const params = this.aiActionToolContext.getInvocationParams(actionId, args)
+
+      // Directly use the variables property from getInvocationParams
+      const invocationParams = {
+        spaceId: params.spaceId,
+        environmentId: params.environmentId,
+        aiActionId: params.aiActionId,
+        outputFormat: params.outputFormat,
+        waitForCompletion: params.waitForCompletion,
+        // Use the correctly formatted variables array directly
+        rawVariables: params.variables,
+      }
+
+      console.error(`Invoking AI Action with params:`, JSON.stringify(invocationParams))
+
+      // Invoke the AI Action
+      return aiActionHandlers.invokeAiAction(invocationParams)
+    } catch (error) {
+      console.error(`Error invoking AI Action:`, error)
+      return {
+        isError: true,
+        message: error instanceof Error ? error.message : String(error),
+      }
+    }
+  }
+
   /**
    * Start the HTTP server
-   * 
+   *
    * @returns Promise that resolves when the server is started
    */
   public async start(): Promise<void> {
@@ -355,10 +412,10 @@ export class StreamableHttpServer {
       })
     })
   }
-  
+
   /**
    * Stop the HTTP server
-   * 
+   *
    * @returns Promise that resolves when the server is stopped
    */
   public async stop(): Promise<void> {
@@ -370,7 +427,7 @@ export class StreamableHttpServer {
         console.error(`Error closing session ${sessionId}:`, error)
       }
     }
-    
+
     // Close the HTTP server
     if (this.server) {
       return new Promise((resolve, reject) => {
@@ -385,3 +442,4 @@ export class StreamableHttpServer {
     }
   }
 }
+
