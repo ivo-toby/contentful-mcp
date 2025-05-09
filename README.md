@@ -226,7 +226,7 @@ To use stdio mode, simply run the server without the `--http` flag:
 ```bash
 npx -y contentful-mcp --management-token YOUR_TOKEN
 # or alternatively
-npx -y @ivotoby/contentful-management-mcp-server/bin/mcp-server.js --management-token YOUR_TOKEN
+npx -y @ivotoby/contentful-management-mcp-server --management-token YOUR_TOKEN
 ```
 
 ### StreamableHTTP Transport
@@ -238,7 +238,7 @@ To use StreamableHTTP mode, run with the `--http` flag:
 ```bash
 npx -y contentful-mcp --management-token YOUR_TOKEN --http --port 3000
 # or alternatively
-npx -y @ivotoby/contentful-management-mcp-server/bin/mcp-server.js --management-token YOUR_TOKEN --http --port 3000
+npx -y @ivotoby/contentful-management-mcp-server --management-token YOUR_TOKEN --http --port 3000
 ```
 
 #### StreamableHTTP Details

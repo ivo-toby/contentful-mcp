@@ -65,10 +65,15 @@ describe("StreamableHTTP Server", () => {
     // Setup routes manually
     // @ts-expect-error - Access private method for testing
     httpServer.setupRoutes()
-    
+
     // Verify that the expected routes were set up
     expect(appAllSpy).toHaveBeenCalledTimes(1) // /mcp
-    expect(appGetSpy).toHaveBeenCalledTimes(1) // /health
+
+    // Express internally calls app.get with a function as the first argument for query parsing
+    // We only care about the route paths, so filter to only include string paths
+    const actualRoutes = appGetSpy.mock.calls
+      .filter(call => typeof call[0] === 'string' && call[0].startsWith('/'))
+    expect(actualRoutes.length).toBe(1) // Only /health is a real route
     
     // Check specific routes
     const mcpCallArgs = appAllSpy.mock.calls.find(call => call[0] === '/mcp')
