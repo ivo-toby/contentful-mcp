@@ -271,3 +271,4 @@ MIT License
 ## Fine print
 
 This MCP Server enables Claude (or other agents that can consume MCP resources) to update, delete content, spaces and content-models. So be sure what you allow Claude to do with your Contentful spaces!
+
