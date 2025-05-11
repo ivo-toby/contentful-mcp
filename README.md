@@ -1,4 +1,4 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ivo-toby-contentful-mcp-badge.png)](https://mseep.ai/app/ivo-toby-contentful-mcp)
+<img width="700" src="https://images.ctfassets.net/jtqsy5pye0zd/6wNuQ2xMvbw134rccObi0q/bf61badc6d6d9780609e541713f0bba6/Contentful_Logo_2.5_Dark.svg?w=700&q=100" alt="Contentful MCP server"/>
 
 # Contentful MCP Server
 
@@ -264,6 +264,8 @@ The server implements comprehensive error handling for:
 - Network issues
 - API-specific errors
 
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ivo-toby-contentful-mcp-badge.png)](https://mseep.ai/app/ivo-toby-contentful-mcp)
+
 ## License
 
 MIT License
@@ -272,3 +274,4 @@ MIT License
 
 This MCP Server enables Claude (or other agents that can consume MCP resources) to update, delete content, spaces and content-models. So be sure what you allow Claude to do with your Contentful spaces!
 
+This MCP-server is not officially supported by Contentful (yet)
