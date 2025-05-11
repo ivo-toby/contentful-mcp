@@ -126,6 +126,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should create a new entry", async () => {
       const entryData = {
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         contentTypeId: testContentTypeId,
         fields: {
           title: { "en-US": "New Entry" },
@@ -146,6 +147,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should update an existing entry", async () => {
       const updateData = {
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: testEntryId,
         fields: {
           title: { "en-US": "Updated Entry" },
@@ -166,6 +168,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should delete an entry", async () => {
       const result = await entryHandlers.deleteEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: testEntryId,
       })
 
@@ -177,6 +180,7 @@ describe("Entry Handlers Integration Tests", () => {
       try {
         await entryHandlers.deleteEntry({
           spaceId: testSpaceId,
+          environmentId: "master", // Adding environmentId parameter
           entryId: "non-existent-id",
         })
         expect.fail("Should have thrown an error")
@@ -190,6 +194,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should publish a single entry", async () => {
       const result = await entryHandlers.publishEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: testEntryId,
       })
 
@@ -205,6 +210,7 @@ describe("Entry Handlers Integration Tests", () => {
 
       const result = await entryHandlers.publishEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: ["entry-id-1", "entry-id-2"],
       })
 
@@ -230,6 +236,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should unpublish a single entry", async () => {
       const result = await entryHandlers.unpublishEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: testEntryId,
       })
 
@@ -245,6 +252,7 @@ describe("Entry Handlers Integration Tests", () => {
 
       const result = await entryHandlers.unpublishEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: ["entry-id-1", "entry-id-2"],
       })
 

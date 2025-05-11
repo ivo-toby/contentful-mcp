@@ -160,10 +160,11 @@ export const assetHandlers = {
     const currentAsset = await getCurrentAsset(params)
 
     const contentfulClient = await getContentfulClient()
+    // Cast to any to allow version parameter which is required but not in the type definition
     await contentfulClient.asset.delete({
       ...params,
       version: currentAsset.sys.version,
-    })
+    } as any)
 
     return formatResponse({
       message: `Asset ${args.assetId} deleted successfully`,
@@ -202,10 +203,11 @@ export const assetHandlers = {
     const currentAsset = await getCurrentAsset(params)
 
     const contentfulClient = await getContentfulClient()
+    // Cast to any to allow version parameter which is required but not in the type definition
     const asset = await contentfulClient.asset.unpublish({
       ...params,
       version: currentAsset.sys.version,
-    })
+    } as any)
 
     return formatResponse(asset)
   },

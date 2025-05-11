@@ -1,11 +1,11 @@
-import { GetPromptResult } from "@modelcontextprotocol/sdk/types"
+import { PromptResult } from "../handlePrompt"
 
 /**
  * Handler for exploring GraphQL schema prompt
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleExploreGraphQLSchema(args?: Record<string, string>): GetPromptResult {
+export function handleExploreGraphQLSchema(args?: Record<string, string>): PromptResult {
   const goal = args?.goal || "different types of content"
 
   return {
@@ -33,7 +33,7 @@ export function handleExploreGraphQLSchema(args?: Record<string, string>): GetPr
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleBuildGraphQLQuery(args?: Record<string, string>): GetPromptResult {
+export function handleBuildGraphQLQuery(args?: Record<string, string>): PromptResult {
   if (!args?.contentType) {
     return {
       messages: [

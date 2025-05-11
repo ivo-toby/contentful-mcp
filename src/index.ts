@@ -11,6 +11,7 @@ import {
 import { CONTENTFUL_PROMPTS } from "./prompts/contentful-prompts.js"
 export { CONTENTFUL_PROMPTS }
 import { handlePrompt } from "./prompts/handlers.js"
+import { PromptResult } from "./prompts/handlePrompt.js"
 import { entryHandlers } from "./handlers/entry-handlers.js"
 import { assetHandlers } from "./handlers/asset-handlers.js"
 import { spaceHandlers } from "./handlers/space-handlers.js"
@@ -99,7 +100,10 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => ({
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
   const { name, arguments: args } = request.params
-  return handlePrompt(name, args)
+  const result = await handlePrompt(name, args)
+  // Add tools to the prompt result
+  result.tools = Object.values(getAllTools())
+  return result as any // Cast to any to satisfy the type checker
 })
 
 // Type-safe handler
@@ -380,6 +384,11 @@ async function loadGraphQLSchema() {
 
     console.error(`Fetching GraphQL schema for space ${spaceId}, environment ${environmentId} using ${tokenType} token...`)
 
+    // Add an assertion to ensure accessToken is defined
+    if (!accessToken) {
+      console.error("Access token must be defined")
+      return
+    }
     const schema = await fetchGraphQLSchema(spaceId, environmentId, accessToken)
 
     if (schema) {

@@ -1,11 +1,11 @@
-import { GetPromptResult } from "@modelcontextprotocol/sdk/types"
+import { PromptResult } from "../handlePrompt"
 
 /**
  * Handler for API concepts prompt
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleApiConcepts(args?: Record<string, string>): GetPromptResult {
+export function handleApiConcepts(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -31,7 +31,7 @@ export function handleApiConcepts(args?: Record<string, string>): GetPromptResul
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleContentModelingGuide(args?: Record<string, string>): GetPromptResult {
+export function handleContentModelingGuide(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -57,7 +57,7 @@ export function handleContentModelingGuide(args?: Record<string, string>): GetPr
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleApiOperationHelp(args?: Record<string, string>): GetPromptResult {
+export function handleApiOperationHelp(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -83,7 +83,7 @@ export function handleApiOperationHelp(args?: Record<string, string>): GetPrompt
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleSpaceIdentification(args?: Record<string, string>): GetPromptResult {
+export function handleSpaceIdentification(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -109,7 +109,7 @@ export function handleSpaceIdentification(args?: Record<string, string>): GetPro
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleEntryManagement(args?: Record<string, string>): GetPromptResult {
+export function handleEntryManagement(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -135,7 +135,7 @@ export function handleEntryManagement(args?: Record<string, string>): GetPromptR
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleAssetManagement(args?: Record<string, string>): GetPromptResult {
+export function handleAssetManagement(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -161,7 +161,7 @@ export function handleAssetManagement(args?: Record<string, string>): GetPromptR
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleContentTypeOperations(args?: Record<string, string>): GetPromptResult {
+export function handleContentTypeOperations(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -187,7 +187,7 @@ export function handleContentTypeOperations(args?: Record<string, string>): GetP
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleBulkOperations(args?: Record<string, string>): GetPromptResult {
+export function handleBulkOperations(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -213,7 +213,7 @@ export function handleBulkOperations(args?: Record<string, string>): GetPromptRe
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleSpaceEnvironmentManagement(args?: Record<string, string>): GetPromptResult {
+export function handleSpaceEnvironmentManagement(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -239,7 +239,7 @@ export function handleSpaceEnvironmentManagement(args?: Record<string, string>):
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleMcpToolUsage(args?: Record<string, string>): GetPromptResult {
+export function handleMcpToolUsage(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {

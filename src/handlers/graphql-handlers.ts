@@ -27,6 +27,65 @@ export interface GetGraphQLExampleArgs {
   cdaToken?: string
 }
 
+// Types for GraphQL API responses
+interface GraphQLResponseBase {
+  errors?: Array<{ message: string }>
+}
+
+interface GraphQLIntrospectionResponse extends GraphQLResponseBase {
+  data: {
+    __schema: any
+  }
+}
+
+interface GraphQLContentTypesResponse extends GraphQLResponseBase {
+  data: {
+    __schema: {
+      queryType: {
+        fields: Array<{
+          name: string
+          description?: string
+          type?: {
+            kind?: string
+            name?: string
+            ofType?: {
+              name?: string
+              kind?: string
+            }
+          }
+        }>
+      }
+    }
+  }
+}
+
+interface GraphQLTypeResponse extends GraphQLResponseBase {
+  data: {
+    __type?: {
+      name: string
+      description?: string
+      fields: Array<{
+        name: string
+        description?: string
+        type: any
+      }>
+    }
+  }
+}
+
+interface GraphQLExecuteResponse extends GraphQLResponseBase {
+  data?: Record<string, any>
+}
+
+// Tool response type
+interface ToolResponse {
+  content: Array<{
+    type: string
+    text: string
+  }>
+  isError?: boolean
+}
+
 // Function to fetch the GraphQL schema via introspection
 export async function fetchGraphQLSchema(
   spaceId: string,
@@ -52,7 +111,7 @@ export async function fetchGraphQLSchema(
       return null
     }
 
-    const introspectionResult = await response.json()
+    const introspectionResult = await response.json() as GraphQLIntrospectionResponse
 
     if (introspectionResult.errors) {
       console.error(`GraphQL introspection errors: ${JSON.stringify(introspectionResult.errors)}`)
@@ -96,7 +155,7 @@ export interface GraphQLQueryArgs {
 // Execute a GraphQL query against the Contentful GraphQL API
 export const graphqlHandlers = {
   // List all content types available in the GraphQL schema
-  listContentTypes: async (args: ListContentTypesArgs) => {
+  listContentTypes: async (args: ListContentTypesArgs): Promise<ToolResponse> => {
     try {
       const spaceId = process.env.SPACE_ID || args.spaceId
       const environmentId = process.env.ENVIRONMENT_ID || args.environmentId || "master"
@@ -167,7 +226,7 @@ export const graphqlHandlers = {
         }
       }
 
-      const result = await response.json()
+      const result = await response.json() as GraphQLContentTypesResponse
 
       if (result.errors) {
         return {
@@ -219,7 +278,7 @@ export const graphqlHandlers = {
   },
 
   // Get schema details for a specific content type
-  getContentTypeSchema: async (args: GetContentTypeSchemaArgs) => {
+  getContentTypeSchema: async (args: GetContentTypeSchemaArgs): Promise<ToolResponse> => {
     try {
       const spaceId = process.env.SPACE_ID || args.spaceId
       const environmentId = process.env.ENVIRONMENT_ID || args.environmentId || "master"
@@ -295,7 +354,7 @@ export const graphqlHandlers = {
         }
       }
 
-      const result = await response.json()
+      const result = await response.json() as GraphQLTypeResponse
 
       if (result.errors) {
         return {
@@ -327,11 +386,11 @@ export const graphqlHandlers = {
       }
 
       // Process fields information
-      const fields = result.data.__type.fields.map((field: any) => ({
+      const fields = result.data.__type?.fields.map((field) => ({
         name: field.name,
         description: field.description || `Field ${field.name}`,
         type: formatGraphQLType(field.type),
-      }))
+      })) || []
 
       return {
         content: [
@@ -364,7 +423,7 @@ export const graphqlHandlers = {
   },
 
   // Get example GraphQL queries for a content type
-  getExample: async (args: GetGraphQLExampleArgs) => {
+  getExample: async (args: GetGraphQLExampleArgs): Promise<ToolResponse> => {
     try {
       const spaceId = process.env.SPACE_ID || args.spaceId
       const environmentId = process.env.ENVIRONMENT_ID || args.environmentId || "master"
@@ -468,7 +527,7 @@ ${scalarFields.map((field: string) => `    ${field}`).join("\n")}
   },
 
   // Execute a GraphQL query
-  executeQuery: async (args: GraphQLQueryArgs) => {
+  executeQuery: async (args: GraphQLQueryArgs): Promise<ToolResponse> => {
     try {
       const spaceId = process.env.SPACE_ID || args.spaceId
       const environmentId = process.env.ENVIRONMENT_ID || args.environmentId || "master"
@@ -579,7 +638,7 @@ ${scalarFields.map((field: string) => `    ${field}`).join("\n")}
         }
       }
 
-      const result = await response.json()
+      const result = await response.json() as GraphQLExecuteResponse
 
       console.error("GraphQL response:", JSON.stringify(result))
 

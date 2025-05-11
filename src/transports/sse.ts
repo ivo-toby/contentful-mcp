@@ -1,5 +1,13 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js"
 import { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js"
+
+// Define our own JSONRPCMessage as we can't extend the MCP one
+interface ExtendedJSONRPCMessage {
+  method: string
+  jsonrpc: "2.0"
+  id?: string | number
+  params?: Record<string, unknown>
+}
 import { randomUUID } from "crypto"
 import type { Request, Response } from "express"
 
@@ -58,12 +66,14 @@ class SSEServerTransport {
     this.session.response.write(`data: ${JSON.stringify({ sessionId: this.session.id })}\n\n`)
   }
 
-  async send(message: JSONRPCMessage): Promise<void> {
+  async send(message: JSONRPCMessage, options?: any): Promise<void> {
     // Send message to client
     if (!this.session.isClosed) {
       try {
         const data = JSON.stringify(message)
-        this.session.response.write(`id: ${message.id || "notification"}\n`)
+        // Cast the message to ExtendedJSONRPCMessage to access id
+        const extMessage = message as ExtendedJSONRPCMessage
+        this.session.response.write(`id: ${extMessage.id || "notification"}\n`)
         this.session.response.write(`data: ${data}\n\n`)
       } catch (error) {
         console.error(`Error sending SSE message for session ${this.session.id}:`, error)
@@ -159,6 +169,8 @@ export class SSETransport {
     sessionId: string,
     message: JSONRPCMessage,
   ): Promise<void> {
+    // Cast to our extended message type to access the id property
+    const extMessage = message as ExtendedJSONRPCMessage
     const session = this.sessions[sessionId]
 
     if (!session || session.isClosed) {
@@ -168,15 +180,14 @@ export class SSETransport {
           code: -32000,
           message: "Session not found or closed",
         },
-        id: message.id || null,
+        id: extMessage.id || null,
       })
       return
     }
 
     try {
       // Get the transport from the server
-      // @ts-expect-error - Accessing transport property
-      const transport = session.server.transport as SSEServerTransport
+      const transport = (session.server as any).transport as SSEServerTransport
 
       // Pass the message to the transport's onmessage handler
       if (transport && transport.onmessage) {
@@ -187,7 +198,7 @@ export class SSETransport {
       res.status(200).json({
         jsonrpc: "2.0",
         result: { success: true },
-        id: message.id || null,
+        id: extMessage.id || null,
       })
     } catch (error) {
       console.error(`Error handling message for session ${sessionId}:`, error)
@@ -197,7 +208,7 @@ export class SSETransport {
           code: -32603,
           message: `Error processing message: ${error instanceof Error ? error.message : String(error)}`,
         },
-        id: message.id || null,
+        id: extMessage.id || null,
       })
     }
   }

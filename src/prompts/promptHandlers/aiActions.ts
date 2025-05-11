@@ -1,4 +1,4 @@
-import { GetPromptResult } from "@modelcontextprotocol/sdk/types"
+import { PromptResult } from "../handlePrompt"
 import { generateVariableTypeContent } from "../generateVariableTypeContent"
 import { handleAiActionsInvoke } from "../ai-actions-invoke"
 import { handleAiActionsOverview } from "../ai-actions-overview"
@@ -8,7 +8,7 @@ import { handleAiActionsOverview } from "../ai-actions-overview"
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleAiActionsCreate(args?: Record<string, string>): GetPromptResult {
+export function handleAiActionsCreate(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {
@@ -132,7 +132,7 @@ Would you like me to help you structure a specific template and variables for yo
  * @param args Optional arguments for the prompt
  * @returns Prompt result with messages
  */
-export function handleAiActionsVariables(args?: Record<string, string>): GetPromptResult {
+export function handleAiActionsVariables(args?: Record<string, string>): PromptResult {
   return {
     messages: [
       {

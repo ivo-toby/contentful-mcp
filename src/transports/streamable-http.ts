@@ -1,9 +1,9 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js"
-import { getAllTools } from "../index.js"
 import { AiActionToolContext } from "../utils/ai-action-tool-generator.js"
 import { CONTENTFUL_PROMPTS } from "../prompts/contentful-prompts.js"
 import { handlePrompt } from "../prompts/handlers.js"
+import { PromptResult } from "../prompts/handlePrompt.js"
 import { randomUUID } from "crypto"
 import express, { Request, Response } from "express"
 import cors from "cors"
@@ -37,7 +37,7 @@ export interface StreamableHttpServerOptions {
  */
 export class StreamableHttpServer {
   private app: express.Application
-  private server: unknown
+  private server: any
   private port: number
   private host: string
 
@@ -61,6 +61,9 @@ export class StreamableHttpServer {
       process.env.SPACE_ID || "",
       process.env.ENVIRONMENT_ID || "master",
     )
+
+    // Initialize tools
+    this.initializeTools()
 
     // Load AI Actions
     this.loadAiActions().catch((error) => {
@@ -110,7 +113,7 @@ export class StreamableHttpServer {
               },
               {
                 capabilities: {
-                  tools: getAllTools(),
+                  tools: this.tools,
                   prompts: CONTENTFUL_PROMPTS,
                 },
               },
@@ -212,7 +215,7 @@ export class StreamableHttpServer {
     // List tools handler
     server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
-        tools: Object.values(getAllTools()),
+        tools: Object.values(this.tools),
       }
     })
 
@@ -226,7 +229,10 @@ export class StreamableHttpServer {
     // Get prompt handler
     server.setRequestHandler(GetPromptRequestSchema, async (request) => {
       const { name, arguments: args } = request.params
-      return handlePrompt(name, args)
+      const result = await handlePrompt(name, args)
+      // Add tools to the prompt result
+      result.tools = Object.values(this.tools) // Use the tools from this server instance
+      return result as any // Cast to any to satisfy the type checker
     })
 
     // Call tool handler
@@ -302,6 +308,57 @@ export class StreamableHttpServer {
 
   // AI Action Tool Context for handling dynamic tools
   private aiActionToolContext: AiActionToolContext
+
+  // Tools available for this server instance
+  private tools: Record<string, any> = {}
+
+  /**
+   * Initialize available tools based on authentication
+   */
+  private initializeTools(): void {
+    // Determine which authentication methods are available
+    const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+    const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
+    const hasPrivateKey = !!process.env.PRIVATE_KEY
+
+    // If we only have a CDA token, only enable GraphQL operations
+    if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
+      this.tools = {
+        graphql_query: {
+          name: "graphql_query",
+          description: "Execute a GraphQL query against the Contentful GraphQL API",
+          inputSchema: { type: "object", properties: {} }
+        },
+        graphql_list_content_types: {
+          name: "graphql_list_content_types",
+          description: "List all available content types in the Contentful GraphQL schema",
+          inputSchema: { type: "object", properties: {} }
+        },
+        graphql_get_content_type_schema: {
+          name: "graphql_get_content_type_schema",
+          description: "Get detailed schema for a specific content type in the GraphQL API",
+          inputSchema: { type: "object", properties: {} }
+        },
+        graphql_get_example: {
+          name: "graphql_get_example",
+          description: "Get example GraphQL queries for a specific content type",
+          inputSchema: { type: "object", properties: {} }
+        }
+      }
+      return
+    }
+
+    // Define static tools
+    this.tools = {
+      // Entry operations
+      create_entry: {
+        name: "create_entry",
+        description: "Create a new entry in Contentful",
+        inputSchema: { type: "object", properties: {} }
+      },
+      // ... other tools would be defined here
+    }
+  }
 
   /**
    * Helper function to map tool names to handlers
@@ -471,6 +528,14 @@ export class StreamableHttpServer {
       // Add each AI Action to the context
       for (const action of response.items) {
         this.aiActionToolContext.addAiAction(action)
+
+        // Add the AI Action to our tools
+        const toolName = `ai_action_${action.sys.id}`
+        this.tools[toolName] = {
+          name: toolName,
+          description: action.description || `AI Action: ${action.name}`,
+          inputSchema: { type: "object", properties: {} }
+        }
 
         // Log variable mappings for debugging
         if (action.instruction.variables && action.instruction.variables.length > 0) {

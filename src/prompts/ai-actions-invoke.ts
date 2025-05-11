@@ -1,7 +1,9 @@
 /**
  * Handler for invoking AI Actions in Contentful
  */
-export async function handleAiActionsInvoke(actionId?: string, details?: string) {
+import { PromptResult } from "./handlePrompt"
+
+export async function handleAiActionsInvoke(actionId?: string, details?: string): Promise<PromptResult> {
   return {
     messages: [
       {

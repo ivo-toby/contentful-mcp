@@ -422,10 +422,11 @@ export const entryHandlers = {
     const currentEntry = await contentfulClient.entry.get(params)
 
     // Add version to params for unpublish
+    // Cast to any to allow version parameter which is required but not in the type definition
     const entry = await contentfulClient.entry.unpublish({
       ...params,
       version: currentEntry.sys.version,
-    })
+    } as any)
 
     return {
       content: [{ type: "text", text: JSON.stringify(entry, null, 2) }],
