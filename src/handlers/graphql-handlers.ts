@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { fetch } from "undici"
 import { buildClientSchema, getIntrospectionQuery, validate, parse, GraphQLSchema } from "graphql"
-import { mapSchema } from "@graphql-tools/utils"
 
 // Store the GraphQL schema globally so it can be reused for validation
 let graphqlSchema: GraphQLSchema | null = null
@@ -10,7 +9,7 @@ let graphqlSchema: GraphQLSchema | null = null
 export async function fetchGraphQLSchema(
   spaceId: string,
   environmentId: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<GraphQLSchema | null> {
   try {
     const introspectionQuery = getIntrospectionQuery()
@@ -40,10 +39,10 @@ export async function fetchGraphQLSchema(
 
     // Build a schema from the introspection result
     const schema = buildClientSchema(introspectionResult.data)
-    
+
     // Log the schema types for debugging
     console.error(`GraphQL schema loaded with ${Object.keys(schema.getTypeMap()).length} types`)
-    
+
     return schema
   } catch (error) {
     console.error(`Error fetching GraphQL schema: ${error}`)
@@ -54,7 +53,7 @@ export async function fetchGraphQLSchema(
 // Set the GraphQL schema for later use
 export function setGraphQLSchema(schema: GraphQLSchema): void {
   graphqlSchema = schema
-  
+
   // Count the available query fields as a sanity check
   const queryType = schema.getQueryType()
   if (queryType) {
@@ -98,15 +97,19 @@ export const graphqlHandlers = {
         try {
           const queryDocument = parse(args.query)
           const validationErrors = validate(graphqlSchema, queryDocument)
-          
+
           if (validationErrors.length > 0) {
             return {
               content: [
                 {
                   type: "text",
-                  text: JSON.stringify({
-                    errors: validationErrors.map(error => ({ message: error.message }))
-                  }, null, 2),
+                  text: JSON.stringify(
+                    {
+                      errors: validationErrors.map((error) => ({ message: error.message })),
+                    },
+                    null,
+                    2,
+                  ),
                 },
               ],
               isError: true,
@@ -117,9 +120,13 @@ export const graphqlHandlers = {
             content: [
               {
                 type: "text",
-                text: JSON.stringify({
-                  errors: [{ message: `GraphQL query parsing error: ${parseError}` }]
-                }, null, 2),
+                text: JSON.stringify(
+                  {
+                    errors: [{ message: `GraphQL query parsing error: ${parseError}` }],
+                  },
+                  null,
+                  2,
+                ),
               },
             ],
             isError: true,
@@ -131,7 +138,7 @@ export const graphqlHandlers = {
 
       // Execute the query against the Contentful GraphQL API
       const endpoint = `https://graphql.contentful.com/content/v1/spaces/${spaceId}/environments/${environmentId}`
-      
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -151,9 +158,13 @@ export const graphqlHandlers = {
           content: [
             {
               type: "text",
-              text: JSON.stringify({
-                errors: [{ message: `HTTP Error ${response.status}: ${errorText}` }]
-              }, null, 2),
+              text: JSON.stringify(
+                {
+                  errors: [{ message: `HTTP Error ${response.status}: ${errorText}` }],
+                },
+                null,
+                2,
+              ),
             },
           ],
           isError: true,
@@ -170,9 +181,13 @@ export const graphqlHandlers = {
           content: [
             {
               type: "text",
-              text: JSON.stringify({
-                errors: result.errors
-              }, null, 2),
+              text: JSON.stringify(
+                {
+                  errors: result.errors,
+                },
+                null,
+                2,
+              ),
             },
           ],
           isError: true,
@@ -192,11 +207,17 @@ export const graphqlHandlers = {
         content: [
           {
             type: "text",
-            text: JSON.stringify({
-              errors: [{
-                message: `Error executing GraphQL query: ${error instanceof Error ? error.message : String(error)}`
-              }]
-            }, null, 2),
+            text: JSON.stringify(
+              {
+                errors: [
+                  {
+                    message: `Error executing GraphQL query: ${error instanceof Error ? error.message : String(error)}`,
+                  },
+                ],
+              },
+              null,
+              2,
+            ),
           },
         ],
         isError: true,
@@ -204,3 +225,4 @@ export const graphqlHandlers = {
     }
   },
 }
+
