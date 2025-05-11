@@ -28,6 +28,17 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 
 The MCP server includes built-in support for Contentful's GraphQL API, allowing you to perform complex, efficient queries that are not possible with the standard REST API.
 
+### GraphQL Schema Exploration
+
+To help Claude understand your Contentful content model, we've implemented a structured GraphQL schema exploration approach with specialized tools:
+
+1. **Discovery**: First explore available content types in your space
+2. **Understanding**: Then examine the schema details for specific content types
+3. **Example Generation**: See example queries for content types of interest
+4. **Execution**: Finally, construct and execute your custom GraphQL queries
+
+This approach enables Claude to generate more accurate and efficient queries by first understanding the structure of your content.
+
 ### GraphQL Tool Features
 
 - **Flexible Queries**: Retrieve only the fields you need, reducing response size
@@ -35,8 +46,46 @@ The MCP server includes built-in support for Contentful's GraphQL API, allowing 
 - **Schema Validation**: Queries are validated against the GraphQL schema when available
 - **Token Flexibility**: Works with either CDA or CMA tokens
 - **Error Handling**: Proper formatting and handling of GraphQL errors
+- **Schema Exploration**: Tools for discovering and understanding your content model
 
-### Using the GraphQL Tool
+### GraphQL Tools
+
+The MCP server provides four GraphQL-related tools:
+
+#### 1. List Content Types
+
+```graphql
+graphql_list_content_types({
+  cdaToken: "your-delivery-token" // Optional, overrides environment variable
+})
+```
+
+This tool lists all available content types in your Contentful space's GraphQL schema, helping Claude understand what content is available to query.
+
+#### 2. Get Content Type Schema
+
+```graphql
+graphql_get_content_type_schema({
+  contentType: "Article", // The name of the content type to explore
+  cdaToken: "your-delivery-token" // Optional, overrides environment variable
+})
+```
+
+This tool provides detailed schema information for a specific content type, including all fields, their types, and relationships to other content types.
+
+#### 3. Get Example Query
+
+```graphql
+graphql_get_example({
+  contentType: "Article", // The content type to generate an example for
+  includeRelations: true, // Whether to include related content in the example
+  cdaToken: "your-delivery-token" // Optional, overrides environment variable
+})
+```
+
+This tool generates example GraphQL queries for a specific content type, helping Claude understand how to construct valid queries.
+
+#### 4. Execute Query
 
 ```graphql
 graphql_query({
@@ -64,11 +113,35 @@ graphql_query({
 })
 ```
 
+This tool executes GraphQL queries against Contentful's GraphQL API, returning the query results.
+
+### GraphQL Prompts
+
+The MCP server also includes two GraphQL-related prompts to help guide schema exploration:
+
+#### 1. Explore GraphQL Schema
+
+```
+explore-graphql-schema(goal: "articles about marketing")
+```
+
+This prompt guides Claude through a systematic exploration of your GraphQL schema with a specific goal in mind.
+
+#### 2. Build GraphQL Query
+
+```
+build-graphql-query(contentType: "Article", fields: "title,body,publishDate", filters: "publishDate > 2023-01-01", includeReferences: true)
+```
+
+This prompt helps Claude build a custom GraphQL query for a specific content type with specified fields, filters, and reference handling.
+
 ### CDA vs CMA Tokens for GraphQL
 
 - **CDA Token (Recommended)**: Use for most GraphQL queries as they're read-only operations
 - **CMA Token**: Can be used but has broader permissions than necessary for queries
 - **Token Priority**: Tool argument > Environment variable
+
+All GraphQL tools work with either CDA or CMA tokens. When using only a CDA token, only GraphQL tools will be available, which makes it a secure option for read-only scenarios.
 
 ## Pagination
 
@@ -140,6 +213,9 @@ These bulk operation tools are ideal for content migrations, mass updates, or ba
 
 ### GraphQL Operations
 
+- **graphql_list_content_types**: Lists all available content types in the Contentful space's GraphQL schema. Use this tool first to understand what content types are available.
+- **graphql_get_content_type_schema**: Gets detailed schema for a specific content type, including all fields, their types, and relationships.
+- **graphql_get_example**: Generates example GraphQL queries for a specific content type to help construct valid queries.
 - **graphql_query**: Execute GraphQL queries against Contentful's GraphQL API. This tool allows you to retrieve content in a more flexible and efficient way than REST API calls. Works with either CDA or CMA tokens.
 
 ## Development Tools
