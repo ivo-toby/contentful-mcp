@@ -17,6 +17,7 @@ import { spaceHandlers } from "./handlers/space-handlers.js"
 import { contentTypeHandlers } from "./handlers/content-type-handlers.js"
 import { bulkActionHandlers } from "./handlers/bulk-action-handlers.js"
 import { aiActionHandlers } from "./handlers/ai-action-handlers.js"
+import { graphqlHandlers, fetchGraphQLSchema, setGraphQLSchema } from "./handlers/graphql-handlers.js"
 import { getTools } from "./types/tools.js"
 import { validateEnvironment } from "./utils/validation.js"
 import { AiActionToolContext } from "./utils/ai-action-tool-generator.js"
@@ -212,6 +213,9 @@ function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
     unpublish_ai_action: aiActionHandlers.unpublishAiAction,
     invoke_ai_action: aiActionHandlers.invokeAiAction,
     get_ai_action_invocation: aiActionHandlers.getAiActionInvocation,
+
+    // GraphQL operations
+    graphql_query: graphqlHandlers.executeQuery,
   }
 
   return handlers[name as keyof typeof handlers]
@@ -310,14 +314,41 @@ async function loadAiActions() {
   }
 }
 
+// Function to fetch GraphQL schema
+async function loadGraphQLSchema() {
+  try {
+    if (!process.env.SPACE_ID || !process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN) {
+      console.error("Unable to fetch GraphQL schema: Space ID or access token not provided")
+      return
+    }
+
+    const spaceId = process.env.SPACE_ID
+    const environmentId = process.env.ENVIRONMENT_ID || "master"
+    const accessToken = process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+
+    console.error(`Fetching GraphQL schema for space ${spaceId}, environment ${environmentId}...`)
+
+    const schema = await fetchGraphQLSchema(spaceId, environmentId, accessToken)
+
+    if (schema) {
+      setGraphQLSchema(schema)
+      console.error("GraphQL schema loaded successfully")
+    } else {
+      console.error("Failed to load GraphQL schema")
+    }
+  } catch (error) {
+    console.error("Error loading GraphQL schema:", error)
+  }
+}
+
 // Start the server
 async function runServer() {
   // Determine if HTTP server mode is enabled
   const enableHttp = process.env.ENABLE_HTTP_SERVER === "true"
   const httpPort = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 3000
 
-  // Load AI Actions before connecting
-  await loadAiActions()
+  // Load AI Actions and GraphQL schema before connecting
+  await Promise.all([loadAiActions(), loadGraphQLSchema()])
 
   if (enableHttp) {
     // Start StreamableHTTP server for MCP over HTTP
@@ -349,8 +380,11 @@ async function runServer() {
     )
   }
 
-  // Set up periodic refresh of AI Actions (every 5 minutes)
-  setInterval(loadAiActions, 5 * 60 * 1000)
+  // Set up periodic refresh of AI Actions and GraphQL schema (every 5 minutes)
+  setInterval(() => {
+    loadAiActions().catch(error => console.error("Error refreshing AI Actions:", error))
+    loadGraphQLSchema().catch(error => console.error("Error refreshing GraphQL schema:", error))
+  }, 5 * 60 * 1000)
 }
 
 runServer().catch((error) => {

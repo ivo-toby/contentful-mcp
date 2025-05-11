@@ -836,6 +836,32 @@ export const getAiActionTools = () => {
   }
 }
 
+// Tool definitions for GraphQL operations
+export const getGraphQLTools = () => {
+  return {
+    GRAPHQL_QUERY: {
+      name: "graphql_query",
+      description:
+        "Execute a GraphQL query against the Contentful GraphQL API. This tool allows you to use Contentful's powerful GraphQL interface to retrieve content in a more flexible and efficient way than REST API calls.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "The GraphQL query string to execute (must be a valid GraphQL query)",
+          },
+          variables: {
+            type: "object",
+            description: "Optional variables for the GraphQL query",
+            additionalProperties: true,
+          },
+        },
+        required: ["query"],
+      }),
+    },
+  }
+}
+
 // Export combined tools
 export const getTools = () => {
   return {
@@ -845,5 +871,6 @@ export const getTools = () => {
     ...getSpaceEnvTools(),
     ...getBulkActionTools(),
     ...getAiActionTools(),
+    ...getGraphQLTools(),
   }
 }
