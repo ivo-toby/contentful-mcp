@@ -113,8 +113,24 @@ export const entryHandlers = {
     const contentfulClient = await getContentfulClient()
     const currentEntry = await contentfulClient.entry.get(params)
 
+    // Merge existing fields with updated fields to ensure all fields are present
+    const mergedFields = { ...currentEntry.fields }
+
+    // Apply updates to each field and locale
+    for (const fieldId in args.fields) {
+      if (Object.prototype.hasOwnProperty.call(args.fields, fieldId)) {
+        // If the field exists in currentEntry, merge the locale values
+        if (mergedFields[fieldId]) {
+          mergedFields[fieldId] = { ...mergedFields[fieldId], ...args.fields[fieldId] }
+        } else {
+          // If it's a new field, add it
+          mergedFields[fieldId] = args.fields[fieldId]
+        }
+      }
+    }
+
     const entryProps: EntryProps = {
-      fields: args.fields,
+      fields: mergedFields,
       sys: currentEntry.sys,
     }
 

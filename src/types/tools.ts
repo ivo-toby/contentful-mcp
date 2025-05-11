@@ -76,7 +76,7 @@ export const getEntryTools = () => {
     CREATE_ENTRY: {
       name: "create_entry",
       description:
-        "Create a new entry in Contentful, before executing this function, you need to know the contentTypeId (not the content type NAME) and the fields of that contentType, you can get the fields definition by using the GET_CONTENT_TYPE tool. ",
+        "Create a new entry in Contentful. Before executing this function, you need to know the contentTypeId (not the content type NAME) and the fields of that contentType. You can get the fields definition by using the GET_CONTENT_TYPE tool. IMPORTANT: All field values MUST include a locale key (e.g., 'en-US') for each value, like: { title: { 'en-US': 'My Title' } }. Every field in Contentful requires a locale even for single-language content.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -84,7 +84,10 @@ export const getEntryTools = () => {
             type: "string",
             description: "The ID of the content type for the new entry",
           },
-          fields: { type: "object", description: "The fields of the entry" },
+          fields: {
+            type: "object",
+            description: "The fields of the entry with localized values. Example: { title: { 'en-US': 'My Title' }, description: { 'en-US': 'My Description' } }"
+          },
         },
         required: ["contentTypeId", "fields"],
       }),
@@ -103,12 +106,15 @@ export const getEntryTools = () => {
     UPDATE_ENTRY: {
       name: "update_entry",
       description:
-        "Update an existing entry, very important: always send all field values and all values related to locales, also the fields values that have not been updated",
+        "Update an existing entry. The handler will merge your field updates with the existing entry fields, so you only need to provide the fields and locales you want to change. IMPORTANT: All field values MUST include a locale key (e.g., 'en-US') for each value, like: { title: { 'en-US': 'My Updated Title' } }. Every field in Contentful requires a locale even for single-language content.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
           entryId: { type: "string" },
-          fields: { type: "object" },
+          fields: {
+            type: "object",
+            description: "The fields to update with localized values. Example: { title: { 'en-US': 'My Updated Title' } }"
+          },
         },
         required: ["entryId", "fields"],
       }),
@@ -418,7 +424,8 @@ export const getContentTypeTools = () => {
     },
     UPDATE_CONTENT_TYPE: {
       name: "update_content_type",
-      description: "Update an existing content type",
+      description:
+        "Update an existing content type. The handler will merge your field updates with existing content type data, so you only need to provide the fields and properties you want to change.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -431,7 +438,7 @@ export const getContentTypeTools = () => {
           description: { type: "string" },
           displayField: { type: "string" },
         },
-        required: ["contentTypeId", "name", "fields"],
+        required: ["contentTypeId", "fields"],
       }),
     },
     DELETE_CONTENT_TYPE: {

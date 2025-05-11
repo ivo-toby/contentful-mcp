@@ -300,3 +300,5 @@ cython_debug/
 #.idea/
 .aider*
 Cntfl-Readme.md
+
+**/.claude/settings.local.json

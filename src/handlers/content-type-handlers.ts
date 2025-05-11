@@ -76,8 +76,8 @@ export const contentTypeHandlers = {
     spaceId: string
     environmentId: string
     contentTypeId: string
-    name: string
-    fields: any[]
+    name?: string
+    fields?: any[]
     description?: string
     displayField?: string
   }) => {
@@ -93,9 +93,44 @@ export const contentTypeHandlers = {
     const contentfulClient = await getContentfulClient()
     const currentContentType = await contentfulClient.contentType.get(params)
 
+    // Use the new fields if provided, otherwise keep existing fields
+    const fields = args.fields || currentContentType.fields
+
+    // If fields are provided, ensure we're not removing any required field metadata
+    // This creates a map of existing fields by ID for easier lookup
+    if (args.fields) {
+      const existingFieldsMap = currentContentType.fields.reduce((acc: Record<string, any>, field: any) => {
+        acc[field.id] = field
+        return acc
+      }, {})
+
+      // Ensure each field has all required metadata
+      fields.forEach((field: any) => {
+        const existingField = existingFieldsMap[field.id]
+        if (existingField) {
+          // If this is an existing field, ensure we preserve any metadata not explicitly changed
+          // This prevents losing validations, linkType, etc.
+          field.validations = field.validations || existingField.validations
+
+          // Preserve required flag if not explicitly set
+          if (field.required === undefined && existingField.required !== undefined) {
+            field.required = existingField.required
+          }
+
+          if (field.type === 'Link' && !field.linkType && existingField.linkType) {
+            field.linkType = existingField.linkType
+          }
+
+          if (field.type === 'Array' && !field.items && existingField.items) {
+            field.items = existingField.items
+          }
+        }
+      })
+    }
+
     const contentTypeProps: ContentTypeProps = {
-      name: args.name,
-      fields: args.fields,
+      name: args.name || currentContentType.name,
+      fields: fields,
       description: args.description || currentContentType.description || "",
       displayField: args.displayField || currentContentType.displayField || "",
       sys: currentContentType.sys,
