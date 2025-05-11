@@ -6,9 +6,12 @@ import { graphqlHandlers } from "../../src/handlers/graphql-handlers.js"
 vi.mock("../../src/types/tools.js", () => {
   const getTools = () => ({
     GRAPHQL_QUERY: { name: "graphql_query", description: "GraphQL query tool" },
+    GRAPHQL_LIST_CONTENT_TYPES: { name: "graphql_list_content_types", description: "List content types tool" },
+    GRAPHQL_GET_CONTENT_TYPE_SCHEMA: { name: "graphql_get_content_type_schema", description: "Get content type schema tool" },
+    GRAPHQL_GET_EXAMPLE: { name: "graphql_get_example", description: "Get GraphQL example tool" },
     CREATE_ENTRY: { name: "create_entry", description: "Create entry tool" }
   })
-  
+
   return {
     getTools,
     getGraphQLTools: vi.fn(),
@@ -57,8 +60,12 @@ describe("Token Authorization Scenarios", () => {
       
       // Verify only GraphQL tools are available
       expect(tools).to.be.an("object")
-      expect(Object.keys(tools)).to.have.lengthOf(1)
+      // Should have 4 GraphQL tools
+      expect(Object.keys(tools)).to.have.length.at.most(4)
       expect(tools).to.have.property("GRAPHQL_QUERY")
+      expect(tools).to.have.property("GRAPHQL_LIST_CONTENT_TYPES")
+      expect(tools).to.have.property("GRAPHQL_GET_CONTENT_TYPE_SCHEMA")
+      expect(tools).to.have.property("GRAPHQL_GET_EXAMPLE")
       expect(tools).to.not.have.property("CREATE_ENTRY")
     })
     

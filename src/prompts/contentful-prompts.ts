@@ -2,6 +2,8 @@
  * Prompt definitions for the Contentful MCP server
  * These prompts help guide users through common operations and concepts
  */
+import { GRAPHQL_PROMPTS } from "./graphql-prompts.js";
+
 export const CONTENTFUL_PROMPTS = {
   "explain-api-concepts": {
     name: "explain-api-concepts",
@@ -200,5 +202,8 @@ export const CONTENTFUL_PROMPTS = {
         required: false
       }
     ]
-  }
+  },
+
+  // Include GraphQL prompts
+  ...GRAPHQL_PROMPTS
 };

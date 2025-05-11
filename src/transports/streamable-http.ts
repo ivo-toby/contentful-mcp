@@ -324,6 +324,9 @@ export class StreamableHttpServer {
       const cdaOnlyHandlers = {
         // Only GraphQL operations are allowed with just a CDA token
         graphql_query: graphqlHandlers.executeQuery,
+        graphql_list_content_types: graphqlHandlers.listContentTypes,
+        graphql_get_content_type_schema: graphqlHandlers.getContentTypeSchema,
+        graphql_get_example: graphqlHandlers.getExample,
       }
 
       return cdaOnlyHandlers[name as keyof typeof cdaOnlyHandlers]
@@ -382,6 +385,9 @@ export class StreamableHttpServer {
 
       // GraphQL operations
       graphql_query: graphqlHandlers.executeQuery,
+      graphql_list_content_types: graphqlHandlers.listContentTypes,
+      graphql_get_content_type_schema: graphqlHandlers.getContentTypeSchema,
+      graphql_get_example: graphqlHandlers.getExample,
     }
 
     return handlers[name as keyof typeof handlers]

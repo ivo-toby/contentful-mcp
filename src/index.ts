@@ -42,7 +42,13 @@ export function getAllTools() {
 
   // If we only have a CDA token, only return GraphQL tools
   if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
-    const graphqlTools = getTools().GRAPHQL_QUERY ? { GRAPHQL_QUERY: getTools().GRAPHQL_QUERY } : {};
+    const tools = getTools();
+    const graphqlTools = {
+      ...(tools.GRAPHQL_QUERY ? { GRAPHQL_QUERY: tools.GRAPHQL_QUERY } : {}),
+      ...(tools.GRAPHQL_LIST_CONTENT_TYPES ? { GRAPHQL_LIST_CONTENT_TYPES: tools.GRAPHQL_LIST_CONTENT_TYPES } : {}),
+      ...(tools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA ? { GRAPHQL_GET_CONTENT_TYPE_SCHEMA: tools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA } : {}),
+      ...(tools.GRAPHQL_GET_EXAMPLE ? { GRAPHQL_GET_EXAMPLE: tools.GRAPHQL_GET_EXAMPLE } : {})
+    };
     return graphqlTools;
   }
 
@@ -186,6 +192,9 @@ function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
     const cdaOnlyHandlers = {
       // Only GraphQL operations are allowed with just a CDA token
       graphql_query: graphqlHandlers.executeQuery,
+      graphql_list_content_types: graphqlHandlers.listContentTypes,
+      graphql_get_content_type_schema: graphqlHandlers.getContentTypeSchema,
+      graphql_get_example: graphqlHandlers.getExample,
     }
 
     return cdaOnlyHandlers[name as keyof typeof cdaOnlyHandlers]
@@ -244,6 +253,9 @@ function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
 
     // GraphQL operations
     graphql_query: graphqlHandlers.executeQuery,
+    graphql_list_content_types: graphqlHandlers.listContentTypes,
+    graphql_get_content_type_schema: graphqlHandlers.getContentTypeSchema,
+    graphql_get_example: graphqlHandlers.getExample,
   }
 
   return handlers[name as keyof typeof handlers]

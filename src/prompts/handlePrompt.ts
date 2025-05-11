@@ -1,6 +1,7 @@
 import { GetPromptResult } from "@modelcontextprotocol/sdk/types";
 import { contentfulHandlers } from "./promptHandlers/contentful";
 import { aiActionsHandlers } from "./promptHandlers/aiActions";
+import { graphqlHandlers } from "./promptHandlers/graphql";
 
 /**
  * Handle a prompt request and return the appropriate response
@@ -16,7 +17,12 @@ export async function handlePrompt(
   if (name.startsWith("ai-actions-") && name in aiActionsHandlers) {
     return aiActionsHandlers[name as keyof typeof aiActionsHandlers](args);
   }
-  
+
+  // Check for GraphQL-related handlers
+  if ((name === "explore-graphql-schema" || name === "build-graphql-query") && name in graphqlHandlers) {
+    return graphqlHandlers[name as keyof typeof graphqlHandlers](args);
+  }
+
   // Check for general Contentful handlers
   if (name in contentfulHandlers) {
     return contentfulHandlers[name as keyof typeof contentfulHandlers](args);

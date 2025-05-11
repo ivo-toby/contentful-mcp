@@ -839,10 +839,66 @@ export const getAiActionTools = () => {
 // Tool definitions for GraphQL operations
 export const getGraphQLTools = () => {
   return {
+    GRAPHQL_LIST_CONTENT_TYPES: {
+      name: "graphql_list_content_types",
+      description: "IMPORTANT: Use this tool FIRST before attempting to write any GraphQL queries. This tool lists all available content types in the Contentful space's GraphQL schema. You should always use this tool to understand what content types are available before formulating GraphQL queries.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          cdaToken: {
+            type: "string",
+            description: "Optional Content Delivery API (CDA) token. If provided, this will be used instead of a Content Management API token.",
+          }
+        },
+        required: [],
+      }),
+    },
+
+    GRAPHQL_GET_CONTENT_TYPE_SCHEMA: {
+      name: "graphql_get_content_type_schema",
+      description: "IMPORTANT: Use this tool AFTER using graphql_list_content_types to get a detailed schema for a specific content type. This tool provides all fields, their types, and relationships for a content type. You should ALWAYS use this tool to understand the structure of a content type before creating a query for it.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          contentType: {
+            type: "string",
+            description: "The name of the content type to fetch schema for (e.g., 'BlogPost')"
+          },
+          cdaToken: {
+            type: "string",
+            description: "Optional Content Delivery API (CDA) token. If provided, this will be used instead of a Content Management API token.",
+          }
+        },
+        required: ["contentType"],
+      }),
+    },
+
+    GRAPHQL_GET_EXAMPLE: {
+      name: "graphql_get_example",
+      description: "IMPORTANT: Use this tool AFTER using graphql_get_content_type_schema to see example GraphQL queries for a specific content type. Learning from these examples will help you construct valid queries.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          contentType: {
+            type: "string",
+            description: "The name of the content type for the example query"
+          },
+          includeRelations: {
+            type: "boolean",
+            description: "Whether to include related content types in the example (defaults to false)"
+          },
+          cdaToken: {
+            type: "string",
+            description: "Optional Content Delivery API (CDA) token. If provided, this will be used instead of a Content Management API token.",
+          }
+        },
+        required: ["contentType"],
+      }),
+    },
+
     GRAPHQL_QUERY: {
       name: "graphql_query",
-      description:
-        "Execute a GraphQL query against the Contentful GraphQL API. This tool allows you to use Contentful's powerful GraphQL interface to retrieve content in a more flexible and efficient way than REST API calls. This tool works with either a Content Delivery API token (CDA) or Content Management API token (CMA).",
+      description: "IMPORTANT: Before using this tool, you MUST first use graphql_list_content_types and graphql_get_content_type_schema to understand the available content types and their structure. Execute a GraphQL query against the Contentful GraphQL API. This tool allows you to use Contentful's powerful GraphQL interface to retrieve content in a more flexible and efficient way than REST API calls. This tool works with either a Content Delivery API token (CDA) or Content Management API token (CMA).",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
