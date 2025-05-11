@@ -103,7 +103,7 @@ export const getEntryTools = () => {
     UPDATE_ENTRY: {
       name: "update_entry",
       description:
-        "Update an existing entry, very important: always send all field values and all values related to locales, also the fields values that have not been updated",
+        "Update an existing entry. The handler will merge your field updates with the existing entry fields, so you only need to provide the fields and locales you want to change.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -418,7 +418,8 @@ export const getContentTypeTools = () => {
     },
     UPDATE_CONTENT_TYPE: {
       name: "update_content_type",
-      description: "Update an existing content type",
+      description:
+        "Update an existing content type. The handler will merge your field updates with existing content type data, so you only need to provide the fields and properties you want to change.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -431,7 +432,7 @@ export const getContentTypeTools = () => {
           description: { type: "string" },
           displayField: { type: "string" },
         },
-        required: ["contentTypeId", "name", "fields"],
+        required: ["contentTypeId", "fields"],
       }),
     },
     DELETE_CONTENT_TYPE: {
