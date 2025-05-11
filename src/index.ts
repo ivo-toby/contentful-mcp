@@ -287,8 +287,12 @@ async function loadAiActions() {
     // First, clear the cache to avoid duplicates
     aiActionToolContext.clearCache()
 
-    // Only load AI Actions if we have required space and environment
-    if (!process.env.SPACE_ID) {
+    // Only load AI Actions if we have required space, environment, and CMA token or private key
+    const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+    const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+    if (!process.env.SPACE_ID || (!hasCmaToken && !hasPrivateKey)) {
+      console.error("Skipping AI Actions loading: Requires Space ID and either CMA token or Private Key")
       return
     }
 

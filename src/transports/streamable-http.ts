@@ -20,6 +20,7 @@ import { spaceHandlers } from "../handlers/space-handlers.js"
 import { contentTypeHandlers } from "../handlers/content-type-handlers.js"
 import { bulkActionHandlers } from "../handlers/bulk-action-handlers.js"
 import { aiActionHandlers } from "../handlers/ai-action-handlers.js"
+import { graphqlHandlers } from "../handlers/graphql-handlers.js"
 import type { AiActionInvocation } from "../types/ai-actions.js"
 
 /**
@@ -307,12 +308,28 @@ export class StreamableHttpServer {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getHandler(name: string): ((args: any) => Promise<any>) | undefined {
-    // Check if this is a dynamic AI Action tool
-    if (name.startsWith("ai_action_")) {
+    // Determine which authentication methods are available
+    const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+    const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+    const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+    // Check if this is a dynamic AI Action tool - only available with CMA token
+    if (name.startsWith("ai_action_") && (hasCmaToken || hasPrivateKey)) {
       const actionId = name.replace("ai_action_", "")
       return (args: Record<string, unknown>) => this.handleAiActionInvocation(actionId, args)
     }
 
+    // If we only have a CDA token, only enable GraphQL operations
+    if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
+      const cdaOnlyHandlers = {
+        // Only GraphQL operations are allowed with just a CDA token
+        graphql_query: graphqlHandlers.executeQuery,
+      }
+
+      return cdaOnlyHandlers[name as keyof typeof cdaOnlyHandlers]
+    }
+
+    // Full handlers list for CMA token or private key
     const handlers = {
       // Entry operations
       create_entry: entryHandlers.createEntry,
@@ -362,6 +379,9 @@ export class StreamableHttpServer {
       unpublish_ai_action: aiActionHandlers.unpublishAiAction,
       invoke_ai_action: aiActionHandlers.invokeAiAction,
       get_ai_action_invocation: aiActionHandlers.getAiActionInvocation,
+
+      // GraphQL operations
+      graphql_query: graphqlHandlers.executeQuery,
     }
 
     return handlers[name as keyof typeof handlers]
@@ -413,8 +433,12 @@ export class StreamableHttpServer {
       // First, clear the cache to avoid duplicates
       this.aiActionToolContext.clearCache()
 
-      // Only load AI Actions if we have required space and environment
-      if (!process.env.SPACE_ID) {
+      // Only load AI Actions if we have required space, environment, and CMA token or private key
+      const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+      const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+      if (!process.env.SPACE_ID || (!hasCmaToken && !hasPrivateKey)) {
+        console.error("Skipping AI Actions loading for StreamableHTTP: Requires Space ID and either CMA token or Private Key")
         return
       }
 
