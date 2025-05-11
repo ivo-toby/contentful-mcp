@@ -68,6 +68,7 @@ export interface GraphQLQueryArgs {
   environmentId: string
   query: string
   variables?: Record<string, any>
+  cdaToken?: string  // Content Delivery API token (preferred for GraphQL queries)
 }
 
 // Execute a GraphQL query against the Contentful GraphQL API
@@ -76,11 +77,18 @@ export const graphqlHandlers = {
     try {
       const spaceId = process.env.SPACE_ID || args.spaceId
       const environmentId = process.env.ENVIRONMENT_ID || args.environmentId || "master"
-      const accessToken = process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+
+      // Try to use a CDA token first (preferred for GraphQL queries), then fall back to CMA token
+      // The argument token takes precedence over environment variable
+      const cdaToken = args.cdaToken || process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
+      const cmaToken = process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+
+      // We need at least one type of token for GraphQL queries
+      const accessToken = cdaToken || cmaToken
 
       if (!accessToken) {
         return {
-          content: [{ type: "text", text: "Contentful management token is required" }],
+          content: [{ type: "text", text: "Either a Contentful delivery token (CDA) or management token (CMA) is required for GraphQL queries" }],
           isError: true,
         }
       }

@@ -21,7 +21,54 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 - **Localization**: Support for multiple locales
 - **Publishing**: Control content publishing workflow
 - **Bulk Operations**: Execute bulk publishing, unpublishing, and validation across multiple entries and assets
+- **GraphQL Support**: Execute GraphQL queries against Contentful's GraphQL API (works with CDA tokens)
 - **Smart Pagination**: List operations return maximum 3 items per request to prevent context window overflow, with built-in pagination support
+
+## GraphQL Support
+
+The MCP server includes built-in support for Contentful's GraphQL API, allowing you to perform complex, efficient queries that are not possible with the standard REST API.
+
+### GraphQL Tool Features
+
+- **Flexible Queries**: Retrieve only the fields you need, reducing response size
+- **Nested References**: Get related content in a single query
+- **Schema Validation**: Queries are validated against the GraphQL schema when available
+- **Token Flexibility**: Works with either CDA or CMA tokens
+- **Error Handling**: Proper formatting and handling of GraphQL errors
+
+### Using the GraphQL Tool
+
+```graphql
+graphql_query({
+  query: `
+    query {
+      entryCollection(limit: 5) {
+        items {
+          sys {
+            id
+          }
+          title
+          linkedContent {
+            sys {
+              id
+            }
+          }
+        }
+      }
+    }
+  `,
+  variables: {
+    // Optional variables for parameterized queries
+  },
+  cdaToken: "your-delivery-token" // Optional, overrides environment variable
+})
+```
+
+### CDA vs CMA Tokens for GraphQL
+
+- **CDA Token (Recommended)**: Use for most GraphQL queries as they're read-only operations
+- **CMA Token**: Can be used but has broader permissions than necessary for queries
+- **Token Priority**: Tool argument > Environment variable
 
 ## Pagination
 
@@ -91,6 +138,10 @@ These bulk operation tools are ideal for content migrations, mass updates, or ba
 - **delete_content_type**: Remove content type
 - **publish_content_type**: Publish a content type
 
+### GraphQL Operations
+
+- **graphql_query**: Execute GraphQL queries against Contentful's GraphQL API. This tool allows you to retrieve content in a more flexible and efficient way than REST API calls. Works with either CDA or CMA tokens.
+
 ## Development Tools
 
 ### MCP Inspector
@@ -118,9 +169,26 @@ These variables can also be set as arguments
 
 - `CONTENTFUL_HOST` / `--host`: Contentful Management API Endpoint (defaults to https://api.contentful.com)
 - `CONTENTFUL_MANAGEMENT_ACCESS_TOKEN` / `--management-token`: Your Content Management API token
+- `CONTENTFUL_DELIVERY_ACCESS_TOKEN` / `--delivery-token`: Your Content Delivery API token (can be used for GraphQL operations only)
 - `ENABLE_HTTP_SERVER` / `--http`: Set to "true" to enable HTTP/SSE mode
 - `HTTP_PORT` / `--port`: Port for HTTP server (default: 3000)
 - `HTTP_HOST` / `--http-host`: Host for HTTP server (default: localhost)
+
+### Authentication Modes & Token Options
+
+The MCP server supports three authentication options:
+
+1. **Content Management API (CMA) Token** - Full access to all tools and operations
+2. **Content Delivery API (CDA) Token** - Limited access to read-only GraphQL operations
+3. **App Identity Authentication** - Uses Contentful App credentials for authentication
+
+When providing tokens, the following rules apply:
+
+- **CMA token only**: All tools and operations are available
+- **CDA token only**: Only GraphQL query operations are available
+- **Both CMA and CDA tokens**: All tools are available, GraphQL operations will prefer using the CDA token
+
+For GraphQL operations, you can also pass a `cdaToken` parameter directly in the tool invocation, which will take precedence over environment variables.
 
 ### Space and Environment Scoping
 
@@ -157,7 +225,8 @@ and add the following lines:
       "command": "npx",
       "args": ["-y", "@ivotoby/contentful-management-mcp-server"],
       "env": {
-        "CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "<Your CMA token>"
+        "CONTENTFUL_MANAGEMENT_ACCESS_TOKEN": "<Your CMA token>",
+        "CONTENTFUL_DELIVERY_ACCESS_TOKEN": "<Your CDA token>" // Optional, for GraphQL operations
       }
     }
   }
@@ -175,7 +244,9 @@ If your MCPClient does not support setting environment variables you can also se
         "-y",
         "@ivotoby/contentful-management-mcp-server",
         "--management-token",
-        "<your token>",
+        "<your CMA token>",
+        "--delivery-token",
+        "<your CDA token>", // Optional, for GraphQL operations
         "--host",
         "http://api.contentful.com"
       ]

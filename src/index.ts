@@ -35,6 +35,18 @@ const aiActionToolContext = new AiActionToolContext(
 
 // Function to get all tools including dynamic AI Action tools
 export function getAllTools() {
+  // Determine which authentication methods are available
+  const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+  const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+  const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+  // If we only have a CDA token, only return GraphQL tools
+  if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
+    const graphqlTools = getTools().GRAPHQL_QUERY ? { GRAPHQL_QUERY: getTools().GRAPHQL_QUERY } : {};
+    return graphqlTools;
+  }
+
+  // Get all static tools if we have CMA token or private key
   const staticTools = getTools()
 
   // Add dynamically generated tools for AI Actions
@@ -164,6 +176,22 @@ function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
     return (args: Record<string, unknown>) => handleAiActionInvocation(actionId, args)
   }
 
+  // Determine which authentication methods are available
+  const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+  const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+  const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+  // If we only have a CDA token, only enable GraphQL operations
+  if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
+    const cdaOnlyHandlers = {
+      // Only GraphQL operations are allowed with just a CDA token
+      graphql_query: graphqlHandlers.executeQuery,
+    }
+
+    return cdaOnlyHandlers[name as keyof typeof cdaOnlyHandlers]
+  }
+
+  // Full handlers list - available with CMA token or private key
   const handlers = {
     // Entry operations
     create_entry: entryHandlers.createEntry,
@@ -317,16 +345,24 @@ async function loadAiActions() {
 // Function to fetch GraphQL schema
 async function loadGraphQLSchema() {
   try {
-    if (!process.env.SPACE_ID || !process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN) {
+    const spaceId = process.env.SPACE_ID
+    const environmentId = process.env.ENVIRONMENT_ID || "master"
+
+    // Try to use CDA token first (preferred for GraphQL), then fall back to CMA token
+    const cdaToken = process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
+    const cmaToken = process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+
+    // Check if we have the minimum required parameters
+    if (!spaceId || (!cdaToken && !cmaToken)) {
       console.error("Unable to fetch GraphQL schema: Space ID or access token not provided")
       return
     }
 
-    const spaceId = process.env.SPACE_ID
-    const environmentId = process.env.ENVIRONMENT_ID || "master"
-    const accessToken = process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+    // Determine which token to use (prefer CDA for GraphQL)
+    const accessToken = cdaToken || cmaToken
+    const tokenType = cdaToken ? "CDA" : "CMA"
 
-    console.error(`Fetching GraphQL schema for space ${spaceId}, environment ${environmentId}...`)
+    console.error(`Fetching GraphQL schema for space ${spaceId}, environment ${environmentId} using ${tokenType} token...`)
 
     const schema = await fetchGraphQLSchema(spaceId, environmentId, accessToken)
 
@@ -347,8 +383,26 @@ async function runServer() {
   const enableHttp = process.env.ENABLE_HTTP_SERVER === "true"
   const httpPort = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 3000
 
-  // Load AI Actions and GraphQL schema before connecting
-  await Promise.all([loadAiActions(), loadGraphQLSchema()])
+  // Determine which authentication methods are available
+  const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+  const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+  const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+  // Load resources based on available tokens
+  const loadPromises = [];
+
+  // Only load AI Actions if we have CMA token or Private Key
+  if (hasCmaToken || hasPrivateKey) {
+    loadPromises.push(loadAiActions());
+  }
+
+  // Load GraphQL schema if we have either CDA or CMA token
+  if (hasCmaToken || hasCdaToken) {
+    loadPromises.push(loadGraphQLSchema());
+  }
+
+  // Wait for all resources to load
+  await Promise.all(loadPromises);
 
   if (enableHttp) {
     // Start StreamableHTTP server for MCP over HTTP
@@ -382,8 +436,15 @@ async function runServer() {
 
   // Set up periodic refresh of AI Actions and GraphQL schema (every 5 minutes)
   setInterval(() => {
-    loadAiActions().catch(error => console.error("Error refreshing AI Actions:", error))
-    loadGraphQLSchema().catch(error => console.error("Error refreshing GraphQL schema:", error))
+    // Only refresh AI Actions if we have CMA token or Private Key
+    if (hasCmaToken || hasPrivateKey) {
+      loadAiActions().catch(error => console.error("Error refreshing AI Actions:", error));
+    }
+
+    // Only refresh GraphQL schema if we have either CDA or CMA token
+    if (hasCmaToken || hasCdaToken) {
+      loadGraphQLSchema().catch(error => console.error("Error refreshing GraphQL schema:", error));
+    }
   }, 5 * 60 * 1000)
 }
 

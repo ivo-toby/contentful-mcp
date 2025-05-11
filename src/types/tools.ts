@@ -842,7 +842,7 @@ export const getGraphQLTools = () => {
     GRAPHQL_QUERY: {
       name: "graphql_query",
       description:
-        "Execute a GraphQL query against the Contentful GraphQL API. This tool allows you to use Contentful's powerful GraphQL interface to retrieve content in a more flexible and efficient way than REST API calls.",
+        "Execute a GraphQL query against the Contentful GraphQL API. This tool allows you to use Contentful's powerful GraphQL interface to retrieve content in a more flexible and efficient way than REST API calls. This tool works with either a Content Delivery API token (CDA) or Content Management API token (CMA).",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -854,6 +854,10 @@ export const getGraphQLTools = () => {
             type: "object",
             description: "Optional variables for the GraphQL query",
             additionalProperties: true,
+          },
+          cdaToken: {
+            type: "string",
+            description: "Optional Content Delivery API (CDA) token. If provided, this will be used instead of a Content Management API token.",
           },
         },
         required: ["query"],
