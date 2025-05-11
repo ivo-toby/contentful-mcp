@@ -1,6 +1,6 @@
 {
   "name": "@ivotoby/contentful-management-mcp-server",
-  "version": "1.14.2",
+  "version": "2.0.0",
   "description": "MCP server for Contentful Content Management API integration",
   "license": "MIT",
   "type": "module",
