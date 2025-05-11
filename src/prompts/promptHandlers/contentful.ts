@@ -1,4 +1,4 @@
-import { GetPromptResult } from "@modelcontextprotocol/sdk/types";
+import { GetPromptResult } from "@modelcontextprotocol/sdk/types"
 
 /**
  * Handler for API concepts prompt
@@ -23,7 +23,7 @@ export function handleApiConcepts(args?: Record<string, string>): GetPromptResul
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -49,7 +49,7 @@ export function handleContentModelingGuide(args?: Record<string, string>): GetPr
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -75,7 +75,7 @@ export function handleApiOperationHelp(args?: Record<string, string>): GetPrompt
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -101,7 +101,7 @@ export function handleSpaceIdentification(args?: Record<string, string>): GetPro
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -127,7 +127,7 @@ export function handleEntryManagement(args?: Record<string, string>): GetPromptR
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -153,7 +153,7 @@ export function handleAssetManagement(args?: Record<string, string>): GetPromptR
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -179,7 +179,7 @@ export function handleContentTypeOperations(args?: Record<string, string>): GetP
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -205,7 +205,7 @@ export function handleBulkOperations(args?: Record<string, string>): GetPromptRe
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -231,7 +231,7 @@ export function handleSpaceEnvironmentManagement(args?: Record<string, string>):
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -257,7 +257,7 @@ export function handleMcpToolUsage(args?: Record<string, string>): GetPromptResu
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -272,6 +272,8 @@ export const contentfulHandlers = {
   "asset-management": (args?: Record<string, string>) => handleAssetManagement(args),
   "content-type-operations": (args?: Record<string, string>) => handleContentTypeOperations(args),
   "bulk-operations": (args?: Record<string, string>) => handleBulkOperations(args),
-  "space-environment-management": (args?: Record<string, string>) => handleSpaceEnvironmentManagement(args),
+  "space-environment-management": (args?: Record<string, string>) =>
+    handleSpaceEnvironmentManagement(args),
   "mcp-tool-usage": (args?: Record<string, string>) => handleMcpToolUsage(args),
-};
+}
+

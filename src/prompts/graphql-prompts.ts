@@ -5,13 +5,14 @@
 export const GRAPHQL_PROMPTS = {
   "explore-graphql-schema": {
     name: "explore-graphql-schema",
-    description: "Explore the GraphQL schema for this Contentful space and get guidance on querying content",
+    description:
+      "Explore the GraphQL schema for this Contentful space and get guidance on querying content",
     arguments: [
       {
         name: "goal",
         description: "What kind of content you're trying to retrieve (optional)",
-        required: false
-      }
+        required: false,
+      },
     ],
     template: `# Exploring the Contentful GraphQL Schema
 
@@ -24,9 +25,9 @@ To help you explore the Contentful GraphQL schema and construct effective querie
 5. Finally, I'll explain how to customize these queries for your specific needs
 
 Let's start by exploring all available content types...
-`
+`,
   },
-  
+
   "build-graphql-query": {
     name: "build-graphql-query",
     description: "Build a custom GraphQL query for a specific content need",
@@ -34,23 +35,23 @@ Let's start by exploring all available content types...
       {
         name: "contentType",
         description: "The primary content type you want to query",
-        required: true
+        required: true,
       },
       {
         name: "fields",
         description: "The specific fields you want to retrieve, comma-separated",
-        required: false
+        required: false,
       },
       {
         name: "filters",
         description: "Any filtering criteria (optional)",
-        required: false
+        required: false,
       },
       {
         name: "includeReferences",
         description: "Whether to include referenced content",
-        required: false
-      }
+        required: false,
+      },
     ],
     template: `# Building a Custom GraphQL Query
 
@@ -59,6 +60,7 @@ I'll help you build a GraphQL query for the "{{contentType}}" content type{{#if 
 {{#if includeReferences}}We'll also include referenced content where appropriate.{{/if}}
 
 First, let's verify the content type exists and examine its schema...
-`
-  }
-};
+`,
+  },
+}
+

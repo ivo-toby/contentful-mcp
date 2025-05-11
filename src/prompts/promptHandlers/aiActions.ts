@@ -1,7 +1,7 @@
-import { GetPromptResult } from "@modelcontextprotocol/sdk/types";
-import { generateVariableTypeContent } from "../generateVariableTypeContent";
-import { handleAiActionsInvoke } from "../ai-actions-invoke";
-import { handleAiActionsOverview } from "../ai-actions-overview";
+import { GetPromptResult } from "@modelcontextprotocol/sdk/types"
+import { generateVariableTypeContent } from "../generateVariableTypeContent"
+import { handleAiActionsInvoke } from "../ai-actions-invoke"
+import { handleAiActionsOverview } from "../ai-actions-overview"
 
 /**
  * Handler for AI Actions create prompt
@@ -42,11 +42,15 @@ Let's start by clearly defining what your AI Action will do:
 
 ## 2. Choose the right model
 
-${args?.modelType ? `You've mentioned using the ${args?.modelType} model, which is a good choice for this use case.` : `For your use case, consider these models:
+${
+  args?.modelType
+    ? `You've mentioned using the ${args?.modelType} model, which is a good choice for this use case.`
+    : `For your use case, consider these models:
 - **GPT-4** (gpt-4): Best for complex reasoning and high-quality content generation
 - **Claude 3 Opus** (claude-3-opus): Excellent for nuanced understanding and creative content
 - **Claude 3 Sonnet** (claude-3-5-sonnet): Good balance of quality and performance
-- **GPT-3.5 Turbo** (gpt-3.5-turbo): Fastest option for simpler tasks`}
+- **GPT-3.5 Turbo** (gpt-3.5-turbo): Fastest option for simpler tasks`
+}
 
 **Temperature setting**: 
 - Lower (0.0-0.3): More consistent, predictable outputs
@@ -120,7 +124,7 @@ Would you like me to help you structure a specific template and variables for yo
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -155,7 +159,7 @@ ${generateVariableTypeContent(args?.variableType)}`,
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -165,5 +169,7 @@ export const aiActionsHandlers = {
   "ai-actions-overview": () => handleAiActionsOverview(),
   "ai-actions-create": (args?: Record<string, string>) => handleAiActionsCreate(args),
   "ai-actions-variables": (args?: Record<string, string>) => handleAiActionsVariables(args),
-  "ai-actions-invoke": (args?: Record<string, string>) => handleAiActionsInvoke(args?.actionId, args?.details),
-};
+  "ai-actions-invoke": (args?: Record<string, string>) =>
+    handleAiActionsInvoke(args?.actionId, args?.details),
+}
+

@@ -90,7 +90,7 @@ export interface GraphQLQueryArgs {
   environmentId: string
   query: string
   variables?: Record<string, any>
-  cdaToken?: string  // Content Delivery API token (preferred for GraphQL queries)
+  cdaToken?: string // Content Delivery API token (preferred for GraphQL queries)
 }
 
 // Execute a GraphQL query against the Contentful GraphQL API
@@ -110,7 +110,12 @@ export const graphqlHandlers = {
 
       if (!accessToken) {
         return {
-          content: [{ type: "text", text: "Either a Contentful delivery token (CDA) or management token (CMA) is required for GraphQL queries" }],
+          content: [
+            {
+              type: "text",
+              text: "Either a Contentful delivery token (CDA) or management token (CMA) is required for GraphQL queries",
+            },
+          ],
           isError: true,
         }
       }
@@ -173,31 +178,41 @@ export const graphqlHandlers = {
 
       // Filter for collection fields which represent content types
       const contentTypeFields = result.data.__schema.queryType.fields
-        .filter((field: any) =>
-          field.name.endsWith("Collection") ||
-          (field.type?.kind === "OBJECT" && field.type?.name?.endsWith("Collection"))
+        .filter(
+          (field: any) =>
+            field.name.endsWith("Collection") ||
+            (field.type?.kind === "OBJECT" && field.type?.name?.endsWith("Collection")),
         )
         .map((field: any) => ({
           name: field.name.replace("Collection", ""),
           description: field.description || `Content type for ${field.name}`,
-          queryName: field.name
-        }));
+          queryName: field.name,
+        }))
 
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            message: "Available content types in this Contentful space. Use graphql_get_content_type_schema to explore a specific content type.",
-            contentTypes: contentTypeFields,
-          }, null, 2)
-        }]
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              {
+                message:
+                  "Available content types in this Contentful space. Use graphql_get_content_type_schema to explore a specific content type.",
+                contentTypes: contentTypeFields,
+              },
+              null,
+              2,
+            ),
+          },
+        ],
       }
     } catch (error) {
       return {
-        content: [{
-          type: "text",
-          text: `Error fetching content types: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        content: [
+          {
+            type: "text",
+            text: `Error fetching content types: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
         isError: true,
       }
     }
@@ -218,7 +233,12 @@ export const graphqlHandlers = {
 
       if (!accessToken) {
         return {
-          content: [{ type: "text", text: "Either a Contentful delivery token (CDA) or management token (CMA) is required for GraphQL queries" }],
+          content: [
+            {
+              type: "text",
+              text: "Either a Contentful delivery token (CDA) or management token (CMA) is required for GraphQL queries",
+            },
+          ],
           isError: true,
         }
       }
@@ -290,16 +310,18 @@ export const graphqlHandlers = {
         if (!args.contentType.endsWith("Collection")) {
           const modifiedArgs = {
             ...args,
-            contentType: `${args.contentType}Collection`
+            contentType: `${args.contentType}Collection`,
           }
           return graphqlHandlers.getContentTypeSchema(modifiedArgs)
         }
 
         return {
-          content: [{
-            type: "text",
-            text: `Content type "${args.contentType}" not found in the schema. Use graphql_list_content_types to see available content types.`
-          }],
+          content: [
+            {
+              type: "text",
+              text: `Content type "${args.contentType}" not found in the schema. Use graphql_list_content_types to see available content types.`,
+            },
+          ],
           isError: true,
         }
       }
@@ -308,26 +330,34 @@ export const graphqlHandlers = {
       const fields = result.data.__type.fields.map((field: any) => ({
         name: field.name,
         description: field.description || `Field ${field.name}`,
-        type: formatGraphQLType(field.type)
+        type: formatGraphQLType(field.type),
       }))
 
       return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            contentType: result.data.__type.name,
-            description: result.data.__type.description,
-            fields,
-            note: "Use this schema to construct your GraphQL queries. For example queries, use the graphql_get_example tool."
-          }, null, 2)
-        }]
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(
+              {
+                contentType: result.data.__type.name,
+                description: result.data.__type.description,
+                fields,
+                note: "Use this schema to construct your GraphQL queries. For example queries, use the graphql_get_example tool.",
+              },
+              null,
+              2,
+            ),
+          },
+        ],
       }
     } catch (error) {
       return {
-        content: [{
-          type: "text",
-          text: `Error fetching content type schema: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        content: [
+          {
+            type: "text",
+            text: `Error fetching content type schema: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
         isError: true,
       }
     }
@@ -344,7 +374,7 @@ export const graphqlHandlers = {
         contentType: args.contentType,
         spaceId,
         environmentId,
-        cdaToken: args.cdaToken
+        cdaToken: args.cdaToken,
       })
 
       if (schemaResult.isError) {
@@ -356,9 +386,13 @@ export const graphqlHandlers = {
 
       // Generate a query for collection
       const isCollection = schemaData.contentType.endsWith("Collection")
-      const contentTypeName = isCollection ? schemaData.contentType : schemaData.contentType.replace(/^[A-Z]/, (c: string) => c.toLowerCase())
+      const contentTypeName = isCollection
+        ? schemaData.contentType
+        : schemaData.contentType.replace(/^[A-Z]/, (c: string) => c.toLowerCase())
       const collectionName = isCollection ? contentTypeName : `${contentTypeName}Collection`
-      const singularName = isCollection ? contentTypeName.replace("Collection", "") : contentTypeName
+      const singularName = isCollection
+        ? contentTypeName.replace("Collection", "")
+        : contentTypeName
 
       // Get top-level scalar fields
       const scalarFields = schemaData.fields
@@ -366,29 +400,34 @@ export const graphqlHandlers = {
         .map((field: any) => field.name)
 
       // Get reference fields if requested
-      const referenceFields = args.includeRelations ?
-        schemaData.fields
-          .filter((field: any) => isReferenceType(field.type))
-          .map((field: any) => ({
-            name: field.name,
-            type: field.type.replace("!", "")
-          })) : []
+      const referenceFields = args.includeRelations
+        ? schemaData.fields
+            .filter((field: any) => isReferenceType(field.type))
+            .map((field: any) => ({
+              name: field.name,
+              type: field.type.replace("!", ""),
+            }))
+        : []
 
       // Build the example query
       let exampleQuery = `# Example query for ${schemaData.contentType}
 query {
   ${collectionName}(limit: 5) {
     items {
-${scalarFields.map((field: string) => `      ${field}`).join('\n')}`
+${scalarFields.map((field: string) => `      ${field}`).join("\n")}`
 
       if (referenceFields.length > 0) {
         exampleQuery += `\n
       # Related content references
-${referenceFields.map((field: any) => `      ${field.name} {
+${referenceFields
+  .map(
+    (field: any) => `      ${field.name} {
         ... on ${field.type} {
           # Add fields you want from ${field.type} here
         }
-      }`).join('\n')}`
+      }`,
+  )
+  .join("\n")}`
       }
 
       exampleQuery += `\n    }
@@ -398,7 +437,7 @@ ${referenceFields.map((field: any) => `      ${field.name} {
 # You can also query a single item by ID
 query GetSingle${singularName}($id: String!) {
   ${singularName}(id: $id) {
-${scalarFields.map((field: string) => `    ${field}`).join('\n')}
+${scalarFields.map((field: string) => `    ${field}`).join("\n")}
   }
 }
 
@@ -408,17 +447,21 @@ ${scalarFields.map((field: string) => `    ${field}`).join('\n')}
 # }`
 
       return {
-        content: [{
-          type: "text",
-          text: exampleQuery
-        }]
+        content: [
+          {
+            type: "text",
+            text: exampleQuery,
+          },
+        ],
       }
     } catch (error) {
       return {
-        content: [{
-          type: "text",
-          text: `Error generating example query: ${error instanceof Error ? error.message : String(error)}`
-        }],
+        content: [
+          {
+            type: "text",
+            text: `Error generating example query: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
         isError: true,
       }
     }
@@ -440,7 +483,12 @@ ${scalarFields.map((field: string) => `    ${field}`).join('\n')}
 
       if (!accessToken) {
         return {
-          content: [{ type: "text", text: "Either a Contentful delivery token (CDA) or management token (CMA) is required for GraphQL queries" }],
+          content: [
+            {
+              type: "text",
+              text: "Either a Contentful delivery token (CDA) or management token (CMA) is required for GraphQL queries",
+            },
+          ],
           isError: true,
         }
       }
@@ -588,30 +636,31 @@ ${scalarFields.map((field: string) => `    ${field}`).join('\n')}
 
 // Helper functions for GraphQL type formatting
 function formatGraphQLType(typeInfo: any): string {
-  if (!typeInfo) return 'Unknown';
+  if (!typeInfo) return "Unknown"
 
-  if (typeInfo.kind === 'NON_NULL') {
-    return `${formatGraphQLType(typeInfo.ofType)}!`;
-  } else if (typeInfo.kind === 'LIST') {
-    return `[${formatGraphQLType(typeInfo.ofType)}]`;
+  if (typeInfo.kind === "NON_NULL") {
+    return `${formatGraphQLType(typeInfo.ofType)}!`
+  } else if (typeInfo.kind === "LIST") {
+    return `[${formatGraphQLType(typeInfo.ofType)}]`
   } else if (typeInfo.name) {
-    return typeInfo.name;
+    return typeInfo.name
   } else if (typeInfo.ofType && typeInfo.ofType.name) {
-    return typeInfo.ofType.name;
+    return typeInfo.ofType.name
   }
 
-  return 'Unknown';
+  return "Unknown"
 }
 
 function isScalarType(typeString: string): boolean {
-  const scalarTypes = ['String', 'Int', 'Float', 'Boolean', 'ID', 'DateTime', 'JSON'];
-  return scalarTypes.some(scalar => typeString.includes(scalar));
+  const scalarTypes = ["String", "Int", "Float", "Boolean", "ID", "DateTime", "JSON"]
+  return scalarTypes.some((scalar) => typeString.includes(scalar))
 }
 
 function isReferenceType(typeString: string): boolean {
   // Exclude scalar types, collections, connections, etc.
-  return !isScalarType(typeString) &&
-         !typeString.includes('Collection') &&
-         !typeString.includes('Connection');
+  return (
+    !isScalarType(typeString) &&
+    !typeString.includes("Collection") &&
+    !typeString.includes("Connection")
+  )
 }
-

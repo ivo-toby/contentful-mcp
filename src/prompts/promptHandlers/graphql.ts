@@ -1,4 +1,4 @@
-import { GetPromptResult } from "@modelcontextprotocol/sdk/types";
+import { GetPromptResult } from "@modelcontextprotocol/sdk/types"
 
 /**
  * Handler for exploring GraphQL schema prompt
@@ -6,8 +6,8 @@ import { GetPromptResult } from "@modelcontextprotocol/sdk/types";
  * @returns Prompt result with messages
  */
 export function handleExploreGraphQLSchema(args?: Record<string, string>): GetPromptResult {
-  const goal = args?.goal || "different types of content";
-  
+  const goal = args?.goal || "different types of content"
+
   return {
     messages: [
       {
@@ -25,7 +25,7 @@ export function handleExploreGraphQLSchema(args?: Record<string, string>): GetPr
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -45,13 +45,13 @@ export function handleBuildGraphQLQuery(args?: Record<string, string>): GetPromp
           },
         },
       ],
-    };
+    }
   }
 
-  const fields = args.fields || "all relevant fields";
-  const filters = args.filters ? `and filter by ${args.filters}` : "";
-  const references = args.includeReferences === "true" ? "including any referenced content" : "";
-  
+  const fields = args.fields || "all relevant fields"
+  const filters = args.filters ? `and filter by ${args.filters}` : ""
+  const references = args.includeReferences === "true" ? "including any referenced content" : ""
+
   return {
     messages: [
       {
@@ -69,7 +69,7 @@ export function handleBuildGraphQLQuery(args?: Record<string, string>): GetPromp
         },
       },
     ],
-  };
+  }
 }
 
 /**
@@ -78,4 +78,5 @@ export function handleBuildGraphQLQuery(args?: Record<string, string>): GetPromp
 export const graphqlHandlers = {
   "explore-graphql-schema": (args?: Record<string, string>) => handleExploreGraphQLSchema(args),
   "build-graphql-query": (args?: Record<string, string>) => handleBuildGraphQLQuery(args),
-};
+}
+

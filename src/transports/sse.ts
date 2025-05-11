@@ -36,6 +36,7 @@ class SSEServerTransport {
       if (!this.session.isClosed) {
         try {
           this.session.response.write(":heartbeat\n\n")
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
           // Connection may be closed, clean up
           this.clearHeartbeat()
@@ -105,7 +106,7 @@ export class SSETransport {
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
       "X-Accel-Buffering": "no", // For Nginx compatibility
     })
 
@@ -156,7 +157,7 @@ export class SSETransport {
     req: Request,
     res: Response,
     sessionId: string,
-    message: JSONRPCMessage
+    message: JSONRPCMessage,
   ): Promise<void> {
     const session = this.sessions[sessionId]
 
@@ -249,3 +250,4 @@ export class SSETransport {
     return Object.values(this.sessions)
   }
 }
+

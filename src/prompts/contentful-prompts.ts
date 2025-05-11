@@ -2,7 +2,7 @@
  * Prompt definitions for the Contentful MCP server
  * These prompts help guide users through common operations and concepts
  */
-import { GRAPHQL_PROMPTS } from "./graphql-prompts.js";
+import { GRAPHQL_PROMPTS } from "./graphql-prompts.js"
 
 export const CONTENTFUL_PROMPTS = {
   "explain-api-concepts": {
@@ -12,9 +12,9 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "concept",
         description: "Contentful concept (Space/Environment/ContentType/Entry/Asset)",
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   },
   "space-identification": {
     name: "space-identification",
@@ -23,9 +23,9 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "operation",
         description: "Operation you want to perform",
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   },
   "content-modeling-guide": {
     name: "content-modeling-guide",
@@ -34,9 +34,9 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "useCase",
         description: "Description of the content modeling scenario",
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   },
   "api-operation-help": {
     name: "api-operation-help",
@@ -45,14 +45,14 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "operation",
         description: "API operation (CRUD, publish, archive, etc)",
-        required: true
+        required: true,
       },
       {
         name: "resourceType",
         description: "Type of resource (Entry/Asset/ContentType)",
-        required: true
-      }
-    ]
+        required: true,
+      },
+    ],
   },
   "entry-management": {
     name: "entry-management",
@@ -61,14 +61,14 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "task",
         description: "Specific task (create/read/update/delete/publish/unpublish/bulk)",
-        required: false
+        required: false,
       },
       {
         name: "details",
         description: "Additional context or requirements",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
   "asset-management": {
     name: "asset-management",
@@ -77,14 +77,14 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "task",
         description: "Specific task (upload/process/update/delete/publish)",
-        required: false
+        required: false,
       },
       {
         name: "details",
         description: "Additional context about asset types or requirements",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
   "content-type-operations": {
     name: "content-type-operations",
@@ -93,19 +93,19 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "task",
         description: "Specific task (create/update/delete/publish/field configuration)",
-        required: false
+        required: false,
       },
       {
         name: "details",
         description: "Additional context about field types or validations",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
   "ai-actions-overview": {
     name: "ai-actions-overview",
     description: "Comprehensive overview of AI Actions in Contentful",
-    arguments: []
+    arguments: [],
   },
   "ai-actions-create": {
     name: "ai-actions-create",
@@ -114,14 +114,14 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "useCase",
         description: "Purpose of the AI Action you want to create",
-        required: true
+        required: true,
       },
       {
         name: "modelType",
         description: "AI model type (e.g., gpt-4, claude-3-opus)",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
   "ai-actions-variables": {
     name: "ai-actions-variables",
@@ -130,9 +130,9 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "variableType",
         description: "Type of variable (Text, Reference, StandardInput, etc)",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
   "ai-actions-invoke": {
     name: "ai-actions-invoke",
@@ -141,14 +141,14 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "actionId",
         description: "ID of the AI Action (if known)",
-        required: false
+        required: false,
       },
       {
         name: "details",
         description: "Additional context about your invocation requirements",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
   "bulk-operations": {
     name: "bulk-operations",
@@ -157,19 +157,19 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "operation",
         description: "Bulk operation type (publish/unpublish/validate)",
-        required: false
+        required: false,
       },
       {
         name: "entityType",
         description: "Type of entities to process (entries/assets)",
-        required: false
+        required: false,
       },
       {
         name: "details",
         description: "Additional context about operation requirements",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
   "space-environment-management": {
     name: "space-environment-management",
@@ -178,19 +178,19 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "task",
         description: "Specific task (create/list/manage environments/aliases)",
-        required: false
+        required: false,
       },
       {
         name: "entity",
         description: "Entity type (space/environment)",
-        required: false
+        required: false,
       },
       {
         name: "details",
         description: "Additional context about workflow requirements",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
   "mcp-tool-usage": {
     name: "mcp-tool-usage",
@@ -199,11 +199,12 @@ export const CONTENTFUL_PROMPTS = {
       {
         name: "toolName",
         description: "Specific tool name (e.g., invoke_ai_action, create_entry)",
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
 
   // Include GraphQL prompts
-  ...GRAPHQL_PROMPTS
-};
+  ...GRAPHQL_PROMPTS,
+}
+

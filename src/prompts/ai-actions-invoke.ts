@@ -15,7 +15,7 @@ export async function handleAiActionsInvoke(actionId?: string, details?: string)
         role: "user",
         content: {
           type: "text",
-          text: `I need help with invoking an AI Action ${actionId ? `with ID ${actionId}` : "in my Contentful space"}. ${details || "Please guide me through providing variables correctly, handling references, and interpreting the results."}`
+          text: `I need help with invoking an AI Action ${actionId ? `with ID ${actionId}` : "in my Contentful space"}. ${details || "Please guide me through providing variables correctly, handling references, and interpreting the results."}`,
         },
       },
       {
@@ -177,5 +177,6 @@ Does this help with your AI Action invocation? Would you like more specific guid
         },
       },
     ],
-  };
+  }
 }
+

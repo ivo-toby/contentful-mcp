@@ -109,7 +109,7 @@ When working with References and MediaReferences, remember that the content must
 
 ## Variable Validation
 
-AI Actions validate variables at runtime to ensure they meet requirements. Configure validation rules appropriately to prevent errors during invocation.`;
+AI Actions validate variables at runtime to ensure they meet requirements. Configure validation rules appropriately to prevent errors during invocation.`
   }
 
   // Generate content for specific variable types
@@ -209,7 +209,7 @@ create_ai_action({
     ]
   }
 });
-\`\`\``;
+\`\`\``
 
     case "text":
       return `## Text Variable Type
@@ -300,7 +300,7 @@ create_ai_action({
     ]
   }
 });
-\`\`\``;
+\`\`\``
 
     case "freeforminput":
     case "free form input":
@@ -382,7 +382,7 @@ create_ai_action({
     ]
   }
 });
-\`\`\``;
+\`\`\``
 
     case "stringoptionslist":
     case "string options list":
@@ -494,7 +494,7 @@ create_ai_action({
     ]
   }
 });
-\`\`\``;
+\`\`\``
 
     case "reference":
       return `## Reference Variable Type
@@ -605,7 +605,7 @@ create_ai_action({
 });
 \`\`\`
 
-When invoking this AI Action via MCP, you would provide both the entry ID and the specific fields to process.`;
+When invoking this AI Action via MCP, you would provide both the entry ID and the specific fields to process.`
 
     case "mediareference":
     case "media reference":
@@ -728,7 +728,7 @@ create_ai_action({
 });
 \`\`\`
 
-When invoking this action via MCP, you would provide the asset ID and the specific field path to process.`;
+When invoking this action via MCP, you would provide the asset ID and the specific field path to process.`
 
     case "locale":
       return `## Locale Variable Type
@@ -842,7 +842,7 @@ invoke_ai_action_translator({
 - **Portuguese**: pt-PT, pt-BR
 - **Italian**: it-IT
 - **Dutch**: nl-NL
-- **Russian**: ru-RU`;
+- **Russian**: ru-RU`
 
     default:
       return `# AI Action Variables: ${variableType}
@@ -857,6 +857,7 @@ The variable type "${variableType}" doesn't match any of the standard Contentful
 6. MediaReference
 7. Locale
 
-Please check the spelling or request information about one of these standard types for detailed guidance.`;
+Please check the spelling or request information about one of these standard types for detailed guidance.`
   }
 }
+

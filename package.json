@@ -20,6 +20,7 @@
     "build": "node build.js && chmod +x bin/mcp-server.js",
     "clean": "rm -rf dist",
     "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint --fix src/**/*.ts",
     "watch": "tsc --watch",
     "dev": "nodemon --watch src -e ts --exec 'npm run build'",
     "typecheck": "tsc --noEmit",

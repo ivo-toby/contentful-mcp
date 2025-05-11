@@ -100,5 +100,6 @@ Would you like me to explain any specific aspect of AI Actions in more detail?`,
         },
       },
     ],
-  };
+  }
 }
+

@@ -37,7 +37,7 @@ export interface StreamableHttpServerOptions {
  */
 export class StreamableHttpServer {
   private app: express.Application
-  private server: any
+  private server: unknown
   private port: number
   private host: string
 
@@ -63,7 +63,7 @@ export class StreamableHttpServer {
     )
 
     // Load AI Actions
-    this.loadAiActions().catch(error => {
+    this.loadAiActions().catch((error) => {
       console.error("Error loading AI Actions for StreamableHTTP server:", error)
     })
 
@@ -309,9 +309,9 @@ export class StreamableHttpServer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getHandler(name: string): ((args: any) => Promise<any>) | undefined {
     // Determine which authentication methods are available
-    const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
-    const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
-    const hasPrivateKey = !!process.env.PRIVATE_KEY;
+    const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+    const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
+    const hasPrivateKey = !!process.env.PRIVATE_KEY
 
     // Check if this is a dynamic AI Action tool - only available with CMA token
     if (name.startsWith("ai_action_") && (hasCmaToken || hasPrivateKey)) {
@@ -440,11 +440,13 @@ export class StreamableHttpServer {
       this.aiActionToolContext.clearCache()
 
       // Only load AI Actions if we have required space, environment, and CMA token or private key
-      const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
-      const hasPrivateKey = !!process.env.PRIVATE_KEY;
+      const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+      const hasPrivateKey = !!process.env.PRIVATE_KEY
 
       if (!process.env.SPACE_ID || (!hasCmaToken && !hasPrivateKey)) {
-        console.error("Skipping AI Actions loading for StreamableHTTP: Requires Space ID and either CMA token or Private Key")
+        console.error(
+          "Skipping AI Actions loading for StreamableHTTP: Requires Space ID and either CMA token or Private Key",
+        )
         return
       }
 
@@ -508,11 +510,14 @@ export class StreamableHttpServer {
    */
   public async start(): Promise<void> {
     // Set up periodic refresh of AI Actions (every 5 minutes)
-    this.aiActionsRefreshInterval = setInterval(() => {
-      this.loadAiActions().catch(error => {
-        console.error("Error refreshing AI Actions for StreamableHTTP:", error)
-      })
-    }, 5 * 60 * 1000)
+    this.aiActionsRefreshInterval = setInterval(
+      () => {
+        this.loadAiActions().catch((error) => {
+          console.error("Error refreshing AI Actions for StreamableHTTP:", error)
+        })
+      },
+      5 * 60 * 1000,
+    )
 
     return new Promise((resolve) => {
       this.server = this.app.listen(this.port, () => {
@@ -557,4 +562,3 @@ export class StreamableHttpServer {
     }
   }
 }
-
