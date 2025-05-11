@@ -30,14 +30,14 @@ The MCP server includes built-in support for Contentful's GraphQL API, allowing 
 
 ### GraphQL Schema Exploration
 
-To help Claude understand your Contentful content model, we've implemented a structured GraphQL schema exploration approach with specialized tools:
+To help the LLM understand your Contentful content model, we've implemented a structured GraphQL schema exploration approach with specialized tools:
 
 1. **Discovery**: First explore available content types in your space
 2. **Understanding**: Then examine the schema details for specific content types
 3. **Example Generation**: See example queries for content types of interest
 4. **Execution**: Finally, construct and execute your custom GraphQL queries
 
-This approach enables Claude to generate more accurate and efficient queries by first understanding the structure of your content.
+This approach enables the LLM to generate more accurate and efficient queries by first understanding the structure of your content.
 
 ### GraphQL Tool Features
 
@@ -60,7 +60,7 @@ graphql_list_content_types({
 })
 ```
 
-This tool lists all available content types in your Contentful space's GraphQL schema, helping Claude understand what content is available to query.
+This tool lists all available content types in your Contentful space's GraphQL schema, helping the LLM understand what content is available to query.
 
 #### 2. Get Content Type Schema
 
@@ -83,7 +83,7 @@ graphql_get_example({
 })
 ```
 
-This tool generates example GraphQL queries for a specific content type, helping Claude understand how to construct valid queries.
+This tool generates example GraphQL queries for a specific content type, helping the LLM understand how to construct valid queries.
 
 #### 4. Execute Query
 
@@ -125,7 +125,7 @@ The MCP server also includes two GraphQL-related prompts to help guide schema ex
 explore-graphql-schema(goal: "articles about marketing")
 ```
 
-This prompt guides Claude through a systematic exploration of your GraphQL schema with a specific goal in mind.
+This prompt guides the LLM through a systematic exploration of your GraphQL schema with a specific goal in mind.
 
 #### 2. Build GraphQL Query
 
@@ -133,7 +133,7 @@ This prompt guides Claude through a systematic exploration of your GraphQL schem
 build-graphql-query(contentType: "Article", fields: "title,body,publishDate", filters: "publishDate > 2023-01-01", includeReferences: true)
 ```
 
-This prompt helps Claude build a custom GraphQL query for a specific content type with specified fields, filters, and reference handling.
+This prompt helps the LLM build a custom GraphQL query for a specific content type with specified fields, filters, and reference handling.
 
 ### CDA vs CMA Tokens for GraphQL
 
