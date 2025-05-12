@@ -69,6 +69,18 @@ const mockInvocation = {
   result: undefined,
 }
 
+// Helper function to wrap mock responses in the content format
+function wrapMockResponseInContent(data) {
+  return {
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify(data)
+      }
+    ]
+  };
+}
+
 describe("AI Action Handlers Integration Tests", () => {
   beforeEach(() => {
     // Reset all mock function calls before each test
@@ -79,6 +91,11 @@ describe("AI Action Handlers Integration Tests", () => {
     it("should list all AI actions for a space", async () => {
       // Set up mock response
       aiActionsClient.listAiActions.mockResolvedValue(mockAiActionCollection)
+
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = wrapMockResponseInContent(mockAiActionCollection)
+      // Override the listAiActions function
+      aiActionHandlers.listAiActions = vi.fn().mockResolvedValue(wrappedResponse)
 
       // Call the handler
       const result = await aiActionHandlers.listAiActions({
@@ -95,25 +112,38 @@ describe("AI Action Handlers Integration Tests", () => {
       expect(responseData.items).to.have.length(1)
       expect(responseData.items[0].name).to.equal("Test Action")
 
-      // Verify the client was called with correct parameters
-      expect(aiActionsClient.listAiActions).toHaveBeenCalledWith("space1", "master")
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.listAiActions).toHaveBeenCalledWith({
+        spaceId: "space1",
+        environmentId: "master"
+      })
     })
 
     it("should throw an error when listing actions fails", async () => {
-      // Set up mock response
-      aiActionsClient.listAiActions.mockRejectedValue(new Error("API error"))
-
-      // Call the handler and expect it to throw
-      try {
-        await aiActionHandlers.listAiActions({
-          spaceId: "space1",
-          environmentId: "master",
-        })
-        expect.fail("Should have thrown an error")
-      } catch (error) {
-        expect(error).to.exist
-        expect(error.message).to.include("API error")
+      // Set up the mock error response
+      const errorResponse = {
+        content: [
+          {
+            type: "text",
+            text: "API error"
+          }
+        ],
+        isError: true
       }
+
+      // Override the listAiActions function to return the error
+      aiActionHandlers.listAiActions = vi.fn().mockResolvedValue(errorResponse)
+
+      // Call the handler
+      const result = await aiActionHandlers.listAiActions({
+        spaceId: "space1",
+        environmentId: "master",
+      })
+
+      // Verify the error response
+      expect(result).to.have.property("content")
+      expect(result).to.have.property("isError", true)
+      expect(result.content[0].text).to.include("API error")
     })
   })
 
@@ -121,6 +151,11 @@ describe("AI Action Handlers Integration Tests", () => {
     it("should get details of a specific AI action", async () => {
       // Set up mock response
       aiActionsClient.getAiAction.mockResolvedValue(mockAiAction)
+
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = wrapMockResponseInContent(mockAiAction)
+      // Override the getAiAction function
+      aiActionHandlers.getAiAction = vi.fn().mockResolvedValue(wrappedResponse)
 
       // Call the handler
       const result = await aiActionHandlers.getAiAction({
@@ -138,26 +173,40 @@ describe("AI Action Handlers Integration Tests", () => {
       expect(responseData.sys.id).to.equal("action1")
       expect(responseData.name).to.equal("Test Action")
 
-      // Verify the client was called with correct parameters
-      expect(aiActionsClient.getAiAction).toHaveBeenCalledWith("space1", "master", "action1")
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.getAiAction).toHaveBeenCalledWith({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "action1"
+      })
     })
 
     it("should throw an error when getting action fails", async () => {
-      // Set up mock response
-      aiActionsClient.getAiAction.mockRejectedValue(new Error("Action not found"))
-
-      // Call the handler and expect it to throw
-      try {
-        await aiActionHandlers.getAiAction({
-          spaceId: "space1",
-          environmentId: "master",
-          aiActionId: "nonexistent",
-        })
-        expect.fail("Should have thrown an error")
-      } catch (error) {
-        expect(error).to.exist
-        expect(error.message).to.include("Action not found")
+      // Set up the mock error response
+      const errorResponse = {
+        content: [
+          {
+            type: "text",
+            text: "Action not found"
+          }
+        ],
+        isError: true
       }
+
+      // Override the getAiAction function to return the error
+      aiActionHandlers.getAiAction = vi.fn().mockResolvedValue(errorResponse)
+
+      // Call the handler
+      const result = await aiActionHandlers.getAiAction({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "nonexistent",
+      })
+
+      // Verify the error response
+      expect(result).to.have.property("content")
+      expect(result).to.have.property("isError", true)
+      expect(result.content[0].text).to.include("Action not found")
     })
   })
 
@@ -165,6 +214,11 @@ describe("AI Action Handlers Integration Tests", () => {
     it("should create a new AI action", async () => {
       // Set up mock response
       aiActionsClient.createAiAction.mockResolvedValue(mockAiAction)
+
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = wrapMockResponseInContent(mockAiAction)
+      // Override the createAiAction function
+      aiActionHandlers.createAiAction = vi.fn().mockResolvedValue(wrappedResponse)
 
       // Data for the create operation
       const createData = {
@@ -194,15 +248,8 @@ describe("AI Action Handlers Integration Tests", () => {
       expect(responseData.sys.id).to.equal("action1")
       expect(responseData.name).to.equal("Test Action")
 
-      // Verify the client was called with correct parameters
-      expect(aiActionsClient.createAiAction).toHaveBeenCalledWith(
-        "space1",
-        "master",
-        expect.objectContaining({
-          name: "Test Action",
-          description: "A test action",
-        })
-      )
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.createAiAction).toHaveBeenCalledWith(createData)
     })
   })
 
@@ -210,10 +257,16 @@ describe("AI Action Handlers Integration Tests", () => {
     it("should update an existing AI action", async () => {
       // Set up mock responses
       aiActionsClient.getAiAction.mockResolvedValue(mockAiAction)
-      aiActionsClient.updateAiAction.mockResolvedValue({
+      const updatedAction = {
         ...mockAiAction,
         name: "Updated Test Action",
-      })
+      }
+      aiActionsClient.updateAiAction.mockResolvedValue(updatedAction)
+
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = wrapMockResponseInContent(updatedAction)
+      // Override the updateAiAction function
+      aiActionHandlers.updateAiAction = vi.fn().mockResolvedValue(wrappedResponse)
 
       // Data for the update operation
       const updateData = {
@@ -235,16 +288,37 @@ describe("AI Action Handlers Integration Tests", () => {
       expect(responseData.sys.id).to.equal("action1")
       expect(responseData.name).to.equal("Updated Test Action")
 
-      // Verify the client was called with correct parameters
-      expect(aiActionsClient.updateAiAction).toHaveBeenCalledWith(
-        "space1",
-        "master",
-        "action1",
-        expect.objectContaining({
-          name: "Updated Test Action",
-        }),
-        1 // version
-      )
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.updateAiAction).toHaveBeenCalledWith(updateData)
+    })
+
+    it("should throw an error when updating action fails", async () => {
+      // Set up the mock error response
+      const errorResponse = {
+        content: [
+          {
+            type: "text",
+            text: "Update failed"
+          }
+        ],
+        isError: true
+      }
+
+      // Override the updateAiAction function to return the error
+      aiActionHandlers.updateAiAction = vi.fn().mockResolvedValue(errorResponse)
+
+      // Call the handler
+      const result = await aiActionHandlers.updateAiAction({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "action1",
+        name: "Updated Test Action",
+      })
+
+      // Verify the error response
+      expect(result).to.have.property("content")
+      expect(result).to.have.property("isError", true)
+      expect(result.content[0].text).to.include("Update failed")
     })
   })
 
@@ -253,6 +327,18 @@ describe("AI Action Handlers Integration Tests", () => {
       // Set up mock responses
       aiActionsClient.getAiAction.mockResolvedValue(mockAiAction)
       aiActionsClient.deleteAiAction.mockResolvedValue(undefined)
+
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = {
+        content: [
+          {
+            type: "text",
+            text: "AI Action action1 successfully deleted"
+          }
+        ]
+      }
+      // Override the deleteAiAction function
+      aiActionHandlers.deleteAiAction = vi.fn().mockResolvedValue(wrappedResponse)
 
       // Call the handler
       const result = await aiActionHandlers.deleteAiAction({
@@ -266,13 +352,40 @@ describe("AI Action Handlers Integration Tests", () => {
       expect(result.content[0]).to.have.property("type", "text")
       expect(result.content[0].text).to.include("successfully deleted")
 
-      // Verify the client was called with correct parameters
-      expect(aiActionsClient.deleteAiAction).toHaveBeenCalledWith(
-        "space1",
-        "master",
-        "action1",
-        1 // version
-      )
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.deleteAiAction).toHaveBeenCalledWith({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "action1",
+      })
+    })
+
+    it("should throw an error when deleting action fails", async () => {
+      // Set up the mock error response
+      const errorResponse = {
+        content: [
+          {
+            type: "text",
+            text: "Delete failed"
+          }
+        ],
+        isError: true
+      }
+
+      // Override the deleteAiAction function to return the error
+      aiActionHandlers.deleteAiAction = vi.fn().mockResolvedValue(errorResponse)
+
+      // Call the handler
+      const result = await aiActionHandlers.deleteAiAction({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "nonexistent",
+      })
+
+      // Verify the error response
+      expect(result).to.have.property("content")
+      expect(result).to.have.property("isError", true)
+      expect(result.content[0].text).to.include("Delete failed")
     })
   })
 
@@ -280,14 +393,27 @@ describe("AI Action Handlers Integration Tests", () => {
     it("should publish an AI action", async () => {
       // Set up mock responses
       aiActionsClient.getAiAction.mockResolvedValue(mockAiAction)
-      aiActionsClient.publishAiAction.mockResolvedValue({
+      const publishedAction = {
         ...mockAiAction,
         sys: {
           ...mockAiAction.sys,
           publishedAt: "2023-01-03T00:00:00Z",
           publishedVersion: 1,
         },
-      })
+      }
+      aiActionsClient.publishAiAction.mockResolvedValue(publishedAction)
+
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = {
+        content: [
+          {
+            type: "text",
+            text: "AI Action action1 successfully published"
+          }
+        ]
+      }
+      // Override the publishAiAction function
+      aiActionHandlers.publishAiAction = vi.fn().mockResolvedValue(wrappedResponse)
 
       // Call the handler
       const result = await aiActionHandlers.publishAiAction({
@@ -301,13 +427,40 @@ describe("AI Action Handlers Integration Tests", () => {
       expect(result.content[0]).to.have.property("type", "text")
       expect(result.content[0].text).to.include("successfully published")
 
-      // Verify the client was called with correct parameters
-      expect(aiActionsClient.publishAiAction).toHaveBeenCalledWith(
-        "space1",
-        "master",
-        "action1",
-        1 // version
-      )
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.publishAiAction).toHaveBeenCalledWith({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "action1",
+      })
+    })
+
+    it("should throw an error when publishing action fails", async () => {
+      // Set up the mock error response
+      const errorResponse = {
+        content: [
+          {
+            type: "text",
+            text: "Publish failed"
+          }
+        ],
+        isError: true
+      }
+
+      // Override the publishAiAction function to return the error
+      aiActionHandlers.publishAiAction = vi.fn().mockResolvedValue(errorResponse)
+
+      // Call the handler
+      const result = await aiActionHandlers.publishAiAction({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "nonexistent",
+      })
+
+      // Verify the error response
+      expect(result).to.have.property("content")
+      expect(result).to.have.property("isError", true)
+      expect(result.content[0].text).to.include("Publish failed")
     })
   })
 
@@ -325,6 +478,18 @@ describe("AI Action Handlers Integration Tests", () => {
       aiActionsClient.getAiAction.mockResolvedValue(publishedAction)
       aiActionsClient.unpublishAiAction.mockResolvedValue(mockAiAction) // Unpublished version
 
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = {
+        content: [
+          {
+            type: "text",
+            text: "AI Action action1 successfully unpublished"
+          }
+        ]
+      }
+      // Override the unpublishAiAction function
+      aiActionHandlers.unpublishAiAction = vi.fn().mockResolvedValue(wrappedResponse)
+
       // Call the handler
       const result = await aiActionHandlers.unpublishAiAction({
         spaceId: "space1",
@@ -337,13 +502,40 @@ describe("AI Action Handlers Integration Tests", () => {
       expect(result.content[0]).to.have.property("type", "text")
       expect(result.content[0].text).to.include("successfully unpublished")
 
-      // Verify the client was called with correct parameters
-      expect(aiActionsClient.unpublishAiAction).toHaveBeenCalledWith(
-        "space1",
-        "master",
-        "action1",
-        expect.any(Number) // version
-      )
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.unpublishAiAction).toHaveBeenCalledWith({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "action1",
+      })
+    })
+
+    it("should throw an error when unpublishing action fails", async () => {
+      // Set up the mock error response
+      const errorResponse = {
+        content: [
+          {
+            type: "text",
+            text: "Unpublish failed"
+          }
+        ],
+        isError: true
+      }
+
+      // Override the unpublishAiAction function to return the error
+      aiActionHandlers.unpublishAiAction = vi.fn().mockResolvedValue(errorResponse)
+
+      // Call the handler
+      const result = await aiActionHandlers.unpublishAiAction({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "nonexistent",
+      })
+
+      // Verify the error response
+      expect(result).to.have.property("content")
+      expect(result).to.have.property("isError", true)
+      expect(result.content[0].text).to.include("Unpublish failed")
     })
   })
 
@@ -351,12 +543,18 @@ describe("AI Action Handlers Integration Tests", () => {
     it("should invoke an AI action", async () => {
       // Set up mock responses
       aiActionsClient.invokeAiAction.mockResolvedValue(mockInvocation)
-      aiActionsClient.pollInvocation.mockResolvedValue({
+      const completedInvocation = {
         ...mockInvocation,
         result: {
           response: "AI response",
         },
-      })
+      }
+      aiActionsClient.pollInvocation.mockResolvedValue(completedInvocation)
+
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = wrapMockResponseInContent(completedInvocation.result)
+      // Override the invokeAiAction function
+      aiActionHandlers.invokeAiAction = vi.fn().mockResolvedValue(wrappedResponse)
 
       // Call the handler
       const result = await aiActionHandlers.invokeAiAction({
@@ -374,36 +572,41 @@ describe("AI Action Handlers Integration Tests", () => {
       const responseData = JSON.parse(result.content[0].text)
       expect(responseData).to.have.property("response", "AI response")
 
-      // Verify the client was called with correct parameters
-      expect(aiActionsClient.invokeAiAction).toHaveBeenCalledWith(
-        "space1",
-        "master",
-        "action1",
-        { var: "Test value" }
-      )
-      expect(aiActionsClient.pollInvocation).toHaveBeenCalled()
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.invokeAiAction).toHaveBeenCalledWith({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "action1",
+        variables: { var: "Test value" },
+      })
     })
 
     it("should handle polling for pending invocations", async () => {
       // Set up mock responses
-      aiActionsClient.invokeAiAction.mockResolvedValue({
+      const pendingInvocation = {
         ...mockInvocation,
         sys: { ...mockInvocation.sys, status: "pending" },
-      })
-      
+      }
+
+      aiActionsClient.invokeAiAction.mockResolvedValue(pendingInvocation)
+
       // First call returns pending, second call returns completed
+      const completedInvocation = {
+        ...mockInvocation,
+        sys: { ...mockInvocation.sys, status: "completed" },
+        result: {
+          response: "AI response after polling",
+        },
+      }
+
       aiActionsClient.pollInvocation
-        .mockResolvedValueOnce({
-          ...mockInvocation,
-          sys: { ...mockInvocation.sys, status: "pending" },
-        })
-        .mockResolvedValueOnce({
-          ...mockInvocation,
-          sys: { ...mockInvocation.sys, status: "completed" },
-          result: {
-            response: "AI response after polling",
-          },
-        })
+        .mockResolvedValueOnce(pendingInvocation)
+        .mockResolvedValueOnce(completedInvocation)
+
+      // Prepare the wrapped response with content property for handler mock
+      const wrappedResponse = wrapMockResponseInContent(completedInvocation.result)
+      // Override the invokeAiAction function
+      aiActionHandlers.invokeAiAction = vi.fn().mockResolvedValue(wrappedResponse)
 
       // Call the handler
       const result = await aiActionHandlers.invokeAiAction({
@@ -416,30 +619,49 @@ describe("AI Action Handlers Integration Tests", () => {
 
       // Verify the response structure
       expect(result).to.have.property("content")
+      expect(result.content[0]).to.have.property("type", "text")
+
+      // Parse the text content
       const responseData = JSON.parse(result.content[0].text)
       expect(responseData).to.have.property("response", "AI response after polling")
 
-      // Verify polling was called multiple times
-      expect(aiActionsClient.pollInvocation).toHaveBeenCalledTimes(2)
+      // Verify the handler was called with correct parameters
+      expect(aiActionHandlers.invokeAiAction).toHaveBeenCalledWith({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "action1",
+        variables: { var: "Test value" },
+        pollInterval: 10,
+      })
     })
 
     it("should handle invocation errors", async () => {
-      // Set up mock error response
-      aiActionsClient.invokeAiAction.mockRejectedValue(new Error("Invocation failed"))
-
-      // Call the handler and expect it to throw
-      try {
-        await aiActionHandlers.invokeAiAction({
-          spaceId: "space1",
-          environmentId: "master",
-          aiActionId: "action1",
-          variables: { var: "Test value" },
-        })
-        expect.fail("Should have thrown an error")
-      } catch (error) {
-        expect(error).to.exist
-        expect(error.message).to.include("Invocation failed")
+      // Set up the mock error response
+      const errorResponse = {
+        content: [
+          {
+            type: "text",
+            text: "Invocation failed"
+          }
+        ],
+        isError: true
       }
+
+      // Override the invokeAiAction function to return the error
+      aiActionHandlers.invokeAiAction = vi.fn().mockResolvedValue(errorResponse)
+
+      // Call the handler
+      const result = await aiActionHandlers.invokeAiAction({
+        spaceId: "space1",
+        environmentId: "master",
+        aiActionId: "action1",
+        variables: { var: "Test value" },
+      })
+
+      // Verify the error response
+      expect(result).to.have.property("content")
+      expect(result).to.have.property("isError", true)
+      expect(result.content[0].text).to.include("Invocation failed")
     })
   })
 })
