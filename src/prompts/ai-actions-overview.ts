@@ -1,7 +1,9 @@
 /**
  * Handler for providing a comprehensive overview of AI Actions in Contentful
  */
-export async function handleAiActionsOverview() {
+import { PromptResult } from "./handlePrompt"
+
+export async function handleAiActionsOverview(): Promise<PromptResult> {
   return {
     messages: [
       {
@@ -100,5 +102,6 @@ Would you like me to explain any specific aspect of AI Actions in more detail?`,
         },
       },
     ],
-  };
+  }
 }
+

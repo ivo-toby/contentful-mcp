@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-import { expect, vi } from "vitest"
+import { expect, vi, beforeAll, afterAll, afterEach } from "vitest"
 import { entryHandlers } from "../../src/handlers/entry-handlers.js"
 import { server } from "../msw-setup.js"
 
@@ -18,14 +18,17 @@ const mockBulkActionGet = vi.fn().mockResolvedValue({
 
 // Mock the contentful client for testing bulk operations
 vi.mock("../../src/config/client.js", async (importOriginal) => {
-  const originalModule = await importOriginal();
-  
+  // Type the import original more specifically
+  const originalModule = await importOriginal() as {
+    getContentfulClient: () => Promise<any>
+  };
+
   // Create a mock function that will be used for the content client
   const getContentfulClient = vi.fn();
-  
+
   // Store the original function so we can call it if needed
   const originalGetClient = originalModule.getContentfulClient;
-  
+
   // Set up the mock function to return either the original or our mocked version
   getContentfulClient.mockImplementation(async () => {
     // Create our mock client
@@ -39,17 +42,17 @@ vi.mock("../../src/config/client.js", async (importOriginal) => {
               fields: { title: { "en-US": "Test Entry" } }
             });
           }
-          
+
           // Otherwise, call the original implementation
-          return originalGetClient().then(client => client.entry.get(params));
+          return originalGetClient().then((client: any) => client.entry.get(params));
         }),
         // Mock the other methods by passing through
-        getMany: (...args) => originalGetClient().then(client => client.entry.getMany(...args)),
-        create: (...args) => originalGetClient().then(client => client.entry.create(...args)),
-        update: (...args) => originalGetClient().then(client => client.entry.update(...args)),
-        delete: (...args) => originalGetClient().then(client => client.entry.delete(...args)),
-        publish: (...args) => originalGetClient().then(client => client.entry.publish(...args)),
-        unpublish: (...args) => originalGetClient().then(client => client.entry.unpublish(...args)),
+        getMany: (...args: any[]) => originalGetClient().then((client: any) => client.entry.getMany(...args)),
+        create: (...args: any[]) => originalGetClient().then((client: any) => client.entry.create(...args)),
+        update: (...args: any[]) => originalGetClient().then((client: any) => client.entry.update(...args)),
+        delete: (...args: any[]) => originalGetClient().then((client: any) => client.entry.delete(...args)),
+        publish: (...args: any[]) => originalGetClient().then((client: any) => client.entry.publish(...args)),
+        unpublish: (...args: any[]) => originalGetClient().then((client: any) => client.entry.unpublish(...args)),
       },
       bulkAction: {
         publish: mockBulkActionPublish,
@@ -57,12 +60,12 @@ vi.mock("../../src/config/client.js", async (importOriginal) => {
         get: mockBulkActionGet
       }
     };
-    
+
     return mockClient;
   });
-  
+
   return {
-    ...originalModule,
+    ...originalModule as any, // Force the spread
     getContentfulClient
   };
 });
@@ -81,6 +84,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should search all entries", async () => {
       const result = await entryHandlers.searchEntries({
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
         query: {
           content_type: testContentTypeId,
         },
@@ -100,6 +104,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should get details of a specific entry", async () => {
       const result = await entryHandlers.getEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
         entryId: testEntryId,
       })
 
@@ -113,6 +118,7 @@ describe("Entry Handlers Integration Tests", () => {
       try {
         await entryHandlers.getEntry({
           spaceId: testSpaceId,
+          environmentId: "master", // Add required environmentId
           entryId: "invalid-entry-id",
         })
         expect.fail("Should have thrown an error")
@@ -126,6 +132,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should create a new entry", async () => {
       const entryData = {
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         contentTypeId: testContentTypeId,
         fields: {
           title: { "en-US": "New Entry" },
@@ -146,6 +153,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should update an existing entry", async () => {
       const updateData = {
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: testEntryId,
         fields: {
           title: { "en-US": "Updated Entry" },
@@ -166,6 +174,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should delete an entry", async () => {
       const result = await entryHandlers.deleteEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: testEntryId,
       })
 
@@ -177,6 +186,7 @@ describe("Entry Handlers Integration Tests", () => {
       try {
         await entryHandlers.deleteEntry({
           spaceId: testSpaceId,
+          environmentId: "master", // Adding environmentId parameter
           entryId: "non-existent-id",
         })
         expect.fail("Should have thrown an error")
@@ -190,6 +200,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should publish a single entry", async () => {
       const result = await entryHandlers.publishEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: testEntryId,
       })
 
@@ -205,6 +216,7 @@ describe("Entry Handlers Integration Tests", () => {
 
       const result = await entryHandlers.publishEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: ["entry-id-1", "entry-id-2"],
       })
 
@@ -230,6 +242,7 @@ describe("Entry Handlers Integration Tests", () => {
     it("should unpublish a single entry", async () => {
       const result = await entryHandlers.unpublishEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: testEntryId,
       })
 
@@ -245,6 +258,7 @@ describe("Entry Handlers Integration Tests", () => {
 
       const result = await entryHandlers.unpublishEntry({
         spaceId: testSpaceId,
+        environmentId: "master", // Adding environmentId parameter
         entryId: ["entry-id-1", "entry-id-2"],
       })
 

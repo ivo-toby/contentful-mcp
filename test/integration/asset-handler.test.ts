@@ -1,4 +1,4 @@
-import { expect } from "vitest";
+import { expect, beforeAll, afterAll, afterEach } from "vitest";
 import { assetHandlers } from "../../src/handlers/asset-handlers.js";
 import { server } from "../msw-setup.js";
 
@@ -15,6 +15,7 @@ describe("Asset Handlers Integration Tests", () => {
     it("should upload and process a new asset", async () => {
       const uploadData = {
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
         title: "Test Asset",
         description: "Test Description",
         file: {
@@ -51,6 +52,7 @@ describe("Asset Handlers Integration Tests", () => {
       const result = await assetHandlers.getAsset({
         spaceId: testSpaceId,
         assetId: testAssetId,
+        environmentId: "master",
       });
 
       expect(result).to.have.property("content");
@@ -63,6 +65,7 @@ describe("Asset Handlers Integration Tests", () => {
         await assetHandlers.getAsset({
           spaceId: testSpaceId,
           assetId: "invalid-asset-id",
+          environmentId: "master",
         });
         expect.fail("Should have thrown an error");
       } catch (error) {
@@ -76,6 +79,7 @@ describe("Asset Handlers Integration Tests", () => {
       const result = await assetHandlers.updateAsset({
         spaceId: testSpaceId,
         assetId: testAssetId,
+        environmentId: "master",
         title: "Updated Asset",
         description: "Updated Description",
       });
@@ -92,6 +96,7 @@ describe("Asset Handlers Integration Tests", () => {
       const result = await assetHandlers.deleteAsset({
         spaceId: testSpaceId,
         assetId: testAssetId,
+        environmentId: "master",
       });
 
       expect(result).to.have.property("content");
@@ -104,6 +109,7 @@ describe("Asset Handlers Integration Tests", () => {
       const result = await assetHandlers.publishAsset({
         spaceId: testSpaceId,
         assetId: testAssetId,
+        environmentId: "master",
       });
 
       expect(result).to.have.property("content");
@@ -117,6 +123,7 @@ describe("Asset Handlers Integration Tests", () => {
       const result = await assetHandlers.unpublishAsset({
         spaceId: testSpaceId,
         assetId: testAssetId,
+        environmentId: "master",
       });
 
       expect(result).to.have.property("content");

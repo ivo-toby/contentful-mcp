@@ -8,6 +8,12 @@ async function main() {
     process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = process.argv[tokenIndex + 1]
   }
 
+  // Find the delivery token argument
+  const deliveryTokenIndex = process.argv.findIndex((arg) => arg === "--delivery-token")
+  if (deliveryTokenIndex !== -1 && process.argv[deliveryTokenIndex + 1]) {
+    process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN = process.argv[deliveryTokenIndex + 1]
+  }
+
   const hostIndex = process.argv.findIndex((arg) => arg === "--host")
   if (hostIndex !== -1 && process.argv[hostIndex + 1]) {
     process.env.CONTENTFUL_HOST = process.argv[hostIndex + 1]

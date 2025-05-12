@@ -157,15 +157,18 @@ describe("Content Type Handler Merge Logic", () => {
     const updatedContentType = JSON.parse(result.content[0].text)
     
     // Assert - fields should be updated but metadata should be preserved
+    // @ts-expect-error - This is unit test code, 'f' parameter can be any
     const titleField = updatedContentType.fields.find(f => f.id === "title")
     expect(titleField.name).toEqual("New Title Name") // Updated
     expect(titleField.required).toEqual(true) // Preserved from original
     expect(titleField.validations).toEqual([{ size: { max: 100 } }]) // Preserved from original
-    
+
+    // @ts-expect-error - This is unit test code, 'f' parameter can be any
     const imageField = updatedContentType.fields.find(f => f.id === "image")
     expect(imageField.name).toEqual("Updated Image") // Updated
     expect(imageField.linkType).toEqual("Asset") // Preserved from original
-    
+
+    // @ts-expect-error - This is unit test code, 'f' parameter can be any
     const tagsField = updatedContentType.fields.find(f => f.id === "tags")
     expect(tagsField.name).toEqual("Updated Tags") // Updated
     expect(tagsField.items).toEqual({ type: "Symbol" }) // Preserved from original
@@ -227,6 +230,7 @@ describe("Content Type Handler Merge Logic", () => {
     
     // Assert - should have all original fields plus the new one
     expect(updatedContentType.fields.length).toEqual(5) // 4 original + 1 new
+    // @ts-expect-error - This is unit test code, 'f' parameter can be any
     const addedField = updatedContentType.fields.find(f => f.id === "newField")
     expect(addedField).toEqual({
       id: "newField",
@@ -256,10 +260,12 @@ describe("Content Type Handler Merge Logic", () => {
     expect(updatedContentType.fields.length).toEqual(4) // All 4 original fields should be preserved
     
     // Check that all original fields are preserved
+    // @ts-expect-error - This is unit test code, 'f' parameter can be any
     const titleField = updatedContentType.fields.find(f => f.id === "title")
     expect(titleField).toBeDefined()
     expect(titleField.name).toEqual("Title")
-    
+
+    // @ts-expect-error - This is unit test code, 'f' parameter can be any
     const descriptionField = updatedContentType.fields.find(f => f.id === "description")
     expect(descriptionField).toBeDefined()
     expect(descriptionField.name).toEqual("Description")

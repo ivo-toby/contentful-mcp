@@ -11,12 +11,14 @@ import {
 import { CONTENTFUL_PROMPTS } from "./prompts/contentful-prompts.js"
 export { CONTENTFUL_PROMPTS }
 import { handlePrompt } from "./prompts/handlers.js"
+import { PromptResult } from "./prompts/handlePrompt.js"
 import { entryHandlers } from "./handlers/entry-handlers.js"
 import { assetHandlers } from "./handlers/asset-handlers.js"
 import { spaceHandlers } from "./handlers/space-handlers.js"
 import { contentTypeHandlers } from "./handlers/content-type-handlers.js"
 import { bulkActionHandlers } from "./handlers/bulk-action-handlers.js"
 import { aiActionHandlers } from "./handlers/ai-action-handlers.js"
+import { graphqlHandlers, fetchGraphQLSchema, setGraphQLSchema } from "./handlers/graphql-handlers.js"
 import { getTools } from "./types/tools.js"
 import { validateEnvironment } from "./utils/validation.js"
 import { AiActionToolContext } from "./utils/ai-action-tool-generator.js"
@@ -34,21 +36,50 @@ const aiActionToolContext = new AiActionToolContext(
 
 // Function to get all tools including dynamic AI Action tools
 export function getAllTools() {
-  const staticTools = getTools()
+  // Determine which authentication methods are available
+  const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+  const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+  const hasPrivateKey = !!process.env.PRIVATE_KEY;
 
-  // Add dynamically generated tools for AI Actions
-  const dynamicTools = aiActionToolContext.generateAllToolSchemas()
+  // Get all static tools
+  const allStaticTools = getTools();
 
-  return {
-    ...staticTools,
-    ...dynamicTools.reduce(
-      (acc, tool) => {
-        acc[tool.name] = tool
-        return acc
-      },
-      {} as Record<string, unknown>,
-    ),
+  // Filter tools based on token availability
+  const staticTools: Record<string, unknown> = {};
+
+  // If we have CDA token, add GraphQL tools
+  if (hasCdaToken) {
+    // Include GraphQL tools only with CDA token
+    if (allStaticTools.GRAPHQL_QUERY) staticTools.GRAPHQL_QUERY = allStaticTools.GRAPHQL_QUERY;
+    if (allStaticTools.GRAPHQL_LIST_CONTENT_TYPES) staticTools.GRAPHQL_LIST_CONTENT_TYPES = allStaticTools.GRAPHQL_LIST_CONTENT_TYPES;
+    if (allStaticTools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA) staticTools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA = allStaticTools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA;
+    if (allStaticTools.GRAPHQL_GET_EXAMPLE) staticTools.GRAPHQL_GET_EXAMPLE = allStaticTools.GRAPHQL_GET_EXAMPLE;
   }
+
+  // If we have CMA token or private key, add all non-GraphQL tools
+  if (hasCmaToken || hasPrivateKey) {
+    Object.entries(allStaticTools).forEach(([key, value]) => {
+      // Skip GraphQL tools as they're handled separately
+      if (!key.startsWith('GRAPHQL_')) {
+        staticTools[key] = value;
+      }
+    });
+
+    // Add dynamically generated tools for AI Actions
+    const dynamicTools = aiActionToolContext.generateAllToolSchemas();
+
+    // Add dynamic AI Action tools
+    dynamicTools.forEach(tool => {
+      if (tool && tool.name) {
+        staticTools[tool.name] = tool;
+      }
+    });
+  }
+
+  // Only CDA token and no CMA/private key means only GraphQL tools
+  // Only CMA/private key and no CDA means all non-GraphQL tools
+  // Both tokens means all tools
+  return staticTools;
 }
 
 // Create MCP server
@@ -80,7 +111,15 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => ({
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
   const { name, arguments: args } = request.params
-  return handlePrompt(name, args)
+  const result = await handlePrompt(name, args)
+  // Add tools to the prompt result
+  // Use Object.values to convert from object to array
+  // @ts-ignore - SDK expects a specific tool format
+  result.tools = Object.values(getAllTools())
+  return {
+    messages: result.messages,
+    tools: result.tools
+  }
 })
 
 // Type-safe handler
@@ -163,6 +202,25 @@ function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
     return (args: Record<string, unknown>) => handleAiActionInvocation(actionId, args)
   }
 
+  // Determine which authentication methods are available
+  const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+  const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+  const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+  // If we only have a CDA token, only enable GraphQL operations
+  if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
+    const cdaOnlyHandlers = {
+      // Only GraphQL operations are allowed with just a CDA token
+      graphql_query: graphqlHandlers.executeQuery,
+      graphql_list_content_types: graphqlHandlers.listContentTypes,
+      graphql_get_content_type_schema: graphqlHandlers.getContentTypeSchema,
+      graphql_get_example: graphqlHandlers.getExample,
+    }
+
+    return cdaOnlyHandlers[name as keyof typeof cdaOnlyHandlers]
+  }
+
+  // Full handlers list - available with CMA token or private key
   const handlers = {
     // Entry operations
     create_entry: entryHandlers.createEntry,
@@ -212,6 +270,12 @@ function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
     unpublish_ai_action: aiActionHandlers.unpublishAiAction,
     invoke_ai_action: aiActionHandlers.invokeAiAction,
     get_ai_action_invocation: aiActionHandlers.getAiActionInvocation,
+
+    // GraphQL operations
+    graphql_query: graphqlHandlers.executeQuery,
+    graphql_list_content_types: graphqlHandlers.listContentTypes,
+    graphql_get_content_type_schema: graphqlHandlers.getContentTypeSchema,
+    graphql_get_example: graphqlHandlers.getExample,
   }
 
   return handlers[name as keyof typeof handlers]
@@ -255,8 +319,12 @@ async function loadAiActions() {
     // First, clear the cache to avoid duplicates
     aiActionToolContext.clearCache()
 
-    // Only load AI Actions if we have required space and environment
-    if (!process.env.SPACE_ID) {
+    // Only load AI Actions if we have required space, environment, and CMA token or private key
+    const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+    const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+    if (!process.env.SPACE_ID || (!hasCmaToken && !hasPrivateKey)) {
+      console.error("Skipping AI Actions loading: Requires Space ID and either CMA token or Private Key")
       return
     }
 
@@ -310,14 +378,61 @@ async function loadAiActions() {
   }
 }
 
+// Function to fetch GraphQL schema
+async function loadGraphQLSchema() {
+  try {
+    const spaceId = process.env.SPACE_ID
+    const environmentId = process.env.ENVIRONMENT_ID || "master"
+
+    // GraphQL REQUIRES a CDA token - Management tokens won't work for GraphQL
+    const cdaToken = process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
+
+    // Check if we have the minimum required parameters
+    if (!spaceId || !cdaToken) {
+      console.error("Unable to fetch GraphQL schema: Space ID or CDA access token not provided")
+      return
+    }
+
+    console.error(`Fetching GraphQL schema for space ${spaceId}, environment ${environmentId} using CDA token...`)
+    const schema = await fetchGraphQLSchema(spaceId, environmentId, cdaToken)
+
+    if (schema) {
+      setGraphQLSchema(schema)
+      console.error("GraphQL schema loaded successfully")
+    } else {
+      console.error("Failed to load GraphQL schema")
+    }
+  } catch (error) {
+    console.error("Error loading GraphQL schema:", error)
+  }
+}
+
 // Start the server
 async function runServer() {
   // Determine if HTTP server mode is enabled
   const enableHttp = process.env.ENABLE_HTTP_SERVER === "true"
   const httpPort = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT) : 3000
 
-  // Load AI Actions before connecting
-  await loadAiActions()
+  // Determine which authentication methods are available
+  const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+  const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+  const hasPrivateKey = !!process.env.PRIVATE_KEY;
+
+  // Load resources based on available tokens
+  const loadPromises = [];
+
+  // Only load AI Actions if we have CMA token or Private Key and a space ID
+  if ((hasCmaToken || hasPrivateKey) && process.env.SPACE_ID) {
+    loadPromises.push(loadAiActions());
+  }
+
+  // Load GraphQL schema ONLY if we have CDA token and a space ID
+  if (hasCdaToken && process.env.SPACE_ID) {
+    loadPromises.push(loadGraphQLSchema());
+  }
+
+  // Wait for all resources to load
+  await Promise.all(loadPromises);
 
   if (enableHttp) {
     // Start StreamableHTTP server for MCP over HTTP
@@ -349,8 +464,18 @@ async function runServer() {
     )
   }
 
-  // Set up periodic refresh of AI Actions (every 5 minutes)
-  setInterval(loadAiActions, 5 * 60 * 1000)
+  // Set up periodic refresh of AI Actions and GraphQL schema (every 5 minutes)
+  setInterval(() => {
+    // Only refresh AI Actions if we have CMA token or Private Key and a space ID
+    if ((hasCmaToken || hasPrivateKey) && process.env.SPACE_ID) {
+      loadAiActions().catch(error => console.error("Error refreshing AI Actions:", error));
+    }
+
+    // Only refresh GraphQL schema if we have CDA token and a space ID
+    if (hasCdaToken && process.env.SPACE_ID) {
+      loadGraphQLSchema().catch(error => console.error("Error refreshing GraphQL schema:", error));
+    }
+  }, 5 * 60 * 1000)
 }
 
 runServer().catch((error) => {

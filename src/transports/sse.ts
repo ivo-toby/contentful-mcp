@@ -1,5 +1,13 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js"
 import { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js"
+
+// Define our own JSONRPCMessage as we can't extend the MCP one
+interface ExtendedJSONRPCMessage {
+  method: string
+  jsonrpc: "2.0"
+  id?: string | number
+  params?: Record<string, unknown>
+}
 import { randomUUID } from "crypto"
 import type { Request, Response } from "express"
 
@@ -36,6 +44,7 @@ class SSEServerTransport {
       if (!this.session.isClosed) {
         try {
           this.session.response.write(":heartbeat\n\n")
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
           // Connection may be closed, clean up
           this.clearHeartbeat()
@@ -57,12 +66,15 @@ class SSEServerTransport {
     this.session.response.write(`data: ${JSON.stringify({ sessionId: this.session.id })}\n\n`)
   }
 
-  async send(message: JSONRPCMessage): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async send(message: JSONRPCMessage, _options?: { silent?: boolean }): Promise<void> {
     // Send message to client
     if (!this.session.isClosed) {
       try {
         const data = JSON.stringify(message)
-        this.session.response.write(`id: ${message.id || "notification"}\n`)
+        // Cast the message to ExtendedJSONRPCMessage to access id
+        const extMessage = message as ExtendedJSONRPCMessage
+        this.session.response.write(`id: ${extMessage.id || "notification"}\n`)
         this.session.response.write(`data: ${data}\n\n`)
       } catch (error) {
         console.error(`Error sending SSE message for session ${this.session.id}:`, error)
@@ -105,7 +117,7 @@ export class SSETransport {
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
       "X-Accel-Buffering": "no", // For Nginx compatibility
     })
 
@@ -138,6 +150,7 @@ export class SSETransport {
     const transport = new SSEServerTransport(session)
 
     // Connect the transport to the server
+    // @ts-expect-error - The transport implementation doesn't exactly match SDK interface but works at runtime
     await server.connect(transport)
 
     // Return the session ID
@@ -156,8 +169,10 @@ export class SSETransport {
     req: Request,
     res: Response,
     sessionId: string,
-    message: JSONRPCMessage
+    message: JSONRPCMessage,
   ): Promise<void> {
+    // Cast to our extended message type to access the id property
+    const extMessage = message as ExtendedJSONRPCMessage
     const session = this.sessions[sessionId]
 
     if (!session || session.isClosed) {
@@ -167,15 +182,17 @@ export class SSETransport {
           code: -32000,
           message: "Session not found or closed",
         },
-        id: message.id || null,
+        id: extMessage.id || null,
       })
       return
     }
 
     try {
       // Get the transport from the server
-      // @ts-expect-error - Accessing transport property
-      const transport = session.server.transport as SSEServerTransport
+      // Access the server's internal transport property with appropriate type casting
+      // We need to access an internal property that's not part of the public interface
+      const serverAny = session.server as any
+      const transport = serverAny.transport as SSEServerTransport
 
       // Pass the message to the transport's onmessage handler
       if (transport && transport.onmessage) {
@@ -186,7 +203,7 @@ export class SSETransport {
       res.status(200).json({
         jsonrpc: "2.0",
         result: { success: true },
-        id: message.id || null,
+        id: extMessage.id || null,
       })
     } catch (error) {
       console.error(`Error handling message for session ${sessionId}:`, error)
@@ -196,7 +213,7 @@ export class SSETransport {
           code: -32603,
           message: `Error processing message: ${error instanceof Error ? error.message : String(error)}`,
         },
-        id: message.id || null,
+        id: extMessage.id || null,
       })
     }
   }

@@ -1,4 +1,4 @@
-import { expect } from "vitest"
+import { expect, beforeAll, afterAll, afterEach } from "vitest"
 import { contentTypeHandlers } from "../../src/handlers/content-type-handlers.js"
 import { server } from "../msw-setup.js"
 import { toCamelCase } from "../../src/utils/to-camel-case.js"
@@ -16,6 +16,7 @@ describe("Content Type Handlers Integration Tests", () => {
     it("should list all content types", async () => {
       const result = await contentTypeHandlers.listContentTypes({
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
       })
 
       expect(result).to.have.property("content").that.is.an("array")
@@ -32,6 +33,7 @@ describe("Content Type Handlers Integration Tests", () => {
     it("should get details of a specific content type", async () => {
       const result = await contentTypeHandlers.getContentType({
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
         contentTypeId: testContentTypeId,
       })
 
@@ -46,6 +48,7 @@ describe("Content Type Handlers Integration Tests", () => {
       try {
         await contentTypeHandlers.getContentType({
           spaceId: testSpaceId,
+          environmentId: "master", // Add required environmentId
           contentTypeId: "invalid-id",
         })
         expect.fail("Should have thrown an error")
@@ -59,6 +62,8 @@ describe("Content Type Handlers Integration Tests", () => {
     it("should create a new content type", async () => {
       const contentTypeData = {
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
+        contentTypeId: "newContentType", // Add required contentTypeId
         name: "New Content Type",
         fields: [
           {
@@ -84,6 +89,7 @@ describe("Content Type Handlers Integration Tests", () => {
     it("should update an existing content type", async () => {
       const updateData = {
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
         contentTypeId: testContentTypeId,
         name: "Updated Content Type",
         fields: [
@@ -109,6 +115,7 @@ describe("Content Type Handlers Integration Tests", () => {
     it("should delete a content type", async () => {
       const result = await contentTypeHandlers.deleteContentType({
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
         contentTypeId: testContentTypeId,
       })
 
@@ -120,6 +127,7 @@ describe("Content Type Handlers Integration Tests", () => {
       try {
         await contentTypeHandlers.deleteContentType({
           spaceId: testSpaceId,
+          environmentId: "master", // Add required environmentId
           contentTypeId: "non-existent-id",
         })
         expect.fail("Should have thrown an error")
@@ -133,6 +141,7 @@ describe("Content Type Handlers Integration Tests", () => {
     it("should publish a content type", async () => {
       const result = await contentTypeHandlers.publishContentType({
         spaceId: testSpaceId,
+        environmentId: "master", // Add required environmentId
         contentTypeId: testContentTypeId,
       })
 
@@ -144,6 +153,7 @@ describe("Content Type Handlers Integration Tests", () => {
       try {
         await contentTypeHandlers.publishContentType({
           spaceId: testSpaceId,
+          environmentId: "master", // Add required environmentId
           contentTypeId: "non-existent-id",
         })
         expect.fail("Should have thrown an error")

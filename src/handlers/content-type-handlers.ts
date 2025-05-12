@@ -99,10 +99,13 @@ export const contentTypeHandlers = {
     // If fields are provided, ensure we're not removing any required field metadata
     // This creates a map of existing fields by ID for easier lookup
     if (args.fields) {
-      const existingFieldsMap = currentContentType.fields.reduce((acc: Record<string, any>, field: any) => {
-        acc[field.id] = field
-        return acc
-      }, {})
+      const existingFieldsMap = currentContentType.fields.reduce(
+        (acc: Record<string, any>, field: any) => {
+          acc[field.id] = field
+          return acc
+        },
+        {},
+      )
 
       // Ensure each field has all required metadata
       fields.forEach((field: any) => {
@@ -117,11 +120,11 @@ export const contentTypeHandlers = {
             field.required = existingField.required
           }
 
-          if (field.type === 'Link' && !field.linkType && existingField.linkType) {
+          if (field.type === "Link" && !field.linkType && existingField.linkType) {
             field.linkType = existingField.linkType
           }
 
-          if (field.type === 'Array' && !field.items && existingField.items) {
+          if (field.type === "Array" && !field.items && existingField.items) {
             field.items = existingField.items
           }
         }

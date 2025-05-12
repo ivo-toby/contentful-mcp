@@ -1,6 +1,7 @@
 export function validateEnvironment(): void {
   const {
     CONTENTFUL_MANAGEMENT_ACCESS_TOKEN,
+    CONTENTFUL_DELIVERY_ACCESS_TOKEN,
     PRIVATE_KEY,
     APP_ID,
     SPACE_ID,
@@ -9,12 +10,24 @@ export function validateEnvironment(): void {
     HTTP_PORT
   } = process.env
 
-  if (!CONTENTFUL_MANAGEMENT_ACCESS_TOKEN && !PRIVATE_KEY) {
-    console.error("Either CONTENTFUL_MANAGEMENT_ACCESS_TOKEN or PRIVATE_KEY must be set")
+  // Determine authorization mode based on provided credentials
+  const hasCmaToken = !!CONTENTFUL_MANAGEMENT_ACCESS_TOKEN;
+  const hasCdaToken = !!CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+  const hasPrivateKey = !!PRIVATE_KEY;
+
+  // Check if we have at least one authentication method
+  if (!hasCmaToken && !hasPrivateKey && !hasCdaToken) {
+    console.error("Either CONTENTFUL_MANAGEMENT_ACCESS_TOKEN, CONTENTFUL_DELIVERY_ACCESS_TOKEN, or PRIVATE_KEY must be set")
     process.exit(1)
   }
 
-  if (PRIVATE_KEY) {
+  // When only CDA token is provided, inform that only GraphQL operations will be available
+  if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
+    console.warn("Only CONTENTFUL_DELIVERY_ACCESS_TOKEN is provided. Only GraphQL operations will be available.")
+  }
+
+  // Requirements when using private key
+  if (hasPrivateKey) {
     if (!APP_ID) {
       console.error("APP_ID is required when using PRIVATE_KEY")
       process.exit(1)
