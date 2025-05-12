@@ -26,6 +26,20 @@ describe("Content Type Handlers Integration Tests", () => {
       expect(contentTypes.items[0]).to.have.nested.property("sys.id", "test-content-type-id")
       expect(contentTypes.items[0]).to.have.property("name", "Test Content Type")
     })
+
+    it("should summarize paginated data", async () => {
+      const result = await contentTypeHandlers.listContentTypes({
+        spaceId: testSpaceId,
+        limit: 10,
+      })
+      expect(result).to.have.property("content").that.is.an("array")
+      expect(result.content).to.have.lengthOf(1)
+      const contentTypes = JSON.parse(result.content[0].text)
+      expect(contentTypes).to.have.property("total", 100)
+      expect(contentTypes).to.have.property("showing", 10)
+      expect(contentTypes).to.have.property("remaining", 90)
+      expect(contentTypes).to.have.property("message", "To see more content types, please ask me to retrieve the next page.")
+    })
   })
 
   describe("getContentType", () => {
