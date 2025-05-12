@@ -86,6 +86,7 @@ describe("GraphQL Handler Variables Test", () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     
     // Verify the request contained the variables
+    // @ts-expect-error - This is unit test code
     const callBody = JSON.parse(vi.mocked(fetch).mock.calls[0][1].body as string)
     expect(callBody).to.have.property('variables')
     expect(callBody.variables).to.deep.equal({ limit: 5 })

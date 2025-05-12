@@ -5,7 +5,7 @@ import { buildSchema } from "graphql"
 // Mock fetch globally for these tests
 vi.mock("undici", () => {
   return {
-    fetch: vi.fn()
+    fetch: vi.fn(),
   }
 })
 
@@ -62,16 +62,16 @@ describe("GraphQL Handler Unit Tests", () => {
     // Clear mocks
     vi.clearAllMocks()
   })
-  
+
   it("should execute a valid GraphQL query successfully", async () => {
     // Mock successful fetch response for entries query
     const mockEntriesResponse = {
       data: {
         entries: [
           { id: "entry1", title: "Test Entry 1", content: "This is test content" },
-          { id: "entry2", title: "Test Entry 2", content: "More test content" }
-        ]
-      }
+          { id: "entry2", title: "Test Entry 2", content: "More test content" },
+        ],
+      },
     }
 
     // Configure mock fetch to return successful response
@@ -81,10 +81,10 @@ describe("GraphQL Handler Unit Tests", () => {
       return {
         ok: true,
         status: 200,
-        json: async () => mockEntriesResponse
+        json: async () => mockEntriesResponse,
       } as any
     })
-    
+
     const result = await graphqlHandlers.executeQuery({
       spaceId: "test-space-id",
       environmentId: "master",
@@ -96,9 +96,9 @@ describe("GraphQL Handler Unit Tests", () => {
             content
           }
         }
-      `
+      `,
     })
-    
+
     // Check that fetch was called with correct parameters
     expect(fetch).toHaveBeenCalledWith(
       "https://graphql.contentful.com/content/v1/spaces/test-space-id/environments/master",
@@ -106,30 +106,34 @@ describe("GraphQL Handler Unit Tests", () => {
         method: "POST",
         headers: expect.objectContaining({
           "Content-Type": "application/json",
-          Authorization: "Bearer test-token"
-        })
-      })
+          Authorization: "Bearer test-token",
+        }),
+      }),
     )
-    
+
     // Verify result formatting
     expect(result).to.have.property("content").that.is.an("array")
     expect(result.content).to.have.lengthOf(1)
-    
+
     const parsedContent = JSON.parse(result.content[0].text)
     expect(parsedContent).to.have.property("data")
     expect(parsedContent.data).to.have.property("entries").that.is.an("array")
     expect(parsedContent.data.entries).to.have.lengthOf(2)
     expect(parsedContent.data.entries[0]).to.have.property("title", "Test Entry 1")
   })
-  
+
   it.skip("should execute a GraphQL query with variables", async () => {
     // Mock successful fetch response for assets query
     const mockAssetsResponse = {
       data: {
         assets: [
-          { title: "Test Asset", description: "This is a test asset", url: "https://example.com/image.jpg" }
-        ]
-      }
+          {
+            title: "Test Asset",
+            description: "This is a test asset",
+            url: "https://example.com/image.jpg",
+          },
+        ],
+      },
     }
 
     // Reset mocks and reestablish the mock implementation
@@ -142,7 +146,7 @@ describe("GraphQL Handler Unit Tests", () => {
       return {
         ok: true,
         status: 200,
-        json: async () => mockAssetsResponse
+        json: async () => mockAssetsResponse,
       } as any
     })
 
@@ -158,7 +162,7 @@ describe("GraphQL Handler Unit Tests", () => {
           }
         }
       `,
-      variables: { limit: 5 }
+      variables: { limit: 5 },
     })
 
     // Verify fetch was called once
@@ -166,24 +170,26 @@ describe("GraphQL Handler Unit Tests", () => {
 
     // Get the actual call arguments
     const call = vi.mocked(fetch).mock.calls[0]
-    expect(call[0]).to.equal("https://graphql.contentful.com/content/v1/spaces/test-space-id/environments/master")
+    expect(call[0]).to.equal(
+      "https://graphql.contentful.com/content/v1/spaces/test-space-id/environments/master",
+    )
 
     // Parse the request body to check for variables
-    const requestBody = JSON.parse(call[1].body as string)
+    const requestBody = JSON.parse(call[1]?.body as string)
     expect(requestBody).to.have.property("variables")
     expect(requestBody.variables).to.deep.equal({ limit: 5 })
-    
+
     // Verify result formatting
     expect(result).to.have.property("content").that.is.an("array")
     expect(result.content).to.have.lengthOf(1)
-    
+
     const parsedContent = JSON.parse(result.content[0].text)
     expect(parsedContent).to.have.property("data")
     expect(parsedContent.data).to.have.property("assets").that.is.an("array")
     expect(parsedContent.data.assets).to.have.lengthOf(1)
     expect(parsedContent.data.assets[0]).to.have.property("title", "Test Asset")
   })
-  
+
   it("should handle invalid GraphQL query syntax", async () => {
     // Explicitly restore the original schema for validation
     setGraphQLSchema(mockSchema)
@@ -195,7 +201,7 @@ describe("GraphQL Handler Unit Tests", () => {
       return {
         ok: true,
         status: 200,
-        json: async () => ({ data: {} })
+        json: async () => ({ data: {} }),
       } as any
     })
 
@@ -208,22 +214,22 @@ describe("GraphQL Handler Unit Tests", () => {
             id
           }
         }
-      `
+      `,
     })
-    
+
     // Verify error result
     expect(result).to.have.property("isError", true)
     expect(result).to.have.property("content").that.is.an("array")
-    
+
     const parsedContent = JSON.parse(result.content[0].text)
     expect(parsedContent).to.have.property("errors").that.is.an("array")
     expect(parsedContent.errors.length).to.be.greaterThan(0)
   })
-  
+
   it("should handle HTTP errors", async () => {
     // Create an error response object
     const errorResponseText = JSON.stringify({
-      errors: [{ message: "Authentication failed. The access token you provided is invalid" }]
+      errors: [{ message: "Authentication failed. The access token you provided is invalid" }],
     })
 
     // Mock unsuccessful fetch response
@@ -231,7 +237,7 @@ describe("GraphQL Handler Unit Tests", () => {
       return {
         ok: false,
         status: 401,
-        text: async () => errorResponseText
+        text: async () => errorResponseText,
       } as any
     })
 
@@ -244,23 +250,26 @@ describe("GraphQL Handler Unit Tests", () => {
             id
           }
         }
-      `
+      `,
     })
 
     expect(result).to.have.property("isError", true)
     expect(result).to.have.property("content").that.is.an("array")
-    
+
     const parsedContent = JSON.parse(result.content[0].text)
     expect(parsedContent).to.have.property("errors").that.is.an("array")
     expect(parsedContent.errors[0].message).to.include("HTTP Error 401")
   })
-  
+
   it("should handle GraphQL errors in successful HTTP response", async () => {
     // Define GraphQL error response
     const graphQLErrorResponse = {
       errors: [
-        { message: "Field 'entries' argument 'contentType' of type 'String' is required but not provided" }
-      ]
+        {
+          message:
+            "Field 'entries' argument 'contentType' of type 'String' is required but not provided",
+        },
+      ],
     }
 
     // Mock successful HTTP response but with GraphQL errors
@@ -268,7 +277,7 @@ describe("GraphQL Handler Unit Tests", () => {
       return {
         ok: true,
         status: 200,
-        json: async () => graphQLErrorResponse
+        json: async () => graphQLErrorResponse,
       } as any
     })
 
@@ -281,7 +290,7 @@ describe("GraphQL Handler Unit Tests", () => {
             id
           }
         }
-      `
+      `,
     })
 
     expect(result).to.have.property("isError", true)
@@ -304,17 +313,17 @@ describe("GraphQL Handler Unit Tests", () => {
                 {
                   name: "articleCollection",
                   description: "Article Collection",
-                  type: { kind: "OBJECT", ofType: null }
+                  type: { kind: "OBJECT", ofType: null },
                 },
                 {
                   name: "productCollection",
                   description: "Product Collection",
-                  type: { kind: "OBJECT", ofType: null }
-                }
-              ]
-            }
-          }
-        }
+                  type: { kind: "OBJECT", ofType: null },
+                },
+              ],
+            },
+          },
+        },
       }
 
       // Mock successful response
@@ -322,13 +331,13 @@ describe("GraphQL Handler Unit Tests", () => {
         return {
           ok: true,
           status: 200,
-          json: async () => mockContentTypesResponse
+          json: async () => mockContentTypesResponse,
         } as any
       })
 
       const result = await graphqlHandlers.listContentTypes({
         spaceId: "test-space-id",
-        environmentId: "master"
+        environmentId: "master",
       })
 
       // Verify result format
@@ -351,13 +360,13 @@ describe("GraphQL Handler Unit Tests", () => {
         return {
           ok: false,
           status: 401,
-          text: async () => "Unauthorized"
+          text: async () => "Unauthorized",
         } as any
       })
 
       const result = await graphqlHandlers.listContentTypes({
         spaceId: "test-space-id",
-        environmentId: "master"
+        environmentId: "master",
       })
 
       expect(result).to.have.property("isError", true)
@@ -375,16 +384,16 @@ describe("GraphQL Handler Unit Tests", () => {
               {
                 name: "title",
                 description: "Article title",
-                type: { kind: "SCALAR", name: "String", ofType: null }
+                type: { kind: "SCALAR", name: "String", ofType: null },
               },
               {
                 name: "body",
                 description: "Article body",
-                type: { kind: "SCALAR", name: "String", ofType: null }
-              }
-            ]
-          }
-        }
+                type: { kind: "SCALAR", name: "String", ofType: null },
+              },
+            ],
+          },
+        },
       }
 
       // Mock successful response
@@ -392,14 +401,14 @@ describe("GraphQL Handler Unit Tests", () => {
         return {
           ok: true,
           status: 200,
-          json: async () => mockContentTypeResponse
+          json: async () => mockContentTypeResponse,
         } as any
       })
 
       const result = await graphqlHandlers.getContentTypeSchema({
         contentType: "Article",
         spaceId: "test-space-id",
-        environmentId: "master"
+        environmentId: "master",
       })
 
       // Verify result format
@@ -424,7 +433,7 @@ describe("GraphQL Handler Unit Tests", () => {
         return {
           ok: true,
           status: 200,
-          json: async () => ({ data: { __type: null } })
+          json: async () => ({ data: { __type: null } }),
         } as any
       })
 
@@ -438,21 +447,23 @@ describe("GraphQL Handler Unit Tests", () => {
               __type: {
                 name: "ArticleCollection",
                 description: "Collection of Articles",
-                fields: [{
-                  name: "items",
-                  description: "List of articles",
-                  type: { kind: "LIST", name: null, ofType: { name: "Article", kind: "OBJECT" } }
-                }]
-              }
-            }
-          })
+                fields: [
+                  {
+                    name: "items",
+                    description: "List of articles",
+                    type: { kind: "LIST", name: null, ofType: { name: "Article", kind: "OBJECT" } },
+                  },
+                ],
+              },
+            },
+          }),
         } as any
       })
 
       const result = await graphqlHandlers.getContentTypeSchema({
         contentType: "Article", // Will try ArticleCollection when Article not found
         spaceId: "test-space-id",
-        environmentId: "master"
+        environmentId: "master",
       })
 
       expect(result).to.have.property("content").that.is.an("array")
@@ -464,31 +475,33 @@ describe("GraphQL Handler Unit Tests", () => {
 
     it("should generate example GraphQL queries", async () => {
       // Mock the getContentTypeSchema call so we don't have to mock fetch again
-      const originalGetContentTypeSchema = graphqlHandlers.getContentTypeSchema;
+      const originalGetContentTypeSchema = graphqlHandlers.getContentTypeSchema
       graphqlHandlers.getContentTypeSchema = vi.fn().mockResolvedValue({
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            contentType: "ArticleCollection",
-            description: "Collection of Articles",
-            fields: [
-              { name: "items", type: "[Article]" },
-              { name: "limit", type: "Int" },
-              { name: "skip", type: "Int" },
-              { name: "total", type: "Int" }
-            ]
-          })
-        }]
-      });
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              contentType: "ArticleCollection",
+              description: "Collection of Articles",
+              fields: [
+                { name: "items", type: "[Article]" },
+                { name: "limit", type: "Int" },
+                { name: "skip", type: "Int" },
+                { name: "total", type: "Int" },
+              ],
+            }),
+          },
+        ],
+      })
 
       const result = await graphqlHandlers.getExample({
         contentType: "Article",
         spaceId: "test-space-id",
-        environmentId: "master"
+        environmentId: "master",
       })
 
       // Restore original function
-      graphqlHandlers.getContentTypeSchema = originalGetContentTypeSchema;
+      graphqlHandlers.getContentTypeSchema = originalGetContentTypeSchema
 
       expect(result).to.have.property("content").that.is.an("array")
       expect(result.content[0].text).to.include("Example query for ArticleCollection")
@@ -500,23 +513,24 @@ describe("GraphQL Handler Unit Tests", () => {
 
     it("should handle errors in example query generation", async () => {
       // Mock the getContentTypeSchema call to return an error
-      const originalGetContentTypeSchema = graphqlHandlers.getContentTypeSchema;
+      const originalGetContentTypeSchema = graphqlHandlers.getContentTypeSchema
       graphqlHandlers.getContentTypeSchema = vi.fn().mockResolvedValue({
         isError: true,
-        content: [{ type: "text", text: "Content type not found" }]
-      });
+        content: [{ type: "text", text: "Content type not found" }],
+      })
 
       const result = await graphqlHandlers.getExample({
         contentType: "NonExistentType",
         spaceId: "test-space-id",
-        environmentId: "master"
+        environmentId: "master",
       })
 
       // Restore original function
-      graphqlHandlers.getContentTypeSchema = originalGetContentTypeSchema;
+      graphqlHandlers.getContentTypeSchema = originalGetContentTypeSchema
 
       expect(result).to.have.property("isError", true)
       expect(result.content[0].text).to.equal("Content type not found")
     })
   })
 })
+

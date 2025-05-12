@@ -70,7 +70,8 @@ export const handlers = [
           // In the real API implementation, the environmentId is taken
           // from the second argument to client.environment.create
           // We need to extract it from the name in our mock
-          const environmentId = body?.name
+          // Add type guard to ensure body is a Record with name property
+          const environmentId = typeof body === 'object' && body !== null ? (body as Record<string, any>).name : undefined
 
           // Return correctly structured response with environment ID
           return HttpResponse.json({

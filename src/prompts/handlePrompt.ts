@@ -1,9 +1,9 @@
-import { GetPromptResult } from "@modelcontextprotocol/sdk/types"
+// Import just the types we need
 import { contentfulHandlers } from "./promptHandlers/contentful"
 import { aiActionsHandlers } from "./promptHandlers/aiActions"
 import { graphqlHandlers } from "./promptHandlers/graphql"
 
-// Define the correct GetPromptResult interface to match SDK requirements
+// Define the correct interfaces to match SDK requirements
 interface MessageContent {
   type: "text"
   text: string
@@ -14,9 +14,18 @@ interface Message {
   content: MessageContent
 }
 
+// Define interface for tool objects with required properties
+interface ToolObject {
+  function: {
+    name: string;
+    description?: string;
+    parameters?: Record<string, unknown>;
+  };
+}
+
 export interface PromptResult {
   messages: Message[]
-  tools?: any[] // Add tools property to match expected result type
+  tools?: ToolObject[] // Properly typed tools array
 }
 
 /**
@@ -26,7 +35,7 @@ export interface PromptResult {
  * @returns Prompt result with messages
  */
 // Tools will be added by the server code at runtime
-const emptyToolsArray: any[] = []
+const emptyToolsArray: ToolObject[] = []
 
 export async function handlePrompt(
   name: string,

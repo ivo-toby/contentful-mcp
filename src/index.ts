@@ -102,8 +102,13 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
   const { name, arguments: args } = request.params
   const result = await handlePrompt(name, args)
   // Add tools to the prompt result
+  // Use Object.values to convert from object to array
+  // @ts-ignore - SDK expects a specific tool format
   result.tools = Object.values(getAllTools())
-  return result as any // Cast to any to satisfy the type checker
+  return {
+    messages: result.messages,
+    tools: result.tools
+  }
 })
 
 // Type-safe handler

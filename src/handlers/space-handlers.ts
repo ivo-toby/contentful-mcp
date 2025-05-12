@@ -34,13 +34,18 @@ export const spaceHandlers = {
 
   createEnvironment: async (args: { spaceId: string; environmentId: string; name: string }) => {
     const contentfulClient = await getContentfulClient()
-    // Cast the first argument to any to include environmentId in params
+    // Define an interface for the params that includes environmentId
+    interface CreateEnvironmentParams {
+      spaceId: string;
+      environmentId: string;
+    }
+
     const environment = await contentfulClient.environment.create(
       {
         spaceId: args.spaceId,
         // environmentId is needed in the actual API call but not defined in the type
         environmentId: args.environmentId,
-      } as any,
+      } as CreateEnvironmentParams,
       {
         name: args.name,
       },

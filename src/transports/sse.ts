@@ -66,7 +66,8 @@ class SSEServerTransport {
     this.session.response.write(`data: ${JSON.stringify({ sessionId: this.session.id })}\n\n`)
   }
 
-  async send(message: JSONRPCMessage, options?: any): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async send(message: JSONRPCMessage, _options?: { silent?: boolean }): Promise<void> {
     // Send message to client
     if (!this.session.isClosed) {
       try {
@@ -149,6 +150,7 @@ export class SSETransport {
     const transport = new SSEServerTransport(session)
 
     // Connect the transport to the server
+    // @ts-expect-error - The transport implementation doesn't exactly match SDK interface but works at runtime
     await server.connect(transport)
 
     // Return the session ID
@@ -187,7 +189,10 @@ export class SSETransport {
 
     try {
       // Get the transport from the server
-      const transport = (session.server as any).transport as SSEServerTransport
+      // Access the server's internal transport property with appropriate type casting
+      // We need to access an internal property that's not part of the public interface
+      const serverAny = session.server as any
+      const transport = serverAny.transport as SSEServerTransport
 
       // Pass the message to the transport's onmessage handler
       if (transport && transport.onmessage) {
@@ -261,4 +266,3 @@ export class SSETransport {
     return Object.values(this.sessions)
   }
 }
-
