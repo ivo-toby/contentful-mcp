@@ -41,34 +41,45 @@ export function getAllTools() {
   const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
   const hasPrivateKey = !!process.env.PRIVATE_KEY;
 
-  // If we only have a CDA token, only return GraphQL tools
-  if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
-    const tools = getTools();
-    const graphqlTools = {
-      ...(tools.GRAPHQL_QUERY ? { GRAPHQL_QUERY: tools.GRAPHQL_QUERY } : {}),
-      ...(tools.GRAPHQL_LIST_CONTENT_TYPES ? { GRAPHQL_LIST_CONTENT_TYPES: tools.GRAPHQL_LIST_CONTENT_TYPES } : {}),
-      ...(tools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA ? { GRAPHQL_GET_CONTENT_TYPE_SCHEMA: tools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA } : {}),
-      ...(tools.GRAPHQL_GET_EXAMPLE ? { GRAPHQL_GET_EXAMPLE: tools.GRAPHQL_GET_EXAMPLE } : {})
-    };
-    return graphqlTools;
+  // Get all static tools
+  const allStaticTools = getTools();
+
+  // Filter tools based on token availability
+  const staticTools: Record<string, unknown> = {};
+
+  // If we have CDA token, add GraphQL tools
+  if (hasCdaToken) {
+    // Include GraphQL tools only with CDA token
+    if (allStaticTools.GRAPHQL_QUERY) staticTools.GRAPHQL_QUERY = allStaticTools.GRAPHQL_QUERY;
+    if (allStaticTools.GRAPHQL_LIST_CONTENT_TYPES) staticTools.GRAPHQL_LIST_CONTENT_TYPES = allStaticTools.GRAPHQL_LIST_CONTENT_TYPES;
+    if (allStaticTools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA) staticTools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA = allStaticTools.GRAPHQL_GET_CONTENT_TYPE_SCHEMA;
+    if (allStaticTools.GRAPHQL_GET_EXAMPLE) staticTools.GRAPHQL_GET_EXAMPLE = allStaticTools.GRAPHQL_GET_EXAMPLE;
   }
 
-  // Get all static tools if we have CMA token or private key
-  const staticTools = getTools()
+  // If we have CMA token or private key, add all non-GraphQL tools
+  if (hasCmaToken || hasPrivateKey) {
+    Object.entries(allStaticTools).forEach(([key, value]) => {
+      // Skip GraphQL tools as they're handled separately
+      if (!key.startsWith('GRAPHQL_')) {
+        staticTools[key] = value;
+      }
+    });
 
-  // Add dynamically generated tools for AI Actions
-  const dynamicTools = aiActionToolContext.generateAllToolSchemas()
+    // Add dynamically generated tools for AI Actions
+    const dynamicTools = aiActionToolContext.generateAllToolSchemas();
 
-  return {
-    ...staticTools,
-    ...dynamicTools.reduce(
-      (acc, tool) => {
-        acc[tool.name] = tool
-        return acc
-      },
-      {} as Record<string, unknown>,
-    ),
+    // Add dynamic AI Action tools
+    dynamicTools.forEach(tool => {
+      if (tool && tool.name) {
+        staticTools[tool.name] = tool;
+      }
+    });
   }
+
+  // Only CDA token and no CMA/private key means only GraphQL tools
+  // Only CMA/private key and no CDA means all non-GraphQL tools
+  // Both tokens means all tools
+  return staticTools;
 }
 
 // Create MCP server
@@ -373,28 +384,17 @@ async function loadGraphQLSchema() {
     const spaceId = process.env.SPACE_ID
     const environmentId = process.env.ENVIRONMENT_ID || "master"
 
-    // Try to use CDA token first (preferred for GraphQL), then fall back to CMA token
+    // GraphQL REQUIRES a CDA token - Management tokens won't work for GraphQL
     const cdaToken = process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
-    const cmaToken = process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
 
     // Check if we have the minimum required parameters
-    if (!spaceId || (!cdaToken && !cmaToken)) {
-      console.error("Unable to fetch GraphQL schema: Space ID or access token not provided")
+    if (!spaceId || !cdaToken) {
+      console.error("Unable to fetch GraphQL schema: Space ID or CDA access token not provided")
       return
     }
 
-    // Determine which token to use (prefer CDA for GraphQL)
-    const accessToken = cdaToken || cmaToken
-    const tokenType = cdaToken ? "CDA" : "CMA"
-
-    console.error(`Fetching GraphQL schema for space ${spaceId}, environment ${environmentId} using ${tokenType} token...`)
-
-    // Add an assertion to ensure accessToken is defined
-    if (!accessToken) {
-      console.error("Access token must be defined")
-      return
-    }
-    const schema = await fetchGraphQLSchema(spaceId, environmentId, accessToken)
+    console.error(`Fetching GraphQL schema for space ${spaceId}, environment ${environmentId} using CDA token...`)
+    const schema = await fetchGraphQLSchema(spaceId, environmentId, cdaToken)
 
     if (schema) {
       setGraphQLSchema(schema)
@@ -421,13 +421,13 @@ async function runServer() {
   // Load resources based on available tokens
   const loadPromises = [];
 
-  // Only load AI Actions if we have CMA token or Private Key
-  if (hasCmaToken || hasPrivateKey) {
+  // Only load AI Actions if we have CMA token or Private Key and a space ID
+  if ((hasCmaToken || hasPrivateKey) && process.env.SPACE_ID) {
     loadPromises.push(loadAiActions());
   }
 
-  // Load GraphQL schema if we have either CDA or CMA token
-  if (hasCmaToken || hasCdaToken) {
+  // Load GraphQL schema ONLY if we have CDA token and a space ID
+  if (hasCdaToken && process.env.SPACE_ID) {
     loadPromises.push(loadGraphQLSchema());
   }
 
@@ -466,13 +466,13 @@ async function runServer() {
 
   // Set up periodic refresh of AI Actions and GraphQL schema (every 5 minutes)
   setInterval(() => {
-    // Only refresh AI Actions if we have CMA token or Private Key
-    if (hasCmaToken || hasPrivateKey) {
+    // Only refresh AI Actions if we have CMA token or Private Key and a space ID
+    if ((hasCmaToken || hasPrivateKey) && process.env.SPACE_ID) {
       loadAiActions().catch(error => console.error("Error refreshing AI Actions:", error));
     }
 
-    // Only refresh GraphQL schema if we have either CDA or CMA token
-    if (hasCmaToken || hasCdaToken) {
+    // Only refresh GraphQL schema if we have CDA token and a space ID
+    if (hasCdaToken && process.env.SPACE_ID) {
       loadGraphQLSchema().catch(error => console.error("Error refreshing GraphQL schema:", error));
     }
   }, 5 * 60 * 1000)

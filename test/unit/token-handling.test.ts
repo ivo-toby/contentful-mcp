@@ -69,34 +69,34 @@ describe("Token Authorization Scenarios", () => {
       expect(tools).to.not.have.property("CREATE_ENTRY")
     })
     
-    it("should expose all tools when CMA token is provided", () => {
+    it("should expose only non-GraphQL tools when only CMA token is provided", () => {
       // Set up the environment with a CMA token
       process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = "test-cma-token"
       process.env.SPACE_ID = "test-space"
-      
+
       // Get the tools
       const tools = getAllTools()
-      
-      // Verify all tools are available
+
+      // Verify the right tools are available
       expect(tools).to.be.an("object")
-      expect(Object.keys(tools)).to.have.length.at.least(2)
-      expect(tools).to.have.property("GRAPHQL_QUERY")
       expect(tools).to.have.property("CREATE_ENTRY")
+      expect(tools).to.not.have.property("GRAPHQL_QUERY")
+      expect(tools).to.not.have.property("GRAPHQL_LIST_CONTENT_TYPES")
     })
     
-    it("should expose all tools when both CDA and CMA tokens are provided", () => {
+    it("should expose both GraphQL and non-GraphQL tools when both CDA and CMA tokens are provided", () => {
       // Set up the environment with both CDA and CMA tokens
       process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN = "test-cda-token"
       process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = "test-cma-token"
       process.env.SPACE_ID = "test-space"
-      
+
       // Get the tools
       const tools = getAllTools()
-      
-      // Verify all tools are available
+
+      // Verify both GraphQL and non-GraphQL tools are available
       expect(tools).to.be.an("object")
-      expect(Object.keys(tools)).to.have.length.at.least(2)
       expect(tools).to.have.property("GRAPHQL_QUERY")
+      expect(tools).to.have.property("GRAPHQL_LIST_CONTENT_TYPES")
       expect(tools).to.have.property("CREATE_ENTRY")
     })
   })

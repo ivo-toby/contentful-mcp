@@ -6,6 +6,7 @@ import { handlePrompt } from "../prompts/handlers.js"
 import { randomUUID } from "crypto"
 import express, { Request, Response } from "express"
 import cors from "cors"
+import { getTools } from "../types/tools.js"
 import {
   isInitializeRequest,
   CallToolRequestSchema,
@@ -19,7 +20,11 @@ import { spaceHandlers } from "../handlers/space-handlers.js"
 import { contentTypeHandlers } from "../handlers/content-type-handlers.js"
 import { bulkActionHandlers } from "../handlers/bulk-action-handlers.js"
 import { aiActionHandlers } from "../handlers/ai-action-handlers.js"
-import { graphqlHandlers } from "../handlers/graphql-handlers.js"
+import {
+  graphqlHandlers,
+  fetchGraphQLSchema,
+  setGraphQLSchema,
+} from "../handlers/graphql-handlers.js"
 import type { AiActionInvocation } from "../types/ai-actions.js"
 
 /**
@@ -37,7 +42,7 @@ export interface StreamableHttpServerOptions {
 export class StreamableHttpServer {
   private app: express.Application
   // @ts-expect-error - This property will be initialized in the start() method
-  private server: import('http').Server
+  private server: import("http").Server
   private port: number
   private host: string
 
@@ -238,7 +243,7 @@ export class StreamableHttpServer {
       // Return the result with proper typing to match expected format
       return {
         messages: result.messages,
-        tools: result.tools
+        tools: result.tools,
       }
     })
 
@@ -314,63 +319,107 @@ export class StreamableHttpServer {
   }
 
   // AI Action Tool Context for handling dynamic tools
-  private aiActionToolContext: AiActionToolContext
+  private aiActionToolContext: AiActionToolContext = new AiActionToolContext(
+    process.env.SPACE_ID || "",
+    process.env.ENVIRONMENT_ID || "master",
+  )
 
   // Tools available for this server instance
-  private tools: Record<string, {
-    name: string;
-    description: string;
-    inputSchema: {
-      type: string;
-      properties: Record<string, unknown>;
-    };
-  }> = {}
+  private tools: Record<
+    string,
+    {
+      name: string
+      description: string
+      inputSchema: {
+        type: string
+        properties: Record<string, unknown>
+      }
+    }
+  > = {}
 
   /**
    * Initialize available tools based on authentication
    */
   private initializeTools(): void {
-    // Determine which authentication methods are available
-    const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
-    const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
-    const hasPrivateKey = !!process.env.PRIVATE_KEY
+    try {
+      // Get all tools from the tools.js module
+      const toolsObj = getTools()
 
-    // If we only have a CDA token, only enable GraphQL operations
-    if (hasCdaToken && !hasCmaToken && !hasPrivateKey) {
-      this.tools = {
-        graphql_query: {
-          name: "graphql_query",
-          description: "Execute a GraphQL query against the Contentful GraphQL API",
-          inputSchema: { type: "object", properties: {} }
-        },
-        graphql_list_content_types: {
-          name: "graphql_list_content_types",
-          description: "List all available content types in the Contentful GraphQL schema",
-          inputSchema: { type: "object", properties: {} }
-        },
-        graphql_get_content_type_schema: {
-          name: "graphql_get_content_type_schema",
-          description: "Get detailed schema for a specific content type in the GraphQL API",
-          inputSchema: { type: "object", properties: {} }
-        },
-        graphql_get_example: {
-          name: "graphql_get_example",
-          description: "Get example GraphQL queries for a specific content type",
-          inputSchema: { type: "object", properties: {} }
+      // Convert the tools format to match our expected format
+      const formattedTools: Record<
+        string,
+        {
+          name: string
+          description: string
+          inputSchema: {
+            type: string
+            properties: Record<string, unknown>
+          }
+        }
+      > = {}
+
+      // Determine which authentication methods are available
+      const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+      const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
+      const hasPrivateKey = !!process.env.PRIVATE_KEY
+
+      // Process each tool from getTools based on available tokens
+      Object.entries(toolsObj).forEach(([key, tool]) => {
+        const toolObject = tool as any
+
+        // Skip undefined tools
+        if (!toolObject) return
+
+        // For GraphQL tools, only include if we have CDA token
+        const isGraphQLTool = key.startsWith("GRAPHQL_")
+
+        if (isGraphQLTool && !hasCdaToken) {
+          // Skip GraphQL tools if no CDA token
+          return
+        }
+
+        if (!isGraphQLTool && !hasCmaToken && !hasPrivateKey) {
+          // Skip non-GraphQL tools if no CMA token or private key
+          return
+        }
+
+        // Convert from the SDK tool format to our StreamableHttp format
+        formattedTools[toolObject.name] = {
+          name: toolObject.name,
+          description: toolObject.description || "",
+          inputSchema: toolObject.inputSchema || { type: "object", properties: {} },
+        }
+      })
+
+      // Add AI Action dynamic tools if we have the space and credentials
+
+      if (process.env.SPACE_ID && (hasCmaToken || hasPrivateKey)) {
+        try {
+          // Generate dynamic tool schemas for AI Actions
+          const dynamicTools = this.aiActionToolContext.generateAllToolSchemas() || []
+
+          // Add dynamic tools to the formatted tools
+          dynamicTools.forEach((tool) => {
+            if (tool && tool.name) {
+              formattedTools[tool.name] = {
+                name: tool.name,
+                description: tool.description || "",
+                inputSchema: tool.inputSchema || { type: "object", properties: {} },
+              }
+            }
+          })
+        } catch (error) {
+          console.error("Error adding AI Action tools:", error)
         }
       }
-      return
-    }
 
-    // Define static tools
-    this.tools = {
-      // Entry operations
-      create_entry: {
-        name: "create_entry",
-        description: "Create a new entry in Contentful",
-        inputSchema: { type: "object", properties: {} }
-      },
-      // ... other tools would be defined here
+      // Set the tools
+      this.tools = formattedTools
+    } catch (error) {
+      console.error("Error initializing tools for StreamableHttpServer:", error)
+
+      // Fallback to minimal set of tools if there's an error
+      this.tools = {}
     }
   }
 
@@ -378,13 +427,13 @@ export class StreamableHttpServer {
    * Helper function to map tool names to handlers
    */
   // The exact return type constraints are too strict but this works at runtime
-  private getHandler(
-    name: string
-  ): ((args: Record<string, unknown>) => Promise<{
-    content?: Array<{ type: string; text: string }>;
-    isError?: boolean;
-    message?: string;
-  }>) | undefined {
+  private getHandler(name: string):
+    | ((args: Record<string, unknown>) => Promise<{
+        content?: Array<{ type: string; text: string }>
+        isError?: boolean
+        message?: string
+      }>)
+    | undefined {
     // Determine which authentication methods are available
     const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
     const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
@@ -411,66 +460,72 @@ export class StreamableHttpServer {
       return cdaOnlyHandlers[name as keyof typeof cdaOnlyHandlers]
     }
 
-    // Full handlers list for CMA token or private key
-    const handlers = {
-      // Entry operations
-      create_entry: entryHandlers.createEntry,
-      get_entry: entryHandlers.getEntry,
-      update_entry: entryHandlers.updateEntry,
-      delete_entry: entryHandlers.deleteEntry,
-      publish_entry: entryHandlers.publishEntry,
-      unpublish_entry: entryHandlers.unpublishEntry,
-      search_entries: entryHandlers.searchEntries,
+    // If we have CMA token or private key, provide access to management tools
+    if (hasCmaToken || hasPrivateKey) {
+      const managementHandlers: Record<string, any> = {
+        // Entry operations
+        create_entry: entryHandlers.createEntry,
+        get_entry: entryHandlers.getEntry,
+        update_entry: entryHandlers.updateEntry,
+        delete_entry: entryHandlers.deleteEntry,
+        publish_entry: entryHandlers.publishEntry,
+        unpublish_entry: entryHandlers.unpublishEntry,
+        search_entries: entryHandlers.searchEntries,
 
-      // Bulk operations
-      bulk_publish: bulkActionHandlers.bulkPublish,
-      bulk_unpublish: bulkActionHandlers.bulkUnpublish,
-      bulk_validate: bulkActionHandlers.bulkValidate,
+        // Bulk operations
+        bulk_publish: bulkActionHandlers.bulkPublish,
+        bulk_unpublish: bulkActionHandlers.bulkUnpublish,
+        bulk_validate: bulkActionHandlers.bulkValidate,
 
-      // Asset operations
-      upload_asset: assetHandlers.uploadAsset,
-      get_asset: assetHandlers.getAsset,
-      update_asset: assetHandlers.updateAsset,
-      delete_asset: assetHandlers.deleteAsset,
-      publish_asset: assetHandlers.publishAsset,
-      unpublish_asset: assetHandlers.unpublishAsset,
-      list_assets: assetHandlers.listAssets,
+        // Asset operations
+        upload_asset: assetHandlers.uploadAsset,
+        get_asset: assetHandlers.getAsset,
+        update_asset: assetHandlers.updateAsset,
+        delete_asset: assetHandlers.deleteAsset,
+        publish_asset: assetHandlers.publishAsset,
+        unpublish_asset: assetHandlers.unpublishAsset,
+        list_assets: assetHandlers.listAssets,
 
-      // Space & Environment operations
-      list_spaces: spaceHandlers.listSpaces,
-      get_space: spaceHandlers.getSpace,
-      list_environments: spaceHandlers.listEnvironments,
-      create_environment: spaceHandlers.createEnvironment,
-      delete_environment: spaceHandlers.deleteEnvironment,
+        // Space & Environment operations
+        list_spaces: spaceHandlers.listSpaces,
+        get_space: spaceHandlers.getSpace,
+        list_environments: spaceHandlers.listEnvironments,
+        create_environment: spaceHandlers.createEnvironment,
+        delete_environment: spaceHandlers.deleteEnvironment,
 
-      // Content Type operations
-      list_content_types: contentTypeHandlers.listContentTypes,
-      get_content_type: contentTypeHandlers.getContentType,
-      create_content_type: contentTypeHandlers.createContentType,
-      update_content_type: contentTypeHandlers.updateContentType,
-      delete_content_type: contentTypeHandlers.deleteContentType,
-      publish_content_type: contentTypeHandlers.publishContentType,
+        // Content Type operations
+        list_content_types: contentTypeHandlers.listContentTypes,
+        get_content_type: contentTypeHandlers.getContentType,
+        create_content_type: contentTypeHandlers.createContentType,
+        update_content_type: contentTypeHandlers.updateContentType,
+        delete_content_type: contentTypeHandlers.deleteContentType,
+        publish_content_type: contentTypeHandlers.publishContentType,
 
-      // AI Action operations
-      list_ai_actions: aiActionHandlers.listAiActions,
-      get_ai_action: aiActionHandlers.getAiAction,
-      create_ai_action: aiActionHandlers.createAiAction,
-      update_ai_action: aiActionHandlers.updateAiAction,
-      delete_ai_action: aiActionHandlers.deleteAiAction,
-      publish_ai_action: aiActionHandlers.publishAiAction,
-      unpublish_ai_action: aiActionHandlers.unpublishAiAction,
-      invoke_ai_action: aiActionHandlers.invokeAiAction,
-      get_ai_action_invocation: aiActionHandlers.getAiActionInvocation,
+        // AI Action operations
+        list_ai_actions: aiActionHandlers.listAiActions,
+        get_ai_action: aiActionHandlers.getAiAction,
+        create_ai_action: aiActionHandlers.createAiAction,
+        update_ai_action: aiActionHandlers.updateAiAction,
+        delete_ai_action: aiActionHandlers.deleteAiAction,
+        publish_ai_action: aiActionHandlers.publishAiAction,
+        unpublish_ai_action: aiActionHandlers.unpublishAiAction,
+        invoke_ai_action: aiActionHandlers.invokeAiAction,
+        get_ai_action_invocation: aiActionHandlers.getAiActionInvocation,
+      }
 
-      // GraphQL operations
-      graphql_query: graphqlHandlers.executeQuery,
-      graphql_list_content_types: graphqlHandlers.listContentTypes,
-      graphql_get_content_type_schema: graphqlHandlers.getContentTypeSchema,
-      graphql_get_example: graphqlHandlers.getExample,
+      // Add GraphQL operations if CDA token is also available
+      if (hasCdaToken) {
+        managementHandlers.graphql_query = graphqlHandlers.executeQuery
+        managementHandlers.graphql_list_content_types = graphqlHandlers.listContentTypes
+        managementHandlers.graphql_get_content_type_schema = graphqlHandlers.getContentTypeSchema
+        managementHandlers.graphql_get_example = graphqlHandlers.getExample
+      }
+
+      return managementHandlers[name as keyof typeof managementHandlers]
     }
 
-    // @ts-expect-error - The exact parameter and return types don't match, but they work at runtime
-    return handlers[name as keyof typeof handlers]
+    // If we reach here, no valid handler was found
+    return undefined
   }
 
   /**
@@ -507,6 +562,43 @@ export class StreamableHttpServer {
         isError: true,
         message: error instanceof Error ? error.message : String(error),
       }
+    }
+  }
+
+  /**
+   * Load GraphQL schema if CDA token is available
+   * Note: We only want to load GraphQL schema when a CDA token is provided
+   */
+  private async loadGraphQLSchema(): Promise<void> {
+    try {
+      // Only load GraphQL schema if we have CDA token
+      const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
+
+      if (!hasCdaToken) {
+        console.error("Skipping GraphQL schema loading for StreamableHTTP: Requires CDA token")
+        return
+      }
+
+      if (!process.env.SPACE_ID) {
+        console.error("Skipping GraphQL schema loading for StreamableHTTP: Requires Space ID")
+        return
+      }
+
+      // Fetch the GraphQL schema - note that fetchGraphQLSchema takes 3 separate parameters
+      const schema = await fetchGraphQLSchema(
+        process.env.SPACE_ID || "",
+        process.env.ENVIRONMENT_ID || "master",
+        process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN || "",
+      )
+
+      if (schema) {
+        setGraphQLSchema(schema)
+        console.error("GraphQL schema loaded successfully for StreamableHTTP")
+      } else {
+        console.error("Failed to load GraphQL schema for StreamableHTTP")
+      }
+    } catch (error) {
+      console.error("Error loading GraphQL schema for StreamableHTTP:", error)
     }
   }
 
@@ -557,7 +649,7 @@ export class StreamableHttpServer {
         this.tools[toolName] = {
           name: toolName,
           description: action.description || `AI Action: ${action.name}`,
-          inputSchema: { type: "object", properties: {} }
+          inputSchema: { type: "object", properties: {} },
         }
 
         // Log variable mappings for debugging
@@ -597,15 +689,36 @@ export class StreamableHttpServer {
    * @returns Promise that resolves when the server is started
    */
   public async start(): Promise<void> {
-    // Set up periodic refresh of AI Actions (every 5 minutes)
-    this.aiActionsRefreshInterval = setInterval(
-      () => {
-        this.loadAiActions().catch((error) => {
-          console.error("Error refreshing AI Actions for StreamableHTTP:", error)
-        })
-      },
-      5 * 60 * 1000,
-    )
+    // Determine which authentication methods are available
+    const hasCmaToken = !!process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
+    const hasCdaToken = !!process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN
+    const hasPrivateKey = !!process.env.PRIVATE_KEY
+
+    // Load resources based on available tokens
+    const loadPromises = []
+
+    // Only load AI Actions if we have CMA token or Private Key
+    if ((hasCmaToken || hasPrivateKey) && process.env.SPACE_ID) {
+      loadPromises.push(this.loadAiActions())
+
+      // Set up periodic refresh of AI Actions (every 5 minutes)
+      this.aiActionsRefreshInterval = setInterval(
+        () => {
+          this.loadAiActions().catch((error) => {
+            console.error("Error refreshing AI Actions for StreamableHTTP:", error)
+          })
+        },
+        5 * 60 * 1000,
+      )
+    }
+
+    // Load GraphQL schema ONLY if we have CDA token
+    if (hasCdaToken && process.env.SPACE_ID) {
+      loadPromises.push(this.loadGraphQLSchema())
+    }
+
+    // Wait for all resources to load
+    await Promise.all(loadPromises)
 
     return new Promise((resolve) => {
       this.server = this.app.listen(this.port, () => {
@@ -614,7 +727,7 @@ export class StreamableHttpServer {
       })
 
       // Handle server errors
-      this.server.on('error', (err: Error) => {
+      this.server.on("error", (err: Error) => {
         console.error(`Server error: ${err.message}`)
       })
     })

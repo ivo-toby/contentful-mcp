@@ -93,9 +93,16 @@ export async function fetchGraphQLSchema(
   accessToken: string,
 ): Promise<GraphQLSchema | null> {
   try {
+    // We must have a CDA token for GraphQL - management tokens won't work for GraphQL schema introspection
+    if (!accessToken) {
+      console.error("No delivery access token provided for GraphQL schema fetch")
+      return null
+    }
+
     const introspectionQuery = getIntrospectionQuery()
     const endpoint = `https://graphql.contentful.com/content/v1/spaces/${spaceId}/environments/${environmentId}`
 
+    console.error(`Fetching GraphQL schema for space ${spaceId}, environment ${environmentId} using delivery token...`)
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
