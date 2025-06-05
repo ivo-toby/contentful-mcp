@@ -264,7 +264,7 @@ The server implements comprehensive error handling for:
 - Network issues
 - API-specific errors
 
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ivo-toby-contentful-mcp-badge.png)](https://mseep.ai/app/ivo-toby-contentful-mcp)
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/146d4235-bdb1-492e-b594-82fd27b77388)
 
 ## License
 
