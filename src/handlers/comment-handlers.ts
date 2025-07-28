@@ -29,7 +29,7 @@ export const commentHandlers = {
     const contentfulClient = await getContentfulClient()
 
     // Build query based on status filter
-    const query: any = {}
+    const query: { status?: "active" | "resolved" } = {}
     if (status !== "all") {
       query.status = status
     }
@@ -226,7 +226,7 @@ export const commentHandlers = {
     }
 
     // Build update data object with only provided fields
-    const updateData: any = {}
+    const updateData: { body?: string; status?: "active" | "resolved" } = {}
     if (body !== undefined) updateData.body = body
     if (status !== undefined) updateData.status = status
 
