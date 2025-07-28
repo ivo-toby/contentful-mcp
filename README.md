@@ -16,6 +16,7 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 ## Features
 
 - **Content Management**: Full CRUD operations for entries and assets
+- **Comment Management**: Create, retrieve, and manage comments on entries with support for both plain-text and rich-text formats
 - **Space Management**: Create, update, and manage spaces and environments
 - **Content Types**: Manage content type definitions
 - **Localization**: Support for multiple locales
@@ -57,6 +58,14 @@ These bulk operation tools are ideal for content migrations, mass updates, or ba
 - **delete_entry**: Remove entries
 - **publish_entry**: Publish entries
 - **unpublish_entry**: Unpublish entries
+
+### Comment Management
+
+- **get_comments**: Retrieve comments for an entry with filtering by status (active, resolved, all)
+- **create_comment**: Create new comments on entries with support for both plain-text and rich-text formats
+- **get_single_comment**: Retrieve a specific comment by its ID for an entry
+- **delete_comment**: Delete a specific comment from an entry
+- **update_comment**: Update existing comments with new body content or status changes
 
 ### Bulk Operations
 

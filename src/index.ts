@@ -17,6 +17,7 @@ import { spaceHandlers } from "./handlers/space-handlers.js"
 import { contentTypeHandlers } from "./handlers/content-type-handlers.js"
 import { bulkActionHandlers } from "./handlers/bulk-action-handlers.js"
 import { aiActionHandlers } from "./handlers/ai-action-handlers.js"
+import { commentHandlers } from "./handlers/comment-handlers.js"
 import { getTools } from "./types/tools.js"
 import { validateEnvironment } from "./utils/validation.js"
 import { AiActionToolContext } from "./utils/ai-action-tool-generator.js"
@@ -212,6 +213,13 @@ function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
     unpublish_ai_action: aiActionHandlers.unpublishAiAction,
     invoke_ai_action: aiActionHandlers.invokeAiAction,
     get_ai_action_invocation: aiActionHandlers.getAiActionInvocation,
+
+    // Comment operations
+    get_comments: commentHandlers.getComments,
+    create_comment: commentHandlers.createComment,
+    get_single_comment: commentHandlers.getSingleComment,
+    delete_comment: commentHandlers.deleteComment,
+    update_comment: commentHandlers.updateComment,
   }
 
   return handlers[name as keyof typeof handlers]
