@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect, vi } from "vitest"
 import { commentHandlers } from "../../src/handlers/comment-handlers.js"
 import { server } from "../msw-setup.js"
@@ -67,7 +68,7 @@ const mockCommentGet = vi.fn().mockResolvedValue(mockComment)
 
 // Mock the contentful client for testing comment operations
 vi.mock("../../src/config/client.js", async (importOriginal) => {
-  const originalModule = await importOriginal()
+  const originalModule = (await importOriginal()) as any
 
   // Create a mock function that will be used for the content client
   const getContentfulClient = vi.fn()
@@ -86,14 +87,20 @@ vi.mock("../../src/config/client.js", async (importOriginal) => {
       },
       // Pass through other methods to the original client
       entry: {
-        get: (...args) => originalGetClient().then((client) => client.entry.get(...args)),
-        getMany: (...args) => originalGetClient().then((client) => client.entry.getMany(...args)),
-        create: (...args) => originalGetClient().then((client) => client.entry.create(...args)),
-        update: (...args) => originalGetClient().then((client) => client.entry.update(...args)),
-        delete: (...args) => originalGetClient().then((client) => client.entry.delete(...args)),
-        publish: (...args) => originalGetClient().then((client) => client.entry.publish(...args)),
-        unpublish: (...args) =>
-          originalGetClient().then((client) => client.entry.unpublish(...args)),
+        get: (...args: any[]) =>
+          originalGetClient().then((client: any) => client.entry.get(...args)),
+        getMany: (...args: any[]) =>
+          originalGetClient().then((client: any) => client.entry.getMany(...args)),
+        create: (...args: any[]) =>
+          originalGetClient().then((client: any) => client.entry.create(...args)),
+        update: (...args: any[]) =>
+          originalGetClient().then((client: any) => client.entry.update(...args)),
+        delete: (...args: any[]) =>
+          originalGetClient().then((client: any) => client.entry.delete(...args)),
+        publish: (...args: any[]) =>
+          originalGetClient().then((client: any) => client.entry.publish(...args)),
+        unpublish: (...args: any[]) =>
+          originalGetClient().then((client: any) => client.entry.unpublish(...args)),
       },
     }
 
@@ -250,8 +257,8 @@ describe("Comment Handlers Integration Tests", () => {
 
       expect(mockCommentCreate).toHaveBeenCalledWith(
         {
-          spaceId: "undefined",
-          environmentId: "undefined",
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
           entryId: testEntryId,
         },
         {
@@ -282,13 +289,12 @@ describe("Comment Handlers Integration Tests", () => {
         environmentId: testEnvironmentId,
         entryId: testEntryId,
         body: testBody,
-        bodyFormat: "rich-text",
       })
 
       expect(mockCommentCreate).toHaveBeenCalledWith(
         {
-          spaceId: "undefined",
-          environmentId: "undefined",
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
           entryId: testEntryId,
         },
         {
@@ -316,8 +322,8 @@ describe("Comment Handlers Integration Tests", () => {
 
       expect(mockCommentCreate).toHaveBeenCalledWith(
         {
-          spaceId: "undefined",
-          environmentId: "undefined",
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
           entryId: testEntryId,
         },
         {
@@ -375,8 +381,8 @@ describe("Comment Handlers Integration Tests", () => {
       })
 
       expect(mockCommentGet).toHaveBeenCalledWith({
-        spaceId: "undefined",
-        environmentId: "undefined",
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
         entryId: testEntryId,
         commentId: testCommentId,
         bodyFormat: "plain-text",
@@ -406,8 +412,8 @@ describe("Comment Handlers Integration Tests", () => {
       })
 
       expect(mockCommentGet).toHaveBeenCalledWith({
-        spaceId: "undefined",
-        environmentId: "undefined",
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
         entryId: testEntryId,
         commentId: testCommentId,
         bodyFormat: "rich-text",
@@ -462,7 +468,7 @@ describe("Comment Handlers Integration Tests", () => {
           commentId: "invalid-comment-id",
         })
         expect.fail("Should have thrown an error")
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist
         expect(error.message).to.equal("Comment not found")
       }
@@ -480,7 +486,7 @@ describe("Comment Handlers Integration Tests", () => {
           entryId: testEntryId,
         })
         expect.fail("Should have thrown an error")
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist
         expect(error.message).to.equal("API Error")
       }
@@ -497,7 +503,7 @@ describe("Comment Handlers Integration Tests", () => {
           body: "Test comment",
         })
         expect.fail("Should have thrown an error")
-      } catch (error) {
+      } catch (error: any) {
         expect(error).to.exist
         expect(error.message).to.equal("Create failed")
       }

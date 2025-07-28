@@ -10,8 +10,14 @@ export const commentHandlers = {
     bodyFormat?: "plain-text" | "rich-text"
     status?: "active" | "resolved" | "all"
   }) => {
-    const spaceId = process.env.SPACE_ID || args.spaceId
-    const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
+    const spaceId =
+      process.env.SPACE_ID && process.env.SPACE_ID !== "undefined"
+        ? process.env.SPACE_ID
+        : args.spaceId
+    const environmentId =
+      process.env.ENVIRONMENT_ID && process.env.ENVIRONMENT_ID !== "undefined"
+        ? process.env.ENVIRONMENT_ID
+        : args.environmentId
     const { entryId, bodyFormat = "plain-text", status = "active" } = args
 
     const baseParams = {
@@ -64,8 +70,14 @@ export const commentHandlers = {
     body: string
     status?: "active"
   }) => {
-    const spaceId = process.env.SPACE_ID || args.spaceId
-    const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
+    const spaceId =
+      process.env.SPACE_ID && process.env.SPACE_ID !== "undefined"
+        ? process.env.SPACE_ID
+        : args.spaceId
+    const environmentId =
+      process.env.ENVIRONMENT_ID && process.env.ENVIRONMENT_ID !== "undefined"
+        ? process.env.ENVIRONMENT_ID
+        : args.environmentId
     const { entryId, body, status = "active" } = args
 
     const baseParams = {
@@ -99,8 +111,14 @@ export const commentHandlers = {
     commentId: string
     bodyFormat?: "plain-text" | "rich-text"
   }) => {
-    const spaceId = process.env.SPACE_ID || args.spaceId
-    const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
+    const spaceId =
+      process.env.SPACE_ID && process.env.SPACE_ID !== "undefined"
+        ? process.env.SPACE_ID
+        : args.spaceId
+    const environmentId =
+      process.env.ENVIRONMENT_ID && process.env.ENVIRONMENT_ID !== "undefined"
+        ? process.env.ENVIRONMENT_ID
+        : args.environmentId
     const { entryId, commentId, bodyFormat = "plain-text" } = args
 
     const baseParams = {
