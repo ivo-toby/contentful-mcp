@@ -218,6 +218,8 @@ function getHandler(name: string): ((args: any) => Promise<any>) | undefined {
     get_comments: commentHandlers.getComments,
     create_comment: commentHandlers.createComment,
     get_single_comment: commentHandlers.getSingleComment,
+    delete_comment: commentHandlers.deleteComment,
+    update_comment: commentHandlers.updateComment,
   }
 
   return handlers[name as keyof typeof handlers]

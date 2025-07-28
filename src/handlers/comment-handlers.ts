@@ -151,4 +151,112 @@ export const commentHandlers = {
       ],
     }
   },
+
+  deleteComment: async (args: {
+    spaceId: string
+    environmentId: string
+    entryId: string
+    commentId: string
+  }) => {
+    const spaceId =
+      process.env.SPACE_ID && process.env.SPACE_ID !== "undefined"
+        ? process.env.SPACE_ID
+        : args.spaceId
+    const environmentId =
+      process.env.ENVIRONMENT_ID && process.env.ENVIRONMENT_ID !== "undefined"
+        ? process.env.ENVIRONMENT_ID
+        : args.environmentId
+    const { entryId, commentId } = args
+
+    const baseParams = {
+      spaceId,
+      environmentId,
+      entryId,
+      commentId,
+    }
+
+    const contentfulClient = await getContentfulClient()
+
+    // First get the comment to obtain its version
+    const comment = await contentfulClient.comment.get({
+      ...baseParams,
+      bodyFormat: "plain-text" as const,
+    })
+
+    // Now delete with the version
+    await contentfulClient.comment.delete({
+      ...baseParams,
+      version: comment.sys.version,
+    })
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Successfully deleted comment ${commentId} from entry ${entryId}`,
+        },
+      ],
+    }
+  },
+
+  updateComment: async (args: {
+    spaceId: string
+    environmentId: string
+    entryId: string
+    commentId: string
+    body?: string
+    status?: "active" | "resolved"
+    bodyFormat?: "plain-text" | "rich-text"
+  }) => {
+    const spaceId =
+      process.env.SPACE_ID && process.env.SPACE_ID !== "undefined"
+        ? process.env.SPACE_ID
+        : args.spaceId
+    const environmentId =
+      process.env.ENVIRONMENT_ID && process.env.ENVIRONMENT_ID !== "undefined"
+        ? process.env.ENVIRONMENT_ID
+        : args.environmentId
+    const { entryId, commentId, body, status, bodyFormat = "plain-text" } = args
+
+    const baseParams = {
+      spaceId,
+      environmentId,
+      entryId,
+      commentId,
+    }
+
+    // Build update data object with only provided fields
+    const updateData: any = {}
+    if (body !== undefined) updateData.body = body
+    if (status !== undefined) updateData.status = status
+
+    const contentfulClient = await getContentfulClient()
+
+    // First get the comment to obtain its version
+    const existingComment =
+      bodyFormat === "rich-text"
+        ? await contentfulClient.comment.get({
+            ...baseParams,
+            bodyFormat: "rich-text" as const,
+          })
+        : await contentfulClient.comment.get({
+            ...baseParams,
+            bodyFormat: "plain-text" as const,
+          })
+
+    // Update with the version
+    const comment = await contentfulClient.comment.update(baseParams, {
+      ...updateData,
+      version: existingComment.sys.version,
+    })
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Successfully updated comment ${commentId} on entry ${entryId}:\n\n${JSON.stringify(comment, null, 2)}`,
+        },
+      ],
+    }
+  },
 }

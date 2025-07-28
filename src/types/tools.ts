@@ -917,6 +917,58 @@ export const getCommentTools = () => {
         required: ["entryId", "commentId"],
       }),
     },
+    DELETE_COMMENT: {
+      name: "delete_comment",
+      description: "Delete a specific comment from an entry.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          entryId: {
+            type: "string",
+            description: "The unique identifier of the entry",
+          },
+          commentId: {
+            type: "string",
+            description: "The unique identifier of the comment to delete",
+          },
+        },
+        required: ["entryId", "commentId"],
+      }),
+    },
+    UPDATE_COMMENT: {
+      name: "update_comment",
+      description:
+        "Update an existing comment on an entry. The handler will merge your updates with the existing comment data.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          entryId: {
+            type: "string",
+            description: "The unique identifier of the entry",
+          },
+          commentId: {
+            type: "string",
+            description: "The unique identifier of the comment to update",
+          },
+          body: {
+            type: "string",
+            description: "The updated content of the comment",
+          },
+          status: {
+            type: "string",
+            enum: ["active", "resolved"],
+            description: "The updated status of the comment",
+          },
+          bodyFormat: {
+            type: "string",
+            enum: ["plain-text", "rich-text"],
+            default: "plain-text",
+            description: "Format for the comment body content",
+          },
+        },
+        required: ["entryId", "commentId"],
+      }),
+    },
   }
 }
 

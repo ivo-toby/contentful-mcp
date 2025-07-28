@@ -65,6 +65,8 @@ const mockCommentsCollection = {
 const mockCommentGetMany = vi.fn().mockResolvedValue(mockCommentsCollection)
 const mockCommentCreate = vi.fn().mockResolvedValue(mockComment)
 const mockCommentGet = vi.fn().mockResolvedValue(mockComment)
+const mockCommentDelete = vi.fn().mockResolvedValue(undefined)
+const mockCommentUpdate = vi.fn().mockResolvedValue(mockComment)
 
 // Mock the contentful client for testing comment operations
 vi.mock("../../src/config/client.js", async (importOriginal) => {
@@ -84,6 +86,8 @@ vi.mock("../../src/config/client.js", async (importOriginal) => {
         getMany: mockCommentGetMany,
         create: mockCommentCreate,
         get: mockCommentGet,
+        delete: mockCommentDelete,
+        update: mockCommentUpdate,
       },
       // Pass through other methods to the original client
       entry: {
@@ -475,6 +479,258 @@ describe("Comment Handlers Integration Tests", () => {
     })
   })
 
+  describe("deleteComment", () => {
+    it("should delete a specific comment", async () => {
+      const result = await commentHandlers.deleteComment({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        commentId: testCommentId,
+      })
+
+      expect(mockCommentDelete).toHaveBeenCalledWith({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        commentId: testCommentId,
+        version: 1,
+      })
+
+      expect(result).to.have.property("content").that.is.an("array")
+      expect(result.content).to.have.lengthOf(1)
+      expect(result.content[0].text).to.include(
+        `Successfully deleted comment ${testCommentId} from entry ${testEntryId}`,
+      )
+    })
+
+    it("should use environment variables when provided", async () => {
+      // Set environment variables
+      const originalSpaceId = process.env.SPACE_ID
+      const originalEnvironmentId = process.env.ENVIRONMENT_ID
+      process.env.SPACE_ID = "env-space-id"
+      process.env.ENVIRONMENT_ID = "env-environment-id"
+
+      const result = await commentHandlers.deleteComment({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        commentId: testCommentId,
+      })
+
+      expect(mockCommentDelete).toHaveBeenCalledWith({
+        spaceId: "env-space-id",
+        environmentId: "env-environment-id",
+        entryId: testEntryId,
+        commentId: testCommentId,
+        version: 1,
+      })
+
+      // Restore environment variables
+      process.env.SPACE_ID = originalSpaceId
+      process.env.ENVIRONMENT_ID = originalEnvironmentId
+
+      expect(result).to.have.property("content")
+    })
+
+    it("should handle errors gracefully", async () => {
+      mockCommentDelete.mockRejectedValueOnce(new Error("Delete failed"))
+
+      try {
+        await commentHandlers.deleteComment({
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
+          entryId: testEntryId,
+          commentId: "invalid-comment-id",
+        })
+        expect.fail("Should have thrown an error")
+      } catch (error) {
+        expect(error).to.exist
+        expect(error.message).to.equal("Delete failed")
+      }
+    })
+  })
+
+  describe("updateComment", () => {
+    it("should update a comment with plain-text format", async () => {
+      const testBody = "Updated comment body"
+      const testStatus = "resolved"
+
+      const result = await commentHandlers.updateComment({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        commentId: testCommentId,
+        body: testBody,
+        status: testStatus,
+      })
+
+      expect(mockCommentUpdate).toHaveBeenCalledWith(
+        {
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
+          entryId: testEntryId,
+          commentId: testCommentId,
+        },
+        {
+          body: testBody,
+          status: testStatus,
+          version: 1,
+        },
+      )
+
+      expect(result).to.have.property("content").that.is.an("array")
+      expect(result.content).to.have.lengthOf(1)
+      expect(result.content[0].text).to.include(
+        `Successfully updated comment ${testCommentId} on entry ${testEntryId}`,
+      )
+
+      const responseData = JSON.parse(result.content[0].text.split(":\n\n")[1])
+      expect(responseData.sys.id).to.equal("test-comment-id")
+    })
+
+    it("should update a comment with rich-text format", async () => {
+      const testBody = "Updated rich text comment"
+
+      mockCommentUpdate.mockResolvedValueOnce(mockRichTextComment)
+
+      const result = await commentHandlers.updateComment({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        commentId: testCommentId,
+        body: testBody,
+        bodyFormat: "rich-text",
+      })
+
+      expect(mockCommentUpdate).toHaveBeenCalledWith(
+        {
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
+          entryId: testEntryId,
+          commentId: testCommentId,
+        },
+        {
+          body: testBody,
+          version: 1,
+        },
+      )
+
+      expect(result).to.have.property("content")
+      expect(result.content[0].text).to.include(
+        `Successfully updated comment ${testCommentId} on entry ${testEntryId}`,
+      )
+    })
+
+    it("should update only body when status is not provided", async () => {
+      const testBody = "Updated comment body only"
+
+      const result = await commentHandlers.updateComment({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        commentId: testCommentId,
+        body: testBody,
+      })
+
+      expect(mockCommentUpdate).toHaveBeenCalledWith(
+        {
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
+          entryId: testEntryId,
+          commentId: testCommentId,
+        },
+        {
+          body: testBody,
+          version: 1,
+        },
+      )
+
+      expect(result).to.have.property("content")
+    })
+
+    it("should update only status when body is not provided", async () => {
+      const testStatus = "resolved"
+
+      const result = await commentHandlers.updateComment({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        commentId: testCommentId,
+        status: testStatus,
+      })
+
+      expect(mockCommentUpdate).toHaveBeenCalledWith(
+        {
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
+          entryId: testEntryId,
+          commentId: testCommentId,
+        },
+        {
+          status: testStatus,
+          version: 1,
+        },
+      )
+
+      expect(result).to.have.property("content")
+    })
+
+    it("should use environment variables when provided", async () => {
+      // Set environment variables
+      const originalSpaceId = process.env.SPACE_ID
+      const originalEnvironmentId = process.env.ENVIRONMENT_ID
+      process.env.SPACE_ID = "env-space-id"
+      process.env.ENVIRONMENT_ID = "env-environment-id"
+
+      const testBody = "Updated comment"
+
+      const result = await commentHandlers.updateComment({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        commentId: testCommentId,
+        body: testBody,
+      })
+
+      expect(mockCommentUpdate).toHaveBeenCalledWith(
+        {
+          spaceId: "env-space-id",
+          environmentId: "env-environment-id",
+          entryId: testEntryId,
+          commentId: testCommentId,
+        },
+        {
+          body: testBody,
+          version: 1,
+        },
+      )
+
+      // Restore environment variables
+      process.env.SPACE_ID = originalSpaceId
+      process.env.ENVIRONMENT_ID = originalEnvironmentId
+
+      expect(result).to.have.property("content")
+    })
+
+    it("should handle errors gracefully", async () => {
+      mockCommentUpdate.mockRejectedValueOnce(new Error("Update failed"))
+
+      try {
+        await commentHandlers.updateComment({
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
+          entryId: testEntryId,
+          commentId: "invalid-comment-id",
+          body: "Test body",
+        })
+        expect.fail("Should have thrown an error")
+      } catch (error) {
+        expect(error).to.exist
+        expect(error.message).to.equal("Update failed")
+      }
+    })
+  })
+
   describe("Error handling", () => {
     it("should handle getComments API errors", async () => {
       mockCommentGetMany.mockRejectedValueOnce(new Error("API Error"))
@@ -486,7 +742,7 @@ describe("Comment Handlers Integration Tests", () => {
           entryId: testEntryId,
         })
         expect.fail("Should have thrown an error")
-      } catch (error: any) {
+      } catch (error) {
         expect(error).to.exist
         expect(error.message).to.equal("API Error")
       }
@@ -503,9 +759,44 @@ describe("Comment Handlers Integration Tests", () => {
           body: "Test comment",
         })
         expect.fail("Should have thrown an error")
-      } catch (error: any) {
+      } catch (error) {
         expect(error).to.exist
         expect(error.message).to.equal("Create failed")
+      }
+    })
+
+    it("should handle deleteComment API errors", async () => {
+      mockCommentDelete.mockRejectedValueOnce(new Error("Delete failed"))
+
+      try {
+        await commentHandlers.deleteComment({
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
+          entryId: testEntryId,
+          commentId: testCommentId,
+        })
+        expect.fail("Should have thrown an error")
+      } catch (error) {
+        expect(error).to.exist
+        expect(error.message).to.equal("Delete failed")
+      }
+    })
+
+    it("should handle updateComment API errors", async () => {
+      mockCommentUpdate.mockRejectedValueOnce(new Error("Update failed"))
+
+      try {
+        await commentHandlers.updateComment({
+          spaceId: testSpaceId,
+          environmentId: testEnvironmentId,
+          entryId: testEntryId,
+          commentId: testCommentId,
+          body: "Test body",
+        })
+        expect.fail("Should have thrown an error")
+      } catch (error) {
+        expect(error).to.exist
+        expect(error.message).to.equal("Update failed")
       }
     })
   })

@@ -64,6 +64,8 @@ These bulk operation tools are ideal for content migrations, mass updates, or ba
 - **get_comments**: Retrieve comments for an entry with filtering by status (active, resolved, all)
 - **create_comment**: Create new comments on entries with support for both plain-text and rich-text formats
 - **get_single_comment**: Retrieve a specific comment by its ID for an entry
+- **delete_comment**: Delete a specific comment from an entry
+- **update_comment**: Update existing comments with new body content or status changes
 
 ### Bulk Operations
 
