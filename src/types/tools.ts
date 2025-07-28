@@ -86,7 +86,8 @@ export const getEntryTools = () => {
           },
           fields: {
             type: "object",
-            description: "The fields of the entry with localized values. Example: { title: { 'en-US': 'My Title' }, description: { 'en-US': 'My Description' } }"
+            description:
+              "The fields of the entry with localized values. Example: { title: { 'en-US': 'My Title' }, description: { 'en-US': 'My Description' } }",
           },
         },
         required: ["contentTypeId", "fields"],
@@ -113,7 +114,8 @@ export const getEntryTools = () => {
           entryId: { type: "string" },
           fields: {
             type: "object",
-            description: "The fields to update with localized values. Example: { title: { 'en-US': 'My Updated Title' } }"
+            description:
+              "The fields to update with localized values. Example: { title: { 'en-US': 'My Updated Title' } }",
           },
         },
         required: ["entryId", "fields"],
@@ -836,6 +838,94 @@ export const getAiActionTools = () => {
   }
 }
 
+// Tool definitions for Comment operations
+export const getCommentTools = () => {
+  return {
+    GET_COMMENTS: {
+      name: "get_comments",
+      description:
+        "Retrieve comments for an entry. Returns comments with their status and body content.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          entryId: {
+            type: "string",
+            description: "The unique identifier of the entry to get comments for",
+          },
+          bodyFormat: {
+            type: "string",
+            enum: ["plain-text", "rich-text"],
+            default: "plain-text",
+            description: "Format for the comment body content",
+          },
+          status: {
+            type: "string",
+            enum: ["active", "resolved", "all"],
+            default: "active",
+            description: "Filter comments by status",
+          },
+        },
+        required: ["entryId"],
+      }),
+    },
+    CREATE_COMMENT: {
+      name: "create_comment",
+      description:
+        "Create a new comment on an entry. The comment will be created with the specified body and status.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          entryId: {
+            type: "string",
+            description: "The unique identifier of the entry to comment on",
+          },
+          body: {
+            type: "string",
+            description: "The content of the comment",
+          },
+          status: {
+            type: "string",
+            enum: ["active"],
+            default: "active",
+            description: "The status of the comment",
+          },
+          bodyFormat: {
+            type: "string",
+            enum: ["plain-text", "rich-text"],
+            default: "plain-text",
+            description: "Format for the comment body content",
+          },
+        },
+        required: ["entryId", "body"],
+      }),
+    },
+    GET_SINGLE_COMMENT: {
+      name: "get_single_comment",
+      description: "Retrieve a specific comment by its ID for an entry.",
+      inputSchema: getSpaceEnvProperties({
+        type: "object",
+        properties: {
+          entryId: {
+            type: "string",
+            description: "The unique identifier of the entry",
+          },
+          commentId: {
+            type: "string",
+            description: "The unique identifier of the comment to retrieve",
+          },
+          bodyFormat: {
+            type: "string",
+            enum: ["plain-text", "rich-text"],
+            default: "plain-text",
+            description: "Format for the comment body content",
+          },
+        },
+        required: ["entryId", "commentId"],
+      }),
+    },
+  }
+}
+
 // Export combined tools
 export const getTools = () => {
   return {
@@ -845,5 +935,6 @@ export const getTools = () => {
     ...getSpaceEnvTools(),
     ...getBulkActionTools(),
     ...getAiActionTools(),
+    ...getCommentTools(),
   }
 }
