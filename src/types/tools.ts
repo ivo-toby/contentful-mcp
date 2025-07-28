@@ -889,12 +889,6 @@ export const getCommentTools = () => {
             default: "active",
             description: "The status of the comment",
           },
-          bodyFormat: {
-            type: "string",
-            enum: ["plain-text", "rich-text"],
-            default: "plain-text",
-            description: "Format for the comment body content",
-          },
         },
         required: ["entryId", "body"],
       }),

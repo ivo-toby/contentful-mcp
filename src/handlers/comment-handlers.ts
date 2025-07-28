@@ -63,11 +63,10 @@ export const commentHandlers = {
     entryId: string
     body: string
     status?: "active"
-    bodyFormat?: "plain-text" | "rich-text"
   }) => {
     const spaceId = process.env.SPACE_ID || args.spaceId
     const environmentId = process.env.ENVIRONMENT_ID || args.environmentId
-    const { entryId, body, status = "active", bodyFormat = "plain-text" } = args
+    const { entryId, body, status = "active" } = args
 
     const baseParams = {
       spaceId,
@@ -77,17 +76,11 @@ export const commentHandlers = {
 
     const contentfulClient = await getContentfulClient()
 
-    // Handle different bodyFormat types separately due to TypeScript overloads
-    const comment =
-      bodyFormat === "rich-text"
-        ? await contentfulClient.comment.create(baseParams, {
-            body,
-            status,
-          })
-        : await contentfulClient.comment.create(baseParams, {
-            body,
-            status,
-          })
+    // Note: createComment doesn't actually use bodyFormat in the API call
+    const comment = await contentfulClient.comment.create(baseParams, {
+      body,
+      status,
+    })
 
     return {
       content: [
