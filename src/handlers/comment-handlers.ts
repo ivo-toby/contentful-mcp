@@ -75,30 +75,19 @@ export const commentHandlers = {
       entryId,
     }
 
-    const commentData = {
-      body,
-      status,
-    }
-
     const contentfulClient = await getContentfulClient()
 
     // Handle different bodyFormat types separately due to TypeScript overloads
     const comment =
       bodyFormat === "rich-text"
-        ? await contentfulClient.comment.create(
-            {
-              ...baseParams,
-              bodyFormat: "rich-text" as const,
-            },
-            commentData,
-          )
-        : await contentfulClient.comment.create(
-            {
-              ...baseParams,
-              bodyFormat: "plain-text" as const,
-            },
-            commentData,
-          )
+        ? await contentfulClient.comment.create(baseParams, {
+            body,
+            status,
+          })
+        : await contentfulClient.comment.create(baseParams, {
+            body,
+            status,
+          })
 
     return {
       content: [
