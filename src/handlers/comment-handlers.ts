@@ -69,6 +69,7 @@ export const commentHandlers = {
     entryId: string
     body: string
     status?: "active"
+    parent?: string
   }) => {
     const spaceId =
       process.env.SPACE_ID && process.env.SPACE_ID !== "undefined"
@@ -78,27 +79,31 @@ export const commentHandlers = {
       process.env.ENVIRONMENT_ID && process.env.ENVIRONMENT_ID !== "undefined"
         ? process.env.ENVIRONMENT_ID
         : args.environmentId
-    const { entryId, body, status = "active" } = args
+    const { entryId, body, parent } = args
 
     const baseParams = {
       spaceId,
       environmentId,
       entryId,
+      // Add parentCommentId to baseParams when parent is provided
+      ...(parent && { parentCommentId: parent }),
     }
 
     const contentfulClient = await getContentfulClient()
 
-    // Note: createComment doesn't actually use bodyFormat in the API call
-    const comment = await contentfulClient.comment.create(baseParams, {
+    // Simple comment data object (no parent in body)
+    const commentData = {
       body,
-      status,
-    })
+      status: "active" as const,
+    }
+
+    const comment = await contentfulClient.comment.create(baseParams, commentData)
 
     return {
       content: [
         {
           type: "text",
-          text: `Successfully created comment on entry ${entryId}:\n\n${JSON.stringify(comment, null, 2)}`,
+          text: `Successfully created ${parent ? "reply" : "comment"} on entry ${entryId}:\n\n${JSON.stringify(comment, null, 2)}`,
         },
       ],
     }

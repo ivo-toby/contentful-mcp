@@ -16,7 +16,7 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 ## Features
 
 - **Content Management**: Full CRUD operations for entries and assets
-- **Comment Management**: Create, retrieve, and manage comments on entries with support for both plain-text and rich-text formats
+- **Comment Management**: Create, retrieve, and manage comments on entries with support for both plain-text and rich-text formats, including threaded conversations
 - **Space Management**: Create, update, and manage spaces and environments
 - **Content Types**: Manage content type definitions
 - **Localization**: Support for multiple locales
@@ -62,10 +62,25 @@ These bulk operation tools are ideal for content migrations, mass updates, or ba
 ### Comment Management
 
 - **get_comments**: Retrieve comments for an entry with filtering by status (active, resolved, all)
-- **create_comment**: Create new comments on entries with support for both plain-text and rich-text formats
+- **create_comment**: Create new comments on entries with support for both plain-text and rich-text formats. Supports threaded conversations by providing a parent comment ID to reply to existing comments
 - **get_single_comment**: Retrieve a specific comment by its ID for an entry
 - **delete_comment**: Delete a specific comment from an entry
 - **update_comment**: Update existing comments with new body content or status changes
+
+#### Threaded Comments
+
+Comments support threading functionality to enable structured conversations and work around the 512-character limit:
+
+- **Reply to Comments**: Use the `parent` parameter in `create_comment` to reply to an existing comment
+- **Threaded Conversations**: Build conversation trees by replying to specific comments
+- **Extended Discussions**: Work around the 512-character limit by creating threaded replies to continue longer messages
+- **Conversation Context**: Maintain context in discussions by organizing related comments in threads
+
+Example usage:
+
+1. Create a main comment: `create_comment` with `entryId`, `body`, and `status`
+2. Reply to that comment: `create_comment` with `entryId`, `body`, `status`, and `parent` (the ID of the comment you're replying to)
+3. Continue the thread: Reply to any comment in the thread by using its ID as the `parent`
 
 ### Bulk Operations
 
