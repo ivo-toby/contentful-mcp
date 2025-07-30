@@ -871,7 +871,7 @@ export const getCommentTools = () => {
     CREATE_COMMENT: {
       name: "create_comment",
       description:
-        "Create a new comment on an entry. The comment will be created with the specified body and status.",
+        "Create a new comment on an entry. The comment will be created with the specified body and status. To create a threaded conversation (reply to an existing comment), provide the parent comment ID. This allows you to work around the 512-character limit by creating threaded replies.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -881,13 +881,18 @@ export const getCommentTools = () => {
           },
           body: {
             type: "string",
-            description: "The content of the comment",
+            description: "The content of the comment (max 512 characters)",
           },
           status: {
             type: "string",
             enum: ["active"],
             default: "active",
             description: "The status of the comment",
+          },
+          parent: {
+            type: "string",
+            description:
+              "Optional ID of the parent comment to reply to. Use this to create threaded conversations or to continue longer messages by replying to your own comments.",
           },
         },
         required: ["entryId", "body"],
