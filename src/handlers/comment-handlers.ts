@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getContentfulClient } from "../config/client.js"
-import { summarizeData } from "../utils/summarizer.js"
 
 export const commentHandlers = {
   getComments: async (args: {
@@ -9,6 +8,8 @@ export const commentHandlers = {
     entryId: string
     bodyFormat?: "plain-text" | "rich-text"
     status?: "active" | "resolved" | "all"
+    limit?: number
+    skip?: number
   }) => {
     const spaceId =
       process.env.SPACE_ID && process.env.SPACE_ID !== "undefined"
@@ -18,7 +19,7 @@ export const commentHandlers = {
       process.env.ENVIRONMENT_ID && process.env.ENVIRONMENT_ID !== "undefined"
         ? process.env.ENVIRONMENT_ID
         : args.environmentId
-    const { entryId, bodyFormat = "plain-text", status = "active" } = args
+    const { entryId, bodyFormat = "plain-text", status = "active", limit = 10, skip = 0 } = args
 
     const baseParams = {
       spaceId,
@@ -48,16 +49,28 @@ export const commentHandlers = {
             query,
           })
 
-    const summarized = summarizeData(comments, {
-      maxItems: 10,
-      remainingMessage: "To see more comments, please ask me to retrieve the next page.",
-    })
+    // Apply manual pagination since Contentful Comments API doesn't support it
+    const startIndex = skip
+    const endIndex = skip + limit
+    const paginatedItems = comments.items.slice(startIndex, endIndex)
+
+    const paginatedResult = {
+      items: paginatedItems,
+      total: comments.total,
+      showing: paginatedItems.length,
+      remaining: Math.max(0, comments.total - endIndex),
+      skip: endIndex < comments.total ? endIndex : undefined,
+      message:
+        endIndex < comments.total
+          ? "To see more comments, use skip parameter with the provided skip value."
+          : undefined,
+    }
 
     return {
       content: [
         {
           type: "text",
-          text: `Retrieved ${comments.total} comments for entry ${entryId}:\n\n${JSON.stringify(summarized, null, 2)}`,
+          text: JSON.stringify(paginatedResult, null, 2),
         },
       ],
     }
@@ -103,7 +116,7 @@ export const commentHandlers = {
       content: [
         {
           type: "text",
-          text: `Successfully created ${parent ? "reply" : "comment"} on entry ${entryId}:\n\n${JSON.stringify(comment, null, 2)}`,
+          text: JSON.stringify(comment, null, 2),
         },
       ],
     }
@@ -151,7 +164,7 @@ export const commentHandlers = {
       content: [
         {
           type: "text",
-          text: `Retrieved comment ${commentId} for entry ${entryId}:\n\n${JSON.stringify(comment, null, 2)}`,
+          text: JSON.stringify(comment, null, 2),
         },
       ],
     }
@@ -198,7 +211,14 @@ export const commentHandlers = {
       content: [
         {
           type: "text",
-          text: `Successfully deleted comment ${commentId} from entry ${entryId}`,
+          text: JSON.stringify(
+            {
+              success: true,
+              message: `Successfully deleted comment ${commentId} from entry ${entryId}`,
+            },
+            null,
+            2,
+          ),
         },
       ],
     }
@@ -259,7 +279,7 @@ export const commentHandlers = {
       content: [
         {
           type: "text",
-          text: `Successfully updated comment ${commentId} on entry ${entryId}:\n\n${JSON.stringify(comment, null, 2)}`,
+          text: JSON.stringify(comment, null, 2),
         },
       ],
     }
