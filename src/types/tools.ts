@@ -844,7 +844,7 @@ export const getCommentTools = () => {
     GET_COMMENTS: {
       name: "get_comments",
       description:
-        "Retrieve comments for an entry. Returns comments with their status and body content.",
+        "Retrieve comments for an entry with pagination support. Returns comments with their status and body content.",
       inputSchema: getSpaceEnvProperties({
         type: "object",
         properties: {
@@ -863,6 +863,19 @@ export const getCommentTools = () => {
             enum: ["active", "resolved", "all"],
             default: "active",
             description: "Filter comments by status",
+          },
+          limit: {
+            type: "number",
+            default: 10,
+            minimum: 1,
+            maximum: 100,
+            description: "Maximum number of comments to return (1-100, default: 10)",
+          },
+          skip: {
+            type: "number",
+            default: 0,
+            minimum: 0,
+            description: "Number of comments to skip for pagination (default: 0)",
           },
         },
         required: ["entryId"],

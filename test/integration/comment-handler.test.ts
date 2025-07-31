@@ -154,11 +154,12 @@ describe("Comment Handlers Integration Tests", () => {
 
       expect(result).to.have.property("content").that.is.an("array")
       expect(result.content).to.have.lengthOf(1)
-      expect(result.content[0].text).to.include(`Retrieved 2 comments for entry ${testEntryId}`)
 
-      const responseData = JSON.parse(result.content[0].text.split(":\n\n")[1])
+      const responseData = JSON.parse(result.content[0].text)
       expect(responseData.items).to.be.an("array")
       expect(responseData.total).to.equal(2)
+      expect(responseData.showing).to.equal(2)
+      expect(responseData.remaining).to.equal(0)
     })
 
     it("should retrieve comments with rich-text body format", async () => {
@@ -178,7 +179,9 @@ describe("Comment Handlers Integration Tests", () => {
       })
 
       expect(result).to.have.property("content")
-      expect(result.content[0].text).to.include(`Retrieved 2 comments for entry ${testEntryId}`)
+
+      const responseData = JSON.parse(result.content[0].text)
+      expect(responseData.items).to.be.an("array")
     })
 
     it("should retrieve comments with status filter", async () => {
@@ -246,6 +249,58 @@ describe("Comment Handlers Integration Tests", () => {
 
       expect(result).to.have.property("content")
     })
+
+    it("should handle pagination with limit parameter", async () => {
+      const result = await commentHandlers.getComments({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        limit: 1,
+      })
+
+      const responseData = JSON.parse(result.content[0].text)
+      expect(responseData.items).to.have.lengthOf(1)
+      expect(responseData.total).to.equal(2)
+      expect(responseData.showing).to.equal(1)
+      expect(responseData.remaining).to.equal(1)
+      expect(responseData.skip).to.equal(1)
+      expect(responseData.message).to.include("skip parameter")
+    })
+
+    it("should handle pagination with skip parameter", async () => {
+      const result = await commentHandlers.getComments({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        limit: 1,
+        skip: 1,
+      })
+
+      const responseData = JSON.parse(result.content[0].text)
+      expect(responseData.items).to.have.lengthOf(1)
+      expect(responseData.total).to.equal(2)
+      expect(responseData.showing).to.equal(1)
+      expect(responseData.remaining).to.equal(0)
+      expect(responseData.skip).to.be.undefined
+      expect(responseData.message).to.be.undefined
+    })
+
+    it("should handle limit larger than available items", async () => {
+      const result = await commentHandlers.getComments({
+        spaceId: testSpaceId,
+        environmentId: testEnvironmentId,
+        entryId: testEntryId,
+        limit: 10,
+      })
+
+      const responseData = JSON.parse(result.content[0].text)
+      expect(responseData.items).to.have.lengthOf(2)
+      expect(responseData.total).to.equal(2)
+      expect(responseData.showing).to.equal(2)
+      expect(responseData.remaining).to.equal(0)
+      expect(responseData.skip).to.be.undefined
+      expect(responseData.message).to.be.undefined
+    })
   })
 
   describe("createComment", () => {
@@ -273,11 +328,8 @@ describe("Comment Handlers Integration Tests", () => {
 
       expect(result).to.have.property("content").that.is.an("array")
       expect(result.content).to.have.lengthOf(1)
-      expect(result.content[0].text).to.include(
-        `Successfully created comment on entry ${testEntryId}`,
-      )
 
-      const responseData = JSON.parse(result.content[0].text.split(":\n\n")[1])
+      const responseData = JSON.parse(result.content[0].text)
       expect(responseData.sys.id).to.equal("test-comment-id")
       expect(responseData.body).to.equal("This is a test comment")
       expect(responseData.status).to.equal("active")
@@ -308,9 +360,9 @@ describe("Comment Handlers Integration Tests", () => {
       )
 
       expect(result).to.have.property("content")
-      expect(result.content[0].text).to.include(
-        `Successfully created comment on entry ${testEntryId}`,
-      )
+
+      const responseData = JSON.parse(result.content[0].text)
+      expect(responseData.sys.id).to.equal("test-rich-comment-id")
     })
 
     it("should create a comment with custom status", async () => {
@@ -394,11 +446,8 @@ describe("Comment Handlers Integration Tests", () => {
 
       expect(result).to.have.property("content").that.is.an("array")
       expect(result.content).to.have.lengthOf(1)
-      expect(result.content[0].text).to.include(
-        `Retrieved comment ${testCommentId} for entry ${testEntryId}`,
-      )
 
-      const responseData = JSON.parse(result.content[0].text.split(":\n\n")[1])
+      const responseData = JSON.parse(result.content[0].text)
       expect(responseData.sys.id).to.equal("test-comment-id")
       expect(responseData.body).to.equal("This is a test comment")
       expect(responseData.status).to.equal("active")
@@ -424,11 +473,8 @@ describe("Comment Handlers Integration Tests", () => {
       })
 
       expect(result).to.have.property("content")
-      expect(result.content[0].text).to.include(
-        `Retrieved comment ${testCommentId} for entry ${testEntryId}`,
-      )
 
-      const responseData = JSON.parse(result.content[0].text.split(":\n\n")[1])
+      const responseData = JSON.parse(result.content[0].text)
       expect(responseData.body).to.have.property("nodeType", "document")
     })
 
@@ -580,11 +626,8 @@ describe("Comment Handlers Integration Tests", () => {
 
       expect(result).to.have.property("content").that.is.an("array")
       expect(result.content).to.have.lengthOf(1)
-      expect(result.content[0].text).to.include(
-        `Successfully updated comment ${testCommentId} on entry ${testEntryId}`,
-      )
 
-      const responseData = JSON.parse(result.content[0].text.split(":\n\n")[1])
+      const responseData = JSON.parse(result.content[0].text)
       expect(responseData.sys.id).to.equal("test-comment-id")
     })
 
@@ -616,9 +659,9 @@ describe("Comment Handlers Integration Tests", () => {
       )
 
       expect(result).to.have.property("content")
-      expect(result.content[0].text).to.include(
-        `Successfully updated comment ${testCommentId} on entry ${testEntryId}`,
-      )
+
+      const responseData = JSON.parse(result.content[0].text)
+      expect(responseData.sys.id).to.equal("test-rich-comment-id")
     })
 
     it("should update only body when status is not provided", async () => {
