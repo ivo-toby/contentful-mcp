@@ -483,23 +483,29 @@ const contentTypeHandlers = [
   http.get(
     "https://api.contentful.com/spaces/:spaceId/environments/:environmentId/content_types",
     ({ params }) => {
-      const { spaceId } = params
+      const { limit, skip, spaceId } = params
       if (spaceId === "test-space-id") {
-        return HttpResponse.json({
-          items: [
+        const total = 100 // Assume there are 100 content types in total
+        const start = parseInt(Array.isArray(skip) ? skip[0] : skip) || 0
+        const end = start + parseInt(Array.isArray(limit) ? limit[0] : limit) || 20
+        const items = Array.from({ length: Math.min(end, total) - start }, (_, index) => ({
+          sys: { id: index === 0 ? "test-content-type-id" : `test-content-type-id-${start + index}` },
+          name: index === 0 ? "Test Content Type" : `Test Content Type ${start + index}`,
+          fields: [
             {
-              sys: { id: "test-content-type-id" },
-              name: "Test Content Type",
-              fields: [
-                {
-                  id: "title",
-                  name: "Title",
-                  type: "Text",
-                  required: true,
-                },
-              ],
+              id: "title",
+              name: "Title",
+              type: "Text",
+              required: true,
             },
           ],
+        }))
+
+        return HttpResponse.json({
+          total,
+          skip,
+          limit,
+          items,
         })
       }
       return new HttpResponse(null, { status: 404 })
