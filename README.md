@@ -2,6 +2,10 @@
 
 # Contentful MCP Server
 
+## Notice
+
+This is a community driven server! Contentful has released an official server which you can find [here](https://github.com/contentful/contentful-mcp-server)
+
 [![smithery badge](https://smithery.ai/badge/@ivotoby/contentful-management-mcp-server)](https://smithery.ai/server/@ivotoby/contentful-management-mcp-server)
 
 An MCP server implementation that integrates with Contentful's Content Management API, providing comprehensive content management capabilities.
