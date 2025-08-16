@@ -6,6 +6,7 @@
 
 This is a community driven server! Contentful has released an official server which you can find [here](https://github.com/contentful/contentful-mcp-server)
 
+[![Trust Score](https://archestra.ai/mcp-catalog/api/badge/quality/ivo-toby/contentful-mcp)](https://archestra.ai/mcp-catalog/ivo-toby__contentful-mcp)
 [![smithery badge](https://smithery.ai/badge/@ivotoby/contentful-management-mcp-server)](https://smithery.ai/server/@ivotoby/contentful-management-mcp-server)
 
 An MCP server implementation that integrates with Contentful's Content Management API, providing comprehensive content management capabilities.
