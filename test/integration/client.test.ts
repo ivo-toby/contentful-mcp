@@ -36,6 +36,9 @@ describe("getContentfulClient", () => {
       {
         accessToken: "test-token",
         host: "api.contentful.com",
+        headers: {
+          "X-Contentful-MCP": "contentful-community-mcp/1.0.0",
+        },
       },
       { type: "plain" },
     )
@@ -73,10 +76,32 @@ describe("getContentfulClient", () => {
       {
         accessToken: "generated-token",
         host: "api.contentful.com",
+        headers: {
+          "X-Contentful-MCP": "contentful-community-mcp/1.0.0",
+        },
       },
       { type: "plain" },
     )
   })
+
+  it("includes MCP identification header in all client configurations", async () => {
+    process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN = "test-token"
+    process.env.CONTENTFUL_HOST = "api.contentful.com"
+
+    const mockCreateClient = vi.fn()
+    const { createClient } = await import("contentful-management")
+    vi.mocked(createClient).mockImplementation(mockCreateClient)
+
+    const { getContentfulClient } = await import("../../src/config/client")
+    await getContentfulClient()
+
+    const callArgs = mockCreateClient.mock.calls[0]
+    const config = callArgs[0]
+
+    expect(config.headers).toBeDefined()
+    expect(config.headers["X-Contentful-MCP"]).toBe("contentful-community-mcp/1.0.0")
+  })
+
   it("throws if neither CONTENTFUL_MANAGEMENT_ACCESS_TOKEN nor PRIVATE_KEY is available", async () => {
     delete process.env.CONTENTFUL_MANAGEMENT_ACCESS_TOKEN
     delete process.env.PRIVATE_KEY
