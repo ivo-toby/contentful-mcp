@@ -37,7 +37,7 @@ describe("getContentfulClient", () => {
         accessToken: "test-token",
         host: "api.contentful.com",
         headers: {
-          "X-Contentful-MCP": "contentful-community-mcp/1.0.0",
+          "X-Contentful-user-agent": "contentful-community-mcp/1.0.0",
         },
       },
       { type: "plain" },
@@ -77,7 +77,7 @@ describe("getContentfulClient", () => {
         accessToken: "generated-token",
         host: "api.contentful.com",
         headers: {
-          "X-Contentful-MCP": "contentful-community-mcp/1.0.0",
+          "X-Contentful-user-agent": "contentful-community-mcp/1.0.0",
         },
       },
       { type: "plain" },
@@ -99,7 +99,7 @@ describe("getContentfulClient", () => {
     const config = callArgs[0]
 
     expect(config.headers).toBeDefined()
-    expect(config.headers["X-Contentful-MCP"]).toBe("contentful-community-mcp/1.0.0")
+    expect(config.headers["X-Contentful-user-agent"]).toBe("contentful-community-mcp/1.0.0")
   })
 
   it("throws if neither CONTENTFUL_MANAGEMENT_ACCESS_TOKEN nor PRIVATE_KEY is available", async () => {

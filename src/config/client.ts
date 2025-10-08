@@ -49,7 +49,7 @@ export const getContentfulClient = async () => {
       accessToken,
       host: CONTENTFUL_HOST,
       headers: {
-        "X-Contentful-MCP": "contentful-community-mcp/1.0.0",
+        "X-Contentful-user-agent": "contentful-community-mcp/1.0.0",
       },
     },
     { type: "plain" },
