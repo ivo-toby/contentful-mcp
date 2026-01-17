@@ -260,6 +260,11 @@ async function handleAiActionInvocation(actionId: string, args: Record<string, u
 // Functions to initialize and refresh AI Actions
 async function loadAiActions() {
   try {
+    // Skip AI Actions loading if disabled
+    if (process.env.DISABLE_AI_ACTIONS === "true") {
+      return
+    }
+
     // First, clear the cache to avoid duplicates
     aiActionToolContext.clearCache()
 

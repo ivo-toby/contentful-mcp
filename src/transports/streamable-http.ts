@@ -410,6 +410,11 @@ export class StreamableHttpServer {
    */
   private async loadAiActions(): Promise<void> {
     try {
+      // Skip AI Actions loading if disabled
+      if (process.env.DISABLE_AI_ACTIONS === "true") {
+        return
+      }
+
       // First, clear the cache to avoid duplicates
       this.aiActionToolContext.clearCache()
 
