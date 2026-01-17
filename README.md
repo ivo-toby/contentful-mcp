@@ -149,6 +149,7 @@ These variables can also be set as arguments
 - `ENABLE_HTTP_SERVER` / `--http`: Set to "true" to enable HTTP/SSE mode
 - `HTTP_PORT` / `--port`: Port for HTTP server (default: 3000)
 - `HTTP_HOST` / `--http-host`: Host for HTTP server (default: localhost)
+- `DISABLE_AI_ACTIONS`: Set to "true" to disable fetching AI Actions on startup (useful if you don't have access to this feature)
 
 ### Space and Environment Scoping
 
