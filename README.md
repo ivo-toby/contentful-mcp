@@ -28,6 +28,10 @@ An MCP server implementation that integrates with Contentful's Content Managemen
 - **Bulk Operations**: Execute bulk publishing, unpublishing, and validation across multiple entries and assets
 - **Smart Pagination**: List operations return maximum 3 items per request to prevent context window overflow, with built-in pagination support
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/ivo-toby-contentful-mcp).
+
 ## Pagination
 
 To prevent context window overflow in LLMs, list operations (like search_entries and list_assets) are limited to 3 items per request. Each response includes:
